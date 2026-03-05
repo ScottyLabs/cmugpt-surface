@@ -1,0 +1,95 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/src/routeTree.gen.ts"]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    }
+  },
+  "formatter": {
+    "useEditorconfig": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noImplicitCoercions": "error", // Disallow shorthand type conversions.
+        "useLiteralKeys": "off" // Conflicts with tsc noPropertyAccessFromIndexSignature.
+      },
+      "correctness": {
+        "useImportExtensions": "error" // Enforce file extensions for relative imports.
+      },
+      "nursery": {
+        "noFloatingPromises": "error", // Require Promise-like statements to be handled appropriately.
+        "noImportCycles": "error", // Prevent import cycles.
+        "noLeakedRender": "error", // Prevent problematic leaked values from being rendered.
+        "noShadow": "error", // Disallow variable declarations from shadowing variables declared in the outer scope.
+        "useDestructuring": "error" // Require destructuring from arrays and/or objects.
+      },
+      "style": {
+        "noCommonJs": "error", // Disallow use of CommonJs module system in favor of ESM style imports.
+        "noDefaultExport": "error", // Disallow default exports. https://biomejs.dev/linter/rules/no-default-export/#description
+        "noEnum": "off", // Disallow TypeScript enum. https://biomejs.dev/linter/rules/no-enum/#description
+        "noImplicitBoolean": "error", // Disallow implicit true values on JSX boolean attributes.
+        "noNegationElse": "error", // Disallow negation in the condition of an if statement if it has an else clause.
+        "useCollapsedIf": "error", // Enforce using single if instead of nested if clauses.
+        "useConsistentObjectDefinitions": "error", // Require the consistent declaration of object literals.
+        "useConsistentArrayType": "error", // Using the same style consistently across your codebase makes it easier for developers to read and understand array types.
+        "useConsistentCurlyBraces": "error", // Enforces consistent use of curly braces inside JSX attributes and JSX children.
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "interface" // https://www.youtube.com/watch?v=e0AIkYrXAYE&t=8m5s
+          }
+        }, // Enforce type definitions to consistently use either interface or type.
+        "useExplicitLengthCheck": "error", // Enforces a specific style length comparisons to make them more clear.
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["camelCase", "PascalCase"]
+          }
+        }, // Enforce naming conventions for JavaScript and TypeScript filenames.
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "separatedType"
+          }
+        }, // Promotes the use of import type for types.
+        "useNamingConvention": "error" // Enforce naming conventions for everything across a codebase.
+      },
+      "suspicious": {
+        "noArrayIndexKey": "error", // Discourage the usage of Array index in keys.
+        "noConstEnum": "error", // Disallow TypeScript const enum. https://biomejs.dev/linter/rules/no-const-enum/#description
+        "noEmptyBlockStatements": "error", // Disallow empty block statements and static blocks.
+        "noEvolvingTypes": "error", // Disallow variables from evolving into any type through reassignments.
+        "useAwait": "error" // Report async functions that lack an await expression.
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Disable the useFilenamingConvention rule for the root-provider.tsx file created by create-tanstack-app.
+      "includes": ["**/root-provider.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
+      }
+    }
+  ]
+}

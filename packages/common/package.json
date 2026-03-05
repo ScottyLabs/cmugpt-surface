@@ -1,0 +1,12 @@
+{
+  "name": "@scottystack/common",
+  "version": "0.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "check": "tsc && biome check",
+    "format": "biome format",
+    "lint": "biome lint",
+    "tsc": "tsc"
+  },
+  "type": "module"
+}

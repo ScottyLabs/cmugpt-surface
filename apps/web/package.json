@@ -1,0 +1,49 @@
+{
+  "name": "@scottystack/web",
+  "version": "0.0.0",
+  "dependencies": {
+    "@scottylabs/corgi": "^0.3.1",
+    "@scottystack/server": "workspace:*",
+    "@tailwindcss/vite": "^4.0.6",
+    "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.90.20",
+    "@tanstack/react-router": "^1.132.0",
+    "@tanstack/react-router-devtools": "^1.132.0",
+    "@tanstack/router-plugin": "^1.132.0",
+    "better-auth": "^1.4.18",
+    "openapi-fetch": "^0.15.0",
+    "openapi-react-query": "^0.5.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.0.6",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tanstack/devtools-vite": "^0.3.11",
+    "@tanstack/react-query-devtools": "^5.91.3",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.0.4",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "jsdom": "^27.0.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vitest": "^3.0.5",
+    "web-vitals": "^5.1.0"
+  },
+  "private": true,
+  "scripts": {
+    "build": "vite build && tsc",
+    "check": "tsc && biome check",
+    "dev": "vite --port 3000",
+    "format": "biome format",
+    "lint": "biome lint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "tsc": "tsc"
+  },
+  "type": "module"
+}
