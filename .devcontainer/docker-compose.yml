@@ -1,8 +1,8 @@
-name: "scottystack"
+name: "cmugpt-frontend"
 
 services:
   dev:
-    container_name: scottystack-dev
+    container_name: cmugpt-frontend-dev
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -14,11 +14,11 @@ services:
 
   postgres:
     image: postgres:17
-    container_name: scottystack-postgres
+    container_name: cmugpt-frontend-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: donotuseinprod
-      POSTGRES_DB: scottystack
+      POSTGRES_DB: cmugpt-frontend
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

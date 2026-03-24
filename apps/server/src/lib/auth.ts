@@ -1,7 +1,10 @@
 import type { Session, User } from "better-auth";
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { customSession, genericOAuth, keycloak } from "better-auth/plugins";
 import jwt from "jsonwebtoken";
+import { db } from "../db/index.ts";
+import { account, session, user, verification } from "../db/schema.ts";
 import { env } from "../env.ts";
 
 /**
@@ -16,6 +19,10 @@ interface Auth {
 
 // https://www.better-auth.com/docs/installation#create-a-better-auth-instance
 export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: { user, session, account, verification },
+  }),
   // biome-ignore lint/style/useNamingConvention: defined by better-auth
   baseURL: env.SERVER_URL,
   trustedOrigins: [env.BETTER_AUTH_URL],
@@ -36,25 +43,35 @@ export const auth = betterAuth({
     }),
 
     // https://www.better-auth.com/docs/concepts/session-management#customizing-session-response
-    customSession(async ({ user, session }, ctx): Promise<Auth> => {
-      const customSessionObject: Auth = { session, user };
+    customSession(
+      async (
+        { user: sessionUser, session: sessionData },
+        ctx,
+      ): Promise<Auth> => {
+        const customSessionObject: Auth = {
+          session: sessionData,
+          user: sessionUser,
+        };
 
-      // Get the decoded access token from the user
-      const decoded = await auth.api
-        .getAccessToken({
-          body: { providerId: "keycloak" },
-          headers: ctx.headers,
-        })
-        .then((accessToken) => {
-          return jwt.decode(accessToken.accessToken);
-        });
+        try {
+          const accessToken = await auth.api.getAccessToken({
+            body: { providerId: "keycloak" },
+            headers: ctx.headers,
+          });
+          const decoded = jwt.decode(accessToken.accessToken);
+          if (decoded && typeof decoded === "object" && "groups" in decoded) {
+            customSessionObject.user.groups = decoded["groups"];
+          }
+        } catch (error) {
+          // Session is still valid without a Keycloak access token (e.g. refresh expired).
+          console.warn(
+            "[auth] customSession: getAccessToken failed; continuing without groups",
+            error instanceof Error ? error.message : error,
+          );
+        }
 
-      // Add groups to the session if they are present in the access token
-      if (decoded && typeof decoded === "object" && "groups" in decoded) {
-        customSessionObject.user.groups = decoded["groups"];
-      }
-
-      return customSessionObject;
-    }),
+        return customSessionObject;
+      },
+    ),
   ],
 });

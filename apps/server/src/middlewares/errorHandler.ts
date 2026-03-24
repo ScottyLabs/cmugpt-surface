@@ -1,3 +1,4 @@
+import { DrizzleQueryError } from "drizzle-orm/errors";
 import type { NextFunction, Request, Response } from "express";
 import { ValidateError } from "tsoa";
 
@@ -10,8 +11,14 @@ export class HttpError extends Error {
 }
 
 export class AuthenticationError extends HttpError {
-  constructor() {
+  /** Set for server logs only; never included in JSON responses. */
+  readonly authDebugReason?: string;
+
+  constructor(authDebugReason?: string) {
     super(401, "Unauthenticated");
+    if (authDebugReason !== undefined) {
+      this.authDebugReason = authDebugReason;
+    }
   }
 }
 
@@ -25,6 +32,18 @@ export class AuthorizationError extends HttpError {
 export class InternalServerError extends HttpError {
   constructor(message: string) {
     super(500, message);
+  }
+}
+
+export class NotFoundError extends HttpError {
+  constructor(message = "Not found") {
+    super(404, message);
+  }
+}
+
+export class BadRequestError extends HttpError {
+  constructor(message: string) {
+    super(400, message);
   }
 }
 
@@ -43,6 +62,23 @@ export function errorHandler(
     const errorToReturn = req.authErrors.reduce((max, currentError) => {
       return currentError.status > max.status ? currentError : max;
     }, firstAuthError);
+
+    const chosenReason =
+      errorToReturn instanceof AuthenticationError &&
+      errorToReturn.authDebugReason
+        ? errorToReturn.authDebugReason
+        : errorToReturn.message;
+    const allReasons = req.authErrors
+      .map((e) =>
+        e instanceof AuthenticationError && e.authDebugReason
+          ? e.authDebugReason
+          : e.message,
+      )
+      .join(" | ");
+    // Single-line log so Turbo’s dev TUI (and similar) is not corrupted by multiline objects.
+    console.warn(
+      `[auth-failure] ${req.method} ${req.path} → ${errorToReturn.status} (${chosenReason}) [tried: ${allReasons}]; cookie=${Boolean(req.headers.cookie)} authorization=${Boolean(req.headers.authorization)}`,
+    );
 
     return res.status(errorToReturn.status).json({
       status: errorToReturn.status,
@@ -66,6 +102,18 @@ export function errorHandler(
       status: err.status,
       error: err.name,
       message: err.message,
+    });
+  }
+
+  // Drizzle wraps PG errors; log the driver message (e.g. missing column) in one line.
+  if (err instanceof DrizzleQueryError) {
+    const pgDetail = err.cause instanceof Error ? err.cause.message : "";
+    console.error(
+      `[db-query] ${req.method} ${req.path}${pgDetail ? ` — ${pgDetail}` : ""}`,
+    );
+    return res.status(500).json({
+      message: "Internal Server Error",
+      details: err.message,
     });
   }
 

@@ -1,0 +1,296 @@
+openapi: 3.0.0
+components:
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    ChatListItemDto:
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        starred:
+          type: boolean
+        isPublic:
+          type: boolean
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - starred
+        - isPublic
+        - updatedAt
+      type: object
+      additionalProperties: false
+    MessageDto:
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+            - system
+        content:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - role
+        - content
+        - createdAt
+      type: object
+      additionalProperties: false
+    ChatDetailDto:
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        starred:
+          type: boolean
+        isPublic:
+          type: boolean
+        updatedAt:
+          type: string
+        isOwner:
+          type: boolean
+      required:
+        - id
+        - title
+        - starred
+        - isPublic
+        - updatedAt
+        - isOwner
+      type: object
+      additionalProperties: false
+    PostMessageResultDto:
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/MessageDto"
+        assistantMessage:
+          $ref: "#/components/schemas/MessageDto"
+      required:
+        - userMessage
+        - assistantMessage
+      type: object
+      additionalProperties: false
+    PostChatMessageBody:
+      properties:
+        content:
+          type: string
+      required:
+        - content
+      type: object
+      additionalProperties: false
+    PatchChatBody:
+      properties:
+        starred:
+          type: boolean
+        title:
+          type: string
+        isPublic:
+          type: boolean
+      type: object
+      additionalProperties: false
+  securitySchemes:
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: https://idp.scottylabs.org/realms/scottylabs/.well-known/openid-configuration
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your bearer token below
+info:
+  title: "@cmugpt-frontend/server"
+  version: 0.0.0
+  contact: {}
+paths:
+  /hello:
+    get:
+      operationId: GetHello
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security: []
+      parameters: []
+  /hello/authenticated:
+    get:
+      operationId: GetHelloAuthenticated
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters: []
+  /hello/admin:
+    get:
+      operationId: GetHelloAdmin
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security:
+        - oidc:
+            - stack-admins
+        - bearerAuth:
+            - stack-admins
+      parameters: []
+  /chats:
+    get:
+      operationId: ListChats
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ChatListItemDto"
+                type: array
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+    post:
+      operationId: CreateChat
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatListItemDto"
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters: []
+  /chats/{id}/messages:
+    get:
+      operationId: GetMessages
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/MessageDto"
+                type: array
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    post:
+      operationId: PostMessage
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostMessageResultDto"
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostChatMessageBody"
+  /chats/{id}:
+    get:
+      operationId: GetChat
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetailDto"
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      operationId: PatchChat
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatListItemDto"
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchChatBody"
+servers:
+  - url: /

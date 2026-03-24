@@ -12,11 +12,8 @@ COPY . .
 # Install deps from bun.lock
 RUN bun install --frozen-lockfile
 
-# Generate artifacts
-RUN bun run generate
-
-# Build the project
-RUN bun run build --filter=@scottystack/server...
+# Build (runs tsoa + openapi, then bundles; see apps/server package.json)
+RUN bun run build --filter=@cmugpt-frontend/server...
 
 # Final runtime image
 FROM base AS runner

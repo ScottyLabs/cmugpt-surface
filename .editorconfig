@@ -13,6 +13,10 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.sql]
+# Drizzle Kit migrations use tab indentation by default.
+indent_style = tab
+
 [*.md]
 # Disable indentation for Markdown files, since for an unordered list nested
 # inside an ordered list, the indentation is determined by the list marker

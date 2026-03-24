@@ -1,10 +1,12 @@
 import { Button } from "@scottylabs/corgi";
 import { createFileRoute } from "@tanstack/react-router";
-import { AuthHello } from "@/components/AuthHello.tsx";
-import { Hello } from "@/components/Hello.tsx";
-import { signIn, signOut, useSession } from "@/lib/auth/client.ts";
+import { ChatShell } from "@/components/ChatShell.tsx";
+import { signIn, useSession } from "@/lib/auth/client.ts";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (raw: Record<string, unknown>) => ({
+    chat: typeof raw.chat === "string" ? raw.chat : undefined,
+  }),
   component: App,
 });
 
@@ -13,8 +15,8 @@ function App() {
 
   if (!auth?.user) {
     return (
-      <div className="m-2">
-        Unauthenticated.{" "}
+      <div className="m-8 flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+        <p className="text-neutral-600">Sign in to use cmuGPT.</p>
         <Button
           size="md"
           theme="brand"
@@ -27,14 +29,5 @@ function App() {
     );
   }
 
-  return (
-    <>
-      <Hello />
-      <AuthHello />
-      <div>Groups: {auth?.user.groups?.join(", ")}</div>
-      <Button size="md" theme="brand" className="inline" onClick={signOut}>
-        Sign Out
-      </Button>
-    </>
-  );
+  return <ChatShell />;
 }

@@ -44,6 +44,47 @@ declare global {
   }
 }
 
+/**
+ * Same auth as chat routes: session cookie (OIDC) or bearer JWT (first to succeed).
+ */
+export async function requireOidcOrBearer(
+  request: express.Request,
+  response: express.Response,
+  next: express.NextFunction,
+): Promise<void> {
+  request.authErrors = request.authErrors ?? [];
+  const failedAttempts: unknown[] = [];
+  const pushAndRethrow = (error: unknown) => {
+    failedAttempts.push(error);
+    throw error;
+  };
+  const attempts = [
+    expressAuthentication(request, OIDC_AUTH, []).catch(pushAndRethrow),
+    expressAuthentication(request, BEARER_AUTH, []).catch(pushAndRethrow),
+  ];
+  try {
+    request.user = (await Promise.any(attempts)) as Express.User;
+    if (response.writableEnded) {
+      return;
+    }
+    next();
+  } catch (caught) {
+    const error = (failedAttempts.pop() ??
+      new AuthenticationError(
+        "requireOidcOrBearer: no strategy succeeded (see allAuthErrors in prior log)",
+      )) as HttpError;
+    error.status = error.status || 401;
+    if (caught instanceof AggregateError) {
+      console.warn("[auth] requireOidcOrBearer: AggregateError", {
+        errors: caught.errors.map((e) =>
+          e instanceof Error ? e.message : String(e),
+        ),
+      });
+    }
+    next(error);
+  }
+}
+
 export function expressAuthentication(
   request: express.Request,
   securityName: string,
@@ -68,6 +109,18 @@ export function expressAuthentication(
   });
 }
 
+function sessionUserToExpressUser(user: {
+  id: string;
+  email: string;
+  name: string;
+}): Express.User {
+  return {
+    sub: user.id,
+    email: user.email,
+    givenName: user.name,
+  };
+}
+
 // Verify OpenID Connect Authentication by checking the user object and scopes
 async function validateOidc(
   request: express.Request,
@@ -75,46 +128,68 @@ async function validateOidc(
   resolve: (value: unknown) => void,
   scopes?: string[],
 ) {
-  // Check if the user is authenticated
+  const needsScopeClaims = Boolean(scopes && scopes.length > 0);
+
   try {
     // https://www.better-auth.com/docs/integrations/express
     const session = await auth.api.getSession({
       headers: fromNodeHeaders(request.headers),
     });
 
-    // Check if the user is authenticated
     if (!session?.user) {
-      const err = new AuthenticationError();
+      const err = new AuthenticationError(
+        "oidc: no session or session.user (cookie missing, wrong domain, or session expired)",
+      );
       request.authErrors?.push(err);
       return reject(err);
     }
 
-    // Get the group from the user access token
-    const decoded = await auth.api
-      .getAccessToken({
+    let decoded: jwt.JwtPayload | string | null = null;
+    try {
+      const accessToken = await auth.api.getAccessToken({
         body: { providerId: "keycloak" },
         headers: fromNodeHeaders(request.headers),
-      })
-      .then((accessToken) => {
-        return jwt.decode(accessToken.accessToken);
       });
+      decoded = jwt.decode(accessToken.accessToken);
+    } catch (error) {
+      if (needsScopeClaims) {
+        console.error(
+          "[auth] oidc: getAccessToken failed (scoped route)",
+          error,
+        );
+        const err = new AuthenticationError(
+          `oidc: getAccessToken failed — ${error instanceof Error ? error.message : String(error)}`,
+        );
+        request.authErrors?.push(err);
+        return reject(err);
+      }
+    }
 
-    // Check if the decoded token is valid
+    if (!needsScopeClaims) {
+      if (decoded !== null && typeof decoded === "object" && decoded.sub) {
+        return resolve(decodedTokenToUser(decoded));
+      }
+      return resolve(sessionUserToExpressUser(session.user));
+    }
+
     if (decoded === null || typeof decoded !== "object") {
-      const err = new AuthenticationError();
+      const err = new AuthenticationError(
+        "oidc: access token missing or not a decodable JWT (required for scoped route)",
+      );
       request.authErrors?.push(err);
       return reject(err);
     }
 
-    // Check if the user has any of the required scopes
     if (!hasAnyScope(decoded["groups"] ?? [], scopes)) {
       return scopeValidationError(request, reject);
     }
 
     return resolve(decodedTokenToUser(decoded));
   } catch (error) {
-    console.error("Authentication error:", error);
-    const err = new AuthenticationError();
+    console.error("[auth] oidc: unexpected error in validateOidc", error);
+    const err = new AuthenticationError(
+      `oidc: validateOidc threw — ${error instanceof Error ? error.message : String(error)}`,
+    );
     request.authErrors?.push(err);
     return reject(err);
   }
@@ -130,7 +205,9 @@ function verifyBearerAuth(
 ) {
   const token = request.headers.authorization?.split(" ")[1];
   if (!token) {
-    const err = new AuthenticationError();
+    const err = new AuthenticationError(
+      "bearer: no Authorization Bearer token on request",
+    );
     request.authErrors?.push(err);
     return reject(err);
   }
@@ -140,8 +217,10 @@ function verifyBearerAuth(
     (header, callback) => {
       client.getSigningKey(header.kid, (_error, key) => {
         if (!key) {
-          console.error("No key found for kid:", header.kid);
-          const err = new AuthenticationError();
+          console.error("[auth] bearer: JWKS missing key for kid", header.kid);
+          const err = new AuthenticationError(
+            `bearer: no JWKS signing key for kid=${header.kid ?? "undefined"}`,
+          );
           request.authErrors?.push(err);
           return reject(err);
         }
@@ -154,15 +233,19 @@ function verifyBearerAuth(
     (error, decoded) => {
       // Check if the token is valid
       if (error) {
-        console.error("Authentication error:", error.message);
-        const err = new AuthenticationError();
+        console.error("[auth] bearer: jwt.verify failed", error.message);
+        const err = new AuthenticationError(
+          `bearer: jwt.verify failed — ${error.message}`,
+        );
         request.authErrors?.push(err);
         return reject(err);
       }
 
       // Check if the token format is valid
       if (!decoded || typeof decoded !== "object") {
-        const err = new AuthenticationError();
+        const err = new AuthenticationError(
+          "bearer: JWT payload missing or not an object",
+        );
         request.authErrors?.push(err);
         return reject(err);
       }

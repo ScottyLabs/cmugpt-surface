@@ -13,5 +13,11 @@ node_modules/
 dist/
 build/
 
+# OpenAPI / tsoa outputs consumed by @cmugpt-frontend/web (must be present in CI)
+!apps/server/build/
+!apps/server/build/swagger.yaml
+!apps/server/build/swagger.d.ts
+!apps/server/build/routes.ts
+
 # Misc
 .DS_Store

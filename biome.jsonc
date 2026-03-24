@@ -6,7 +6,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/src/routeTree.gen.ts"]
+    "includes": [
+      "**",
+      "!**/src/routeTree.gen.ts",
+      "!**/build/swagger.d.ts",
+      "!**/build/routes.ts"
+    ]
   },
   "css": {
     "parser": {
@@ -80,6 +85,16 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["**/drizzle.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
     {
       // Disable the useFilenamingConvention rule for the root-provider.tsx file created by create-tanstack-app.
       "includes": ["**/root-provider.tsx"],
