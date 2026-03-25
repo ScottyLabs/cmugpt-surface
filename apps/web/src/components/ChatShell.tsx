@@ -151,6 +151,76 @@ function codeLangFromFilename(name: string): string {
   return map[ext] ?? ext;
 }
 
+/**
+ * Map LLM-style `\\[ \\]` / `\\( \\)` delimiters to remark-math syntax.
+ * CommonMark treats `\\[` as an escaped `[`, which breaks LaTeX from models.
+ */
+function preprocessLlmLatexDelimiters(markdown: string): string {
+  return markdown
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, body: string) => `$$${body}$$`)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, body: string) => `$${body}$`);
+}
+
+/** Odd `$$` count means block math is still open — upsets mdast→hast (`children in undefined`). */
+function closeOpenBlockMathFence(streamingMarkdown: string): string {
+  const fences = streamingMarkdown.match(/\$\$/g);
+  const n = fences?.length ?? 0;
+  return n % 2 === 1 ? `${streamingMarkdown}$$` : streamingMarkdown;
+}
+
+/** Safe string input + LaTeX delimiters; optional streaming fence balance for partial SSE text. */
+function markdownForReactComponent(
+  raw: unknown,
+  options?: { streaming?: boolean },
+): string {
+  const base = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
+  let md = preprocessLlmLatexDelimiters(base);
+  if (options?.streaming) {
+    md = closeOpenBlockMathFence(md);
+  }
+  return md;
+}
+
+/**
+ * `unist-util-visit-parents` (used by rehype-katex) does `"children" in node` for
+ * each child — null/undefined entries in `children[]` throw. Strip them recursively.
+ */
+function stripInvalidHastChildren(node: unknown): void {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if (!("children" in node)) {
+    return;
+  }
+  const n = node as { children: unknown[] };
+  if (!Array.isArray(n.children)) {
+    return;
+  }
+  n.children = n.children.filter(
+    (c): c is object => c != null && typeof c === "object",
+  );
+  for (const child of n.children) {
+    stripInvalidHastChildren(child);
+  }
+}
+
+/** Unified attacher: must be registered as `[rehypeKatexWithGuards, opts]`, not `rehypeKatexWithGuards(opts)`. */
+function rehypeKatexWithGuards(options?: Parameters<typeof rehypeKatex>[0]) {
+  const run = rehypeKatex(options);
+  return (tree: unknown, file: unknown) => {
+    stripInvalidHastChildren(tree);
+    try {
+      run(tree as Parameters<typeof run>[0], file as Parameters<typeof run>[1]);
+    } catch (err) {
+      console.warn(
+        "[markdown] rehype-katex failed; math may render as plain text",
+        err,
+      );
+    }
+    stripInvalidHastChildren(tree);
+  };
+}
+
 async function buildOutgoingContent(
   textPart: string,
   pending: PendingAttachment[],
@@ -462,10 +532,18 @@ export function ChatShell() {
     });
   }
 
-  const remarkMarkdownPlugins = useMemo(() => [remarkGfm, remarkMath], []);
+  // Math before GFM: otherwise tables/`$` parsing can yield an invalid tree and
+  // mdast-util-to-hast hits `'children' in undefined` during applyData.
+  const remarkMarkdownPlugins = useMemo(() => [remarkMath, remarkGfm], []);
 
+  // Tuple form: unified calls `attacher.call(processor, options)` and uses the
+  // *returned* function as the transformer. A pre-invoked `fn({...})` would be
+  // mistaken for an attacher and invoked with no tree/file (both undefined).
   const rehypeMarkdownPlugins = useMemo(
-    () => [rehypeKatex({ strict: "ignore" })],
+    () =>
+      [[rehypeKatexWithGuards, { strict: "ignore" }]] as NonNullable<
+        ComponentProps<typeof ReactMarkdown>["rehypePlugins"]
+      >,
     [],
   );
 
@@ -877,7 +955,7 @@ export function ChatShell() {
                           rehypePlugins={rehypeMarkdownPlugins}
                           components={userMarkdownComponents}
                         >
-                          {m.content}
+                          {markdownForReactComponent(m.content)}
                         </ReactMarkdown>
                       </div>
                     </div>
@@ -889,7 +967,7 @@ export function ChatShell() {
                       rehypePlugins={rehypeMarkdownPlugins}
                       components={markdownComponents}
                     >
-                      {m.content}
+                      {markdownForReactComponent(m.content)}
                     </ReactMarkdown>
                   </div>
                 ),
@@ -904,7 +982,9 @@ export function ChatShell() {
                     rehypePlugins={rehypeMarkdownPlugins}
                     components={markdownComponents}
                   >
-                    {streamingText}
+                    {markdownForReactComponent(streamingText, {
+                      streaming: true,
+                    })}
                   </ReactMarkdown>
                 </div>
               )}
