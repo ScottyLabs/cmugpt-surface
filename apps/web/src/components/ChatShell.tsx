@@ -1,7 +1,7 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { LockOpen } from "lucide-react";
-import type { ChangeEvent, ComponentProps } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { LockOpen, Search, Settings } from "lucide-react";
+import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -168,6 +168,27 @@ function closeOpenBlockMathFence(streamingMarkdown: string): string {
   return n % 2 === 1 ? `${streamingMarkdown}$$` : streamingMarkdown;
 }
 
+function getReadableApiError(err: unknown, context: string): string {
+  const raw =
+    err instanceof Error
+      ? err.message
+      : err != null &&
+          typeof err === "object" &&
+          "message" in err &&
+          (err as { message: unknown }).message != null
+        ? String((err as { message: unknown }).message)
+        : String(err);
+  const lower = raw.toLowerCase();
+  if (
+    raw === "Unauthenticated" ||
+    lower.includes("unauthenticated") ||
+    lower.includes("401")
+  ) {
+    return `Not signed in to the API (${context}). Try signing out and back in, or reload the page.`;
+  }
+  return raw.length > 0 ? raw : `Something went wrong (${context}). Try again.`;
+}
+
 /** Safe string input + LaTeX delimiters; optional streaming fence balance for partial SSE text. */
 function markdownForReactComponent(
   raw: unknown,
@@ -274,6 +295,7 @@ export function ChatShell() {
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
+  const isNewChatIntent = search.newChat;
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQ, setSearchQ] = useState("");
@@ -288,8 +310,18 @@ export function ChatShell() {
   const [shareFeedback, setShareFeedback] = useState<
     null | "copied" | "shared"
   >(null);
+  const [sidebarMenu, setSidebarMenu] = useState<{
+    x: number;
+    y: number;
+    chatId: string;
+  } | null>(null);
+  const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const draftComposerRef = useRef<HTMLTextAreaElement>(null);
+  const hasAutoFocusedComposerRef = useRef(false);
   const pendingAttachmentsRef = useRef(pendingAttachments);
   const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -343,9 +375,8 @@ export function ChatShell() {
   );
 
   const createChat = $api.useMutation("post", "/chats", {
-    onSuccess: (row) => {
+    onSuccess: () => {
       void refetchChats();
-      void navigate({ to: "/", search: { chat: row.id } });
     },
   });
 
@@ -355,6 +386,89 @@ export function ChatShell() {
       void refetchChatDetail();
     },
   });
+
+  const chatIdRef = useRef<string | undefined>(chatId);
+  chatIdRef.current = chatId;
+
+  const deleteChat = $api.useMutation("delete", "/chats/{id}", {
+    onSuccess: async (_data, variables) => {
+      const deletedId = variables.params.path.id;
+      const wasActive = chatIdRef.current === deletedId;
+      const { data: nextChats } = await refetchChats();
+      if (wasActive) {
+        const list = nextChats ?? [];
+        if (list.length > 0) {
+          void navigate({
+            to: "/",
+            search: { chat: list[0].id, newChat: false },
+          });
+        } else {
+          void navigate({
+            to: "/",
+            search: { chat: undefined, newChat: false },
+          });
+        }
+      }
+    },
+  });
+
+  const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
+  const [customLlmUse, setCustomLlmUse] = useState(false);
+  const [customLlmBaseUrl, setCustomLlmBaseUrl] = useState("");
+  const [customLlmModel, setCustomLlmModel] = useState("");
+  const [customLlmApiKey, setCustomLlmApiKey] = useState("");
+  const [customLlmSaveError, setCustomLlmSaveError] = useState<string | null>(
+    null,
+  );
+  const customLlmSeededRef = useRef(false);
+  const [llmSettingsGateError, setLlmSettingsGateError] = useState<
+    string | null
+  >(null);
+
+  const { data: oidcAdminStatus, refetch: refetchOidcAdmin } = $api.useQuery(
+    "get",
+    "/me/oidc-admin",
+    undefined,
+    { enabled: Boolean(auth?.user) },
+  );
+
+  const {
+    data: customLlmSettings,
+    refetch: refetchCustomLlmSettings,
+    error: customLlmLoadError,
+  } = $api.useQuery("get", "/me/custom-llm", undefined, {
+    enabled: Boolean(auth?.user && llmSettingsOpen),
+    retry: false,
+  });
+
+  const patchCustomLlm = $api.useMutation("patch", "/me/custom-llm", {
+    onMutate: () => {
+      setCustomLlmSaveError(null);
+    },
+    onSuccess: async () => {
+      setCustomLlmApiKey("");
+      await refetchCustomLlmSettings();
+      setLlmSettingsOpen(false);
+    },
+    onError: (err: unknown) => {
+      setCustomLlmSaveError(getReadableApiError(err, "save LLM settings"));
+    },
+  });
+
+  useEffect(() => {
+    if (!llmSettingsOpen) {
+      customLlmSeededRef.current = false;
+      return;
+    }
+    if (!customLlmSettings || customLlmSeededRef.current) {
+      return;
+    }
+    customLlmSeededRef.current = true;
+    setCustomLlmUse(customLlmSettings.useCustomChat);
+    setCustomLlmBaseUrl(customLlmSettings.baseUrl);
+    setCustomLlmModel(customLlmSettings.model);
+    setCustomLlmApiKey("");
+  }, [llmSettingsOpen, customLlmSettings]);
 
   const currentChat = chats.find((c) => c.id === chatId);
 
@@ -375,14 +489,54 @@ export function ChatShell() {
   );
 
   useEffect(() => {
+    if (isNewChatIntent) {
+      return;
+    }
     if (!chatsLoading && chats.length > 0 && !chatId) {
       void navigate({
         to: "/",
-        search: { chat: chats[0].id },
+        search: { chat: chats[0].id, newChat: false },
         replace: true,
       });
     }
-  }, [chats, chatId, chatsLoading, navigate]);
+  }, [chats, chatId, chatsLoading, navigate, isNewChatIntent]);
+
+  useEffect(() => {
+    if (hasAutoFocusedComposerRef.current || isStreaming) {
+      return;
+    }
+    if (chatId && !canEditChat) {
+      return;
+    }
+    if (!chatId && chatsLoading) {
+      return;
+    }
+    if (!chatId && chats.length > 0 && !isNewChatIntent) {
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      draftComposerRef.current?.focus();
+      hasAutoFocusedComposerRef.current = true;
+    });
+    return () => cancelAnimationFrame(id);
+  }, [
+    chatId,
+    chatsLoading,
+    chats.length,
+    isStreaming,
+    canEditChat,
+    isNewChatIntent,
+  ]);
+
+  useEffect(() => {
+    if (!isNewChatIntent) {
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      draftComposerRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isNewChatIntent]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -408,16 +562,12 @@ export function ChatShell() {
     }, 2200);
   }
 
-  async function shareChat() {
-    if (!chatId || typeof window === "undefined") {
-      return;
-    }
-    const detail = effectiveChatDetail;
-    if (!detail) {
+  async function shareChatById(targetId: string, alreadyPublic: boolean) {
+    if (typeof window === "undefined") {
       return;
     }
 
-    if (detail.isOwner && !detail.isPublic) {
+    if (!alreadyPublic) {
       const ok = window.confirm(
         "Anyone signed in to cmuGPT can open this chat with the link. Make this chat public and continue sharing?",
       );
@@ -426,7 +576,7 @@ export function ChatShell() {
       }
       try {
         await patchChat.mutateAsync({
-          params: { path: { id: chatId } },
+          params: { path: { id: targetId } },
           body: { isPublic: true },
         });
       } catch {
@@ -435,7 +585,7 @@ export function ChatShell() {
     }
 
     const url = new URL(window.location.href);
-    url.searchParams.set("chat", chatId);
+    url.searchParams.set("chat", targetId);
     const shareUrl = url.toString();
 
     try {
@@ -466,6 +616,20 @@ export function ChatShell() {
     scheduleShareFeedbackClear();
   }
 
+  async function shareChat() {
+    if (!chatId || typeof window === "undefined") {
+      return;
+    }
+    const detail = effectiveChatDetail;
+    if (!detail) {
+      return;
+    }
+    if (!detail.isOwner) {
+      return;
+    }
+    await shareChatById(chatId, detail.isPublic);
+  }
+
   function makeChatPrivate() {
     if (!chatId) {
       return;
@@ -482,16 +646,19 @@ export function ChatShell() {
   }
 
   function onAttachmentFilesSelected(e: ChangeEvent<HTMLInputElement>) {
-    const list = e.target.files;
-    e.target.value = "";
+    const input = e.target;
+    const list = input.files;
     if (list == null || list.length === 0) {
       return;
     }
+    /** Snapshot before clearing: `FileList` is live; resetting `value` empties it. */
+    const files = Array.from(list);
+    input.value = "";
     setAttachmentHint(null);
     let limitHint: string | null = null;
     setPendingAttachments((prev) => {
       const additions: PendingAttachment[] = [];
-      for (const file of Array.from(list)) {
+      for (const file of files) {
         if (prev.length + additions.length >= MAX_ATTACHMENTS) {
           limitHint = `You can attach up to ${MAX_ATTACHMENTS} files.`;
           break;
@@ -522,8 +689,84 @@ export function ChatShell() {
   }
 
   function selectChat(id: string) {
-    void navigate({ to: "/", search: { chat: id } });
+    void navigate({ to: "/", search: { chat: id, newChat: false } });
   }
+
+  const closeSidebarMenu = useCallback(() => {
+    setSidebarMenu(null);
+  }, []);
+
+  function beginRename(c: { id: string; title: string }) {
+    setRenamingChatId(c.id);
+    setRenameDraft(c.title);
+    closeSidebarMenu();
+  }
+
+  function cancelRename() {
+    setRenamingChatId(null);
+  }
+
+  function commitRename(id: string, originalTitle: string) {
+    const t = renameDraft.trim();
+    if (!t) {
+      cancelRename();
+      return;
+    }
+    if (t === originalTitle) {
+      cancelRename();
+      return;
+    }
+    patchChat.mutate(
+      { params: { path: { id } }, body: { title: t } },
+      { onSettled: () => cancelRename() },
+    );
+  }
+
+  function onRenameKeyDown(
+    e: KeyboardEvent<HTMLInputElement>,
+    id: string,
+    originalTitle: string,
+  ) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitRename(id, originalTitle);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelRename();
+    }
+  }
+
+  function confirmDeleteChatRow(id: string) {
+    closeSidebarMenu();
+    if (!window.confirm("Delete this chat? This cannot be undone.")) {
+      return;
+    }
+    deleteChat.mutate({ params: { path: { id } } });
+  }
+
+  useEffect(() => {
+    if (!renamingChatId) {
+      return;
+    }
+    const raf = requestAnimationFrame(() => {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [renamingChatId]);
+
+  useEffect(() => {
+    if (sidebarMenu == null) {
+      return;
+    }
+    function onKeyDown(ev: globalThis.KeyboardEvent) {
+      if (ev.key === "Escape") {
+        closeSidebarMenu();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [sidebarMenu, closeSidebarMenu]);
 
   function toggleStarChat(id: string, next: boolean) {
     patchChat.mutate({
@@ -598,11 +841,28 @@ export function ChatShell() {
   );
 
   async function send() {
-    if (!chatId || isStreaming) {
+    if (isStreaming) {
       return;
     }
     const textPart = draft.trim();
     if (!textPart && pendingAttachments.length === 0) {
+      return;
+    }
+
+    let activeChatId = chatId ?? null;
+    if (!activeChatId) {
+      try {
+        const row = await createChat.mutateAsync({});
+        activeChatId = row.id;
+        void navigate({
+          to: "/",
+          search: { chat: row.id, newChat: false },
+        });
+      } catch {
+        setStreamError("Could not start chat");
+        return;
+      }
+    } else if (!canEditChat) {
       return;
     }
 
@@ -642,7 +902,7 @@ export function ChatShell() {
         streamHeaders.Authorization = `Bearer ${bearer}`;
       }
       const res = await fetch(
-        `${env.VITE_SERVER_URL}/chats/${chatId}/messages/stream`,
+        `${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`,
         {
           method: "POST",
           credentials: "include",
@@ -724,6 +984,68 @@ export function ChatShell() {
   const userBubbleMarkdownClass =
     "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
 
+  function renderSidebarChatRow(
+    c: (typeof chats)[number],
+    starFilled: boolean,
+  ) {
+    const rowClass = `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
+      c.id === chatId ? "bg-neutral-200" : ""
+    }`;
+    return (
+      <li
+        key={c.id}
+        className={rowClass}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: c.id });
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => toggleStarChat(c.id, !starFilled)}
+          className={
+            starFilled
+              ? "shrink-0 text-amber-500"
+              : "shrink-0 text-neutral-400 hover:text-amber-500"
+          }
+          aria-label={starFilled ? "Remove from starred" : "Add to starred"}
+        >
+          {starFilled ? "★" : "☆"}
+        </button>
+        {renamingChatId === c.id ? (
+          <input
+            ref={renameInputRef}
+            value={renameDraft}
+            onChange={(e) => setRenameDraft(e.target.value)}
+            onBlur={() => commitRename(c.id, c.title)}
+            onKeyDown={(e) => onRenameKeyDown(e, c.id, c.title)}
+            className="min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
+            aria-label="Chat name"
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => selectChat(c.id)}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              beginRename(c);
+            }}
+            title="Double-click to rename"
+            className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
+          >
+            {c.title}
+          </button>
+        )}
+      </li>
+    );
+  }
+
+  const sidebarMenuChat =
+    sidebarMenu != null
+      ? chats.find((x) => x.id === sidebarMenu.chatId)
+      : undefined;
+
   return (
     <div className="relative flex h-dvh min-h-[480px] bg-white text-neutral-900">
       <aside
@@ -743,22 +1065,28 @@ export function ChatShell() {
         </div>
         <div className="px-3 pb-2">
           <div className="relative">
-            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-              ⌕
-            </span>
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-6 -translate-y-1/2 text-neutral-400"
+              strokeWidth={2}
+              aria-hidden={true}
+            />
             <input
               type="search"
               placeholder="Search Chats"
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-8 pr-2 text-sm outline-none focus:border-neutral-400"
+              className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-11 pr-2 text-sm outline-none focus:border-neutral-400"
             />
           </div>
           <button
             type="button"
-            onClick={() => createChat.mutate({})}
-            disabled={createChat.isPending}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50"
+            onClick={() =>
+              void navigate({
+                to: "/",
+                search: { chat: undefined, newChat: true },
+              })
+            }
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white py-2 text-sm font-medium hover:bg-neutral-50"
           >
             <span>+</span> New Chat
           </button>
@@ -770,31 +1098,7 @@ export function ChatShell() {
                 Starred
               </p>
               <ul className="space-y-0.5">
-                {starred.map((c) => (
-                  <li key={c.id}>
-                    <div
-                      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
-                        c.id === chatId ? "bg-neutral-200" : ""
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleStarChat(c.id, false)}
-                        className="shrink-0 text-amber-500"
-                        aria-label="Remove from starred"
-                      >
-                        ★
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectChat(c.id)}
-                        className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
-                      >
-                        {c.title}
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {starred.map((c) => renderSidebarChatRow(c, true))}
               </ul>
             </div>
           )}
@@ -803,36 +1107,43 @@ export function ChatShell() {
               Chats
             </p>
             <ul className="space-y-0.5">
-              {unstarred.map((c) => (
-                <li key={c.id}>
-                  <div
-                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
-                      c.id === chatId ? "bg-neutral-200" : ""
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleStarChat(c.id, true)}
-                      className="shrink-0 text-neutral-400 hover:text-amber-500"
-                      aria-label="Add to starred"
-                    >
-                      ☆
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectChat(c.id)}
-                      className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
-                    >
-                      {c.title}
-                    </button>
-                  </div>
-                </li>
-              ))}
+              {unstarred.map((c) => renderSidebarChatRow(c, false))}
             </ul>
           </div>
         </div>
         <div className="mt-auto border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2">
+            {oidcAdminStatus?.isOidcAdmin ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomLlmSaveError(null);
+                  setLlmSettingsGateError(null);
+                  void (async () => {
+                    const v = await refetchOidcAdmin();
+                    if (v.error) {
+                      setLlmSettingsGateError(
+                        "Could not verify session with the server. Try signing out and back in.",
+                      );
+                      return;
+                    }
+                    if (!v.data?.isOidcAdmin) {
+                      return;
+                    }
+                    setLlmSettingsOpen(true);
+                  })();
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800"
+                aria-label="LLM settings"
+                title="LLM settings"
+              >
+                <Settings
+                  className="size-4"
+                  strokeWidth={2}
+                  aria-hidden={true}
+                />
+              </button>
+            ) : null}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
               {auth?.user?.image ? (
                 <img
@@ -855,8 +1166,224 @@ export function ChatShell() {
               </button>
             </div>
           </div>
+          {llmSettingsGateError ? (
+            <p className="mt-2 text-xs text-red-600">{llmSettingsGateError}</p>
+          ) : null}
         </div>
       </aside>
+
+      {llmSettingsOpen ? (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/30"
+            aria-hidden={true}
+            onClick={() => {
+              setLlmSettingsGateError(null);
+              setLlmSettingsOpen(false);
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal={true}
+            aria-labelledby="llm-settings-title"
+            className="fixed left-1/2 top-1/2 z-50 w-[min(28rem,calc(100vw-2rem))] max-h-[min(90vh,32rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-5 shadow-xl"
+          >
+            <h2
+              id="llm-settings-title"
+              className="text-lg font-semibold text-neutral-900"
+            >
+              LLM settings
+            </h2>
+            <p className="mt-1 text-sm text-neutral-600">
+              Custom OpenAI-compatible endpoint for your chats. When off, the
+              app uses the default server configuration.
+            </p>
+
+            {customLlmLoadError ? (
+              <p className="mt-3 text-sm text-red-600">
+                {getReadableApiError(customLlmLoadError, "load LLM settings")}
+              </p>
+            ) : customLlmSettings ? (
+              <div className="mt-4 space-y-4">
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={customLlmUse}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setCustomLlmUse(e.target.checked)
+                    }
+                    className="size-4 rounded border-neutral-300"
+                  />
+                  <span className="text-sm font-medium text-neutral-800">
+                    Use custom chat
+                  </span>
+                </label>
+
+                <div>
+                  <label
+                    htmlFor="custom-llm-base-url"
+                    className="block text-xs font-medium text-neutral-600"
+                  >
+                    Base URL
+                  </label>
+                  <input
+                    id="custom-llm-base-url"
+                    type="url"
+                    value={customLlmBaseUrl}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setCustomLlmBaseUrl(e.target.value)
+                    }
+                    disabled={!customLlmUse}
+                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
+                    placeholder="https://…"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="custom-llm-model"
+                    className="block text-xs font-medium text-neutral-600"
+                  >
+                    Model name
+                  </label>
+                  <input
+                    id="custom-llm-model"
+                    type="text"
+                    value={customLlmModel}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setCustomLlmModel(e.target.value)
+                    }
+                    disabled={!customLlmUse}
+                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="custom-llm-api-key"
+                    className="block text-xs font-medium text-neutral-600"
+                  >
+                    API key
+                  </label>
+                  <input
+                    id="custom-llm-api-key"
+                    type="password"
+                    value={customLlmApiKey}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setCustomLlmApiKey(e.target.value)
+                    }
+                    disabled={!customLlmUse}
+                    autoComplete="off"
+                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
+                    placeholder={
+                      customLlmSettings.apiKeySet
+                        ? "Leave blank to keep existing key"
+                        : "Required when custom chat is on"
+                    }
+                  />
+                </div>
+
+                {customLlmSaveError ? (
+                  <p className="text-sm text-red-600">{customLlmSaveError}</p>
+                ) : null}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLlmSettingsGateError(null);
+                      setLlmSettingsOpen(false);
+                    }}
+                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={
+                      patchCustomLlm.isPending ||
+                      !customLlmSettings ||
+                      (customLlmUse &&
+                        (!customLlmBaseUrl.trim() ||
+                          !customLlmModel.trim() ||
+                          (!customLlmSettings.apiKeySet &&
+                            !customLlmApiKey.trim())))
+                    }
+                    onClick={() => {
+                      patchCustomLlm.mutate({
+                        body: {
+                          useCustomChat: customLlmUse,
+                          baseUrl: customLlmBaseUrl,
+                          model: customLlmModel,
+                          ...(customLlmApiKey.trim()
+                            ? { apiKey: customLlmApiKey.trim() }
+                            : {}),
+                        },
+                      });
+                    }}
+                    className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {patchCustomLlm.isPending ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-neutral-500">Loading…</p>
+            )}
+          </div>
+        </>
+      ) : null}
+
+      {sidebarMenu != null && sidebarMenuChat != null ? (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            aria-hidden={true}
+            onClick={() => closeSidebarMenu()}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              closeSidebarMenu();
+            }}
+          />
+          <div
+            className="fixed z-50 min-w-[11rem] overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 text-sm shadow-lg"
+            style={{ left: sidebarMenu.x, top: sidebarMenu.y }}
+            role="menu"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full px-3 py-2 text-left hover:bg-neutral-100"
+              onClick={() => beginRename(sidebarMenuChat)}
+            >
+              Rename
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full px-3 py-2 text-left hover:bg-neutral-100"
+              onClick={() => {
+                closeSidebarMenu();
+                void shareChatById(
+                  sidebarMenuChat.id,
+                  sidebarMenuChat.isPublic,
+                );
+              }}
+            >
+              Share
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={deleteChat.isPending}
+              className="flex w-full px-3 py-2 text-left text-red-700 hover:bg-red-50 disabled:opacity-50"
+              onClick={() => confirmDeleteChatRow(sidebarMenuChat.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </>
+      ) : null}
 
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
@@ -871,15 +1398,15 @@ export function ChatShell() {
                 <SidebarPanelIcon />
               </button>
             )}
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-1.5">
               <img
                 src="/sl-logo.svg"
                 alt=""
-                className="h-8 w-8 shrink-0"
-                width={32}
-                height={32}
+                className="h-6 w-6 shrink-0 object-contain"
+                width={24}
+                height={24}
               />
-              <span className="truncate text-lg font-semibold tracking-tight">
+              <span className="truncate text-lg font-semibold leading-none tracking-tight">
                 cmuGPT
               </span>
             </div>
@@ -935,11 +1462,15 @@ export function ChatShell() {
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-          {!chatId && !chatsLoading && chats.length === 0 && (
-            <p className="text-center text-neutral-500 text-sm">
-              No chats yet. Create one with &quot;New Chat&quot;.
-            </p>
-          )}
+          {!chatId &&
+            !chatsLoading &&
+            (chats.length === 0 || isNewChatIntent) && (
+              <p className="text-center text-neutral-500 text-sm">
+                {isNewChatIntent && chats.length > 0
+                  ? "New chat — type your first message below."
+                  : "Type your first message below to start."}
+              </p>
+            )}
           {Boolean(chatId) && messagesLoading && (
             <p className="text-neutral-500 text-sm">Loading messages…</p>
           )}
@@ -1048,7 +1579,7 @@ export function ChatShell() {
               onClick={openAttachmentPicker}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:pointer-events-none disabled:opacity-35"
               aria-label="Attach files"
-              disabled={!chatId || isStreaming}
+              disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
             >
               <svg
                 width={20}
@@ -1065,10 +1596,11 @@ export function ChatShell() {
               </svg>
             </button>
             <textarea
+              ref={draftComposerRef}
               rows={1}
               placeholder="Ask me anything about Carnegie Mellon University"
               value={draft}
-              disabled={!chatId || isStreaming}
+              disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
               onChange={(e) => {
                 setDraft(e.target.value);
                 setAttachmentHint(null);
@@ -1085,9 +1617,9 @@ export function ChatShell() {
               type="button"
               onClick={() => send()}
               disabled={
-                !chatId ||
                 isStreaming ||
-                !canEditChat ||
+                createChat.isPending ||
+                (Boolean(chatId) && !canEditChat) ||
                 (!draft.trim() && pendingAttachments.length === 0)
               }
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-500 text-white transition-colors hover:bg-neutral-600 disabled:opacity-35"

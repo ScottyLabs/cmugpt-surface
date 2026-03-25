@@ -1,6 +1,7 @@
 import type { Request as ExpressRequest } from "express";
 import {
   Body,
+  Delete,
   Get,
   Patch,
   Path,
@@ -106,5 +107,16 @@ export class ChatController {
     @Body() body: PatchChatBody,
   ): Promise<ChatListItemDto> {
     return chatService.patchChat(id, authenticatedSub(req), body);
+  }
+
+  @Security(OIDC_AUTH)
+  @Security(BEARER_AUTH)
+  @Delete("{id}")
+  @SuccessResponse(204)
+  public deleteChat(
+    @Request() req: ExpressRequest,
+    @Path() id: string,
+  ): Promise<void> {
+    return chatService.deleteChat(id, authenticatedSub(req));
   }
 }

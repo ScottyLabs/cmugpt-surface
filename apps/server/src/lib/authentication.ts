@@ -16,6 +16,8 @@ import { auth } from "./auth.ts";
 
 export const OIDC_AUTH = "oidc";
 export const BEARER_AUTH = "bearerAuth";
+/** Single TSOA security: session cookie and/or Bearer, merged (see {@link resolveMergedOidcBearerUser}). */
+export const OIDC_OR_BEARER_AUTH = "oidcOrBearer";
 export const ADMIN_SCOPE = "stack-admins";
 export const MEMBER_SCOPE = "stack-devs";
 
@@ -45,42 +47,95 @@ declare global {
 }
 
 /**
- * Same auth as chat routes: session cookie (OIDC) or bearer JWT (first to succeed).
+ * Merge cookie session + bearer identities so `groups` from the JWT is not dropped
+ * when OIDC resolves first without claims (race with {@link Promise.any}).
+ */
+function mergeAuthenticatedUsers(users: Express.User[]): Express.User {
+  const [first, ...rest] = users;
+  if (first === undefined) {
+    throw new InternalServerError("mergeAuthenticatedUsers: empty");
+  }
+  const groupSet = new Set<string>();
+  for (const g of first.groups ?? []) {
+    groupSet.add(g);
+  }
+  for (const u of rest) {
+    for (const g of u.groups ?? []) {
+      groupSet.add(g);
+    }
+  }
+  const merged: Express.User = {
+    sub: first.sub,
+    ...(first.email !== undefined ? { email: first.email } : {}),
+    ...(first.givenName !== undefined ? { givenName: first.givenName } : {}),
+    ...(groupSet.size > 0 ? { groups: [...groupSet] } : {}),
+  };
+  return merged;
+}
+
+/**
+ * Run cookie session + Bearer together and merge identities (groups, etc.).
+ * Used by {@link requireOidcOrBearer} and TSOA {@link OIDC_OR_BEARER_AUTH}.
+ */
+export async function resolveMergedOidcBearerUser(
+  request: express.Request,
+): Promise<Express.User> {
+  request.authErrors = request.authErrors ?? [];
+
+  const results = await Promise.allSettled([
+    expressAuthentication(request, OIDC_AUTH, []),
+    expressAuthentication(request, BEARER_AUTH, []),
+  ]);
+
+  const users: Express.User[] = [];
+  const failures: unknown[] = [];
+
+  for (const r of results) {
+    if (r.status === "fulfilled") {
+      users.push(r.value as Express.User);
+    } else {
+      failures.push(r.reason);
+    }
+  }
+
+  if (users.length === 0) {
+    const error = (failures[failures.length - 1] ??
+      new AuthenticationError(
+        "merged auth: no strategy succeeded (see allAuthErrors in prior log)",
+      )) as HttpError;
+    error.status = error.status || 401;
+    if (failures.length > 1) {
+      console.warn(
+        "[auth] resolveMergedOidcBearerUser: all strategies failed",
+        {
+          errors: failures.map((e) =>
+            e instanceof Error ? e.message : String(e),
+          ),
+        },
+      );
+    }
+    throw error;
+  }
+
+  return mergeAuthenticatedUsers(users);
+}
+
+/**
+ * Same auth as chat routes: session cookie (OIDC) and/or bearer JWT — results are
+ * merged (not raced) so group claims stay available for admin checks.
  */
 export async function requireOidcOrBearer(
   request: express.Request,
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
-  request.authErrors = request.authErrors ?? [];
-  const failedAttempts: unknown[] = [];
-  const pushAndRethrow = (error: unknown) => {
-    failedAttempts.push(error);
-    throw error;
-  };
-  const attempts = [
-    expressAuthentication(request, OIDC_AUTH, []).catch(pushAndRethrow),
-    expressAuthentication(request, BEARER_AUTH, []).catch(pushAndRethrow),
-  ];
   try {
-    request.user = (await Promise.any(attempts)) as Express.User;
+    request.user = await resolveMergedOidcBearerUser(request);
     if (response.writableEnded) {
       return;
     }
     next();
-  } catch (caught) {
-    const error = (failedAttempts.pop() ??
-      new AuthenticationError(
-        "requireOidcOrBearer: no strategy succeeded (see allAuthErrors in prior log)",
-      )) as HttpError;
-    error.status = error.status || 401;
-    if (caught instanceof AggregateError) {
-      console.warn("[auth] requireOidcOrBearer: AggregateError", {
-        errors: caught.errors.map((e) =>
-          e instanceof Error ? e.message : String(e),
-        ),
-      });
-    }
+  } catch (error) {
     next(error);
   }
 }
@@ -93,6 +148,17 @@ export function expressAuthentication(
   // Store all authentication errors in the request object
   // so we can return the most relevant error to the client in errorHandler
   request.authErrors = request.authErrors ?? [];
+
+  if (securityName === OIDC_OR_BEARER_AUTH) {
+    if (scopes != null && scopes.length > 0) {
+      const err = new InternalServerError(
+        "oidcOrBearer does not support scopes; use oidc and bearerAuth on the route instead",
+      );
+      request.authErrors.push(err);
+      return Promise.reject(err);
+    }
+    return resolveMergedOidcBearerUser(request);
+  }
 
   return new Promise((resolve, reject) => {
     if (securityName === OIDC_AUTH) {
@@ -109,15 +175,23 @@ export function expressAuthentication(
   });
 }
 
-function sessionUserToExpressUser(user: {
+function sessionUserToExpressUser({
+  id,
+  email,
+  name,
+  groups,
+}: {
   id: string;
   email: string;
   name: string;
+  /** Set by better-auth `customSession` when the IdP access token exposes `groups`. */
+  groups?: string[];
 }): Express.User {
   return {
-    sub: user.id,
-    email: user.email,
-    givenName: user.name,
+    sub: id,
+    email,
+    givenName: name,
+    ...(groups !== undefined && groups.length > 0 ? { groups } : {}),
   };
 }
 
@@ -167,7 +241,19 @@ async function validateOidc(
 
     if (!needsScopeClaims) {
       if (decoded !== null && typeof decoded === "object" && decoded.sub) {
-        return resolve(decodedTokenToUser(decoded));
+        const fromToken = decodedTokenToUser(decoded);
+        const sessionUser = session.user as typeof session.user & {
+          groups?: string[];
+        };
+        const sessionGroups = sessionUser.groups;
+        if (
+          (!fromToken.groups || fromToken.groups.length === 0) &&
+          sessionGroups !== undefined &&
+          sessionGroups.length > 0
+        ) {
+          fromToken.groups = sessionGroups;
+        }
+        return resolve(fromToken);
       }
       return resolve(sessionUserToExpressUser(session.user));
     }

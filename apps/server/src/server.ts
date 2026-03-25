@@ -28,8 +28,20 @@ await pool.query(
   `ALTER TABLE "chats" ADD COLUMN IF NOT EXISTS "is_public" boolean DEFAULT false NOT NULL`,
 );
 
+await pool.query(`
+CREATE TABLE IF NOT EXISTS "user_custom_llm" (
+  "user_sub" text PRIMARY KEY NOT NULL,
+  "use_custom_chat" boolean DEFAULT false NOT NULL,
+  "base_url" text DEFAULT '' NOT NULL,
+  "api_key" text DEFAULT '' NOT NULL,
+  "model" text DEFAULT '' NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
+);
+`);
+
 const app = express();
-app.use(express.json({ limit: "1mb" }));
+/** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
+app.use(express.json({ limit: "12mb" }));
 
 // Define CORS options
 const corsOptions: CorsOptions = {

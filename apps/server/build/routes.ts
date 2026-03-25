@@ -7,6 +7,8 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 import { HelloController } from './../src/controllers/hellloController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ChatController } from './../src/controllers/chatController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MeController } from './../src/controllers/meController';
 import { expressAuthentication } from './../src/lib/authentication';
 // @ts-ignore - no great way to install types from subpackage
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
@@ -76,6 +78,28 @@ const models: TsoaRoute.Models = {
             "starred": {"dataType":"boolean"},
             "title": {"dataType":"string"},
             "isPublic": {"dataType":"boolean"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CustomLlmSettingsDto": {
+        "dataType": "refObject",
+        "properties": {
+            "useCustomChat": {"dataType":"boolean","required":true},
+            "baseUrl": {"dataType":"string","required":true},
+            "model": {"dataType":"string","required":true},
+            "apiKeySet": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PatchCustomLlmBody": {
+        "dataType": "refObject",
+        "properties": {
+            "useCustomChat": {"dataType":"boolean"},
+            "baseUrl": {"dataType":"string"},
+            "model": {"dataType":"string"},
+            "apiKey": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
@@ -371,6 +395,132 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'patchChat',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsChatController_deleteChat: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                id: {"in":"path","name":"id","required":true,"dataType":"string"},
+        };
+        app.delete('/chats/:id',
+            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(ChatController)),
+            ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat)),
+
+            async function ChatController_deleteChat(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsChatController_deleteChat, request, response });
+
+                const controller = new ChatController();
+
+              await templateService.apiHandler({
+                methodName: 'deleteChat',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 204,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_getOidcAdminStatus: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.get('/me/oidc-admin',
+            authenticateMiddleware([{"oidcOrBearer":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getOidcAdminStatus)),
+
+            async function MeController_getOidcAdminStatus(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_getOidcAdminStatus, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'getOidcAdminStatus',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_getCustomLlmSettings: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.get('/me/custom-llm',
+            authenticateMiddleware([{"oidcOrBearer":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getCustomLlmSettings)),
+
+            async function MeController_getCustomLlmSettings(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_getCustomLlmSettings, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'getCustomLlmSettings',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_patchCustomLlmSettings: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                body: {"in":"body","name":"body","required":true,"ref":"PatchCustomLlmBody"},
+        };
+        app.patch('/me/custom-llm',
+            authenticateMiddleware([{"oidcOrBearer":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.patchCustomLlmSettings)),
+
+            async function MeController_patchCustomLlmSettings(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_patchCustomLlmSettings, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'patchCustomLlmSettings',
                 controller,
                 response,
                 next,

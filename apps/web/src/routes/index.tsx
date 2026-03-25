@@ -6,6 +6,8 @@ import { signIn, useSession } from "@/lib/auth/client.ts";
 export const Route = createFileRoute("/")({
   validateSearch: (raw: Record<string, unknown>) => ({
     chat: typeof raw.chat === "string" ? raw.chat : undefined,
+    newChat:
+      raw.newChat === true || raw.newChat === "true" || raw.newChat === "1",
   }),
   component: App,
 });

@@ -13,6 +13,12 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": "Enter your bearer token below"
+      },
+      "oidcOrBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Better Auth session cookie and/or Keycloak access token as Bearer; server merges both."
       }
     },
     "basePath": "/",

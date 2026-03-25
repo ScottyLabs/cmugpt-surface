@@ -99,6 +99,37 @@ components:
           type: boolean
       type: object
       additionalProperties: false
+    CustomLlmSettingsDto:
+      properties:
+        useCustomChat:
+          type: boolean
+        baseUrl:
+          type: string
+        model:
+          type: string
+        apiKeySet:
+          type: boolean
+          description: True when a non-empty API key is stored (value is never returned).
+      required:
+        - useCustomChat
+        - baseUrl
+        - model
+        - apiKeySet
+      type: object
+      additionalProperties: false
+    PatchCustomLlmBody:
+      properties:
+        useCustomChat:
+          type: boolean
+        baseUrl:
+          type: string
+        model:
+          type: string
+        apiKey:
+          type: string
+          description: Omit to leave the stored key unchanged.
+      type: object
+      additionalProperties: false
   securitySchemes:
     oidc:
       type: openIdConnect
@@ -108,6 +139,12 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Enter your bearer token below
+    oidcOrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Better Auth session cookie and/or Keycloak access token as Bearer;
+        server merges both.
 info:
   title: "@cmugpt-frontend/server"
   version: 0.0.0
@@ -292,5 +329,68 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/PatchChatBody"
+    delete:
+      operationId: DeleteChat
+      responses:
+        "204":
+          description: ""
+      security:
+        - oidc: []
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+  /me/oidc-admin:
+    get:
+      operationId: GetOidcAdminStatus
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  isOidcAdmin:
+                    type: boolean
+                required:
+                  - isOidcAdmin
+                type: object
+      security:
+        - oidcOrBearer: []
+      parameters: []
+  /me/custom-llm:
+    get:
+      operationId: GetCustomLlmSettings
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomLlmSettingsDto"
+      security:
+        - oidcOrBearer: []
+      parameters: []
+    patch:
+      operationId: PatchCustomLlmSettings
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomLlmSettingsDto"
+      security:
+        - oidcOrBearer: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchCustomLlmBody"
 servers:
   - url: /

@@ -2,24 +2,13 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { env } from "../env.ts";
 import type { ChatMessage } from "../lib/llm/chatCompletionPort.ts";
-import { OpenaiCompatibleChatCompletion } from "../lib/llm/openaiCompatibleChatCompletion.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
+import { userCustomLlmService } from "./userCustomLlmService.ts";
 
 const DEFAULT_CHAT_TITLE = "New chat";
 
 const SYSTEM_PROMPT = `You are cmuGPT, a concise and accurate assistant focused on Carnegie Mellon University (CMU): campus, academics, student life, and Pittsburgh context. If you are unsure, say so and suggest official CMU resources where appropriate.`;
-
-const llm = new OpenaiCompatibleChatCompletion({
-  baseUrl: env.LLM_API_BASE_URL,
-  apiKey: env.LLM_API_KEY,
-  model: env.LLM_MODEL,
-  ...(env.LLM_HTTP_REFERER !== undefined && {
-    httpReferer: env.LLM_HTTP_REFERER,
-  }),
-  ...(env.LLM_APP_NAME !== undefined && { appName: env.LLM_APP_NAME }),
-});
 
 function titleFromFirstMessage(content: string): string {
   const line = content.trim().split("\n")[0]?.trim() ?? "";
@@ -229,6 +218,7 @@ export const chatService = {
       content,
     );
 
+    const llm = await userCustomLlmService.getChatCompletionForUser(userSub);
     const assistantText = await llm.complete({ messages: llmMessages });
 
     const [assistantRow] = await db
@@ -268,6 +258,8 @@ export const chatService = {
     );
 
     yield { type: "user", message: messageRowToDto(userRow) };
+
+    const llm = await userCustomLlmService.getChatCompletionForUser(userSub);
 
     let full = "";
     try {
@@ -363,6 +355,14 @@ export const chatService = {
       throw new NotFoundError("Chat not found");
     }
     return chatRowToListDto(row);
+  },
+
+  async deleteChat(chatId: string, userSub: string): Promise<void> {
+    const chat = await getOwnedChat(chatId, userSub);
+    if (!chat) {
+      throw new NotFoundError("Chat not found");
+    }
+    await db.delete(chats).where(eq(chats.id, chatId));
   },
 
   async getChat(chatId: string, userSub: string): Promise<ChatDetailDto> {

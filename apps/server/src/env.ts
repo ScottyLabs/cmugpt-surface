@@ -20,6 +20,9 @@ const envSchema = z.object({
   LLM_MODEL: z.string().default("google/gemini-3.1-flash-lite-preview"),
   LLM_HTTP_REFERER: z.url().optional(),
   LLM_APP_NAME: z.string().optional(),
+
+  /** Keycloak (or IdP) group claim value that may configure custom LLM settings. */
+  ADMIN_GROUP: z.string().default("cmugpt-prod"),
 });
 
 // Validate `process.env` against our schema and return the result

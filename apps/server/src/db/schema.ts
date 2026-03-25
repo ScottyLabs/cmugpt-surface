@@ -113,3 +113,16 @@ export const chatsRelations = relations(chats, ({ many }) => ({
 export const messagesRelations = relations(messages, ({ one }) => ({
   chat: one(chats, { fields: [messages.chatId], references: [chats.id] }),
 }));
+
+/** Per-user overrides for OpenAI-compatible chat (OIDC admin group only in API). */
+export const userCustomLlm = pgTable("user_custom_llm", {
+  userSub: text("user_sub").primaryKey(),
+  useCustomChat: boolean("use_custom_chat").notNull().default(false),
+  baseUrl: text("base_url").notNull().default(""),
+  apiKey: text("api_key").notNull().default(""),
+  model: text("model").notNull().default(""),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

@@ -16,6 +16,8 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       "/api": { target: devApiTarget, changeOrigin: true },
       "/chats": { target: devApiTarget, changeOrigin: true },
+      "/me": { target: devApiTarget, changeOrigin: true },
+      "/hello": { target: devApiTarget, changeOrigin: true },
       "/swagger": { target: devApiTarget, changeOrigin: true },
       "/openapi.json": { target: devApiTarget, changeOrigin: true },
     },
