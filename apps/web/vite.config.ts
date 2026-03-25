@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 const devApiTarget = process.env.VITE_DEV_API_ORIGIN ?? "http://localhost:8080";
 
 // biome-ignore lint/style/noDefaultExport: https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     allowedHosts: ["chat.scottylabs.org"],
     // Same-origin API in dev so Better Auth session cookies are sent reliably
@@ -21,7 +21,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    devtools(),
+    ...(mode === "development" ? [devtools()] : []),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
@@ -38,4 +38,4 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-});
+}));

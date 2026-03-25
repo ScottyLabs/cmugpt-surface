@@ -3,7 +3,10 @@ import { LockOpen } from "lucide-react";
 import type { ChangeEvent, ComponentProps } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import "katex/dist/katex.min.css";
 import { env } from "@/env.ts";
 import { $api } from "@/lib/api/client.ts";
 import {
@@ -459,6 +462,13 @@ export function ChatShell() {
     });
   }
 
+  const remarkMarkdownPlugins = useMemo(() => [remarkGfm, remarkMath], []);
+
+  const rehypeMarkdownPlugins = useMemo(
+    () => [rehypeKatex({ strict: "ignore" })],
+    [],
+  );
+
   const markdownComponents = useMemo(
     () =>
       ({
@@ -631,7 +641,10 @@ export function ChatShell() {
   }
 
   const markdownClass =
-    "max-w-none text-sm leading-relaxed text-neutral-800 [&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:font-semibold [&_p]:my-2 [&_p:first-child]:mt-0";
+    "max-w-none text-sm leading-relaxed text-neutral-800 [&_.katex-display]:my-3 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[1em] [&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:font-semibold [&_p]:my-2 [&_p:first-child]:mt-0";
+
+  const userBubbleMarkdownClass =
+    "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
 
   return (
     <div className="relative flex h-dvh min-h-[480px] bg-white text-neutral-900">
@@ -858,9 +871,10 @@ export function ChatShell() {
                 m.role === "user" ? (
                   <div key={m.id} className="flex justify-end">
                     <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
-                      <div className="max-w-none [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold">
+                      <div className={userBubbleMarkdownClass}>
                         <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
+                          remarkPlugins={remarkMarkdownPlugins}
+                          rehypePlugins={rehypeMarkdownPlugins}
                           components={userMarkdownComponents}
                         >
                           {m.content}
@@ -871,7 +885,8 @@ export function ChatShell() {
                 ) : (
                   <div key={m.id} className={markdownClass}>
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
+                      remarkPlugins={remarkMarkdownPlugins}
+                      rehypePlugins={rehypeMarkdownPlugins}
                       components={markdownComponents}
                     >
                       {m.content}
@@ -885,7 +900,8 @@ export function ChatShell() {
               {isStreaming && streamingText.length > 0 && (
                 <div className={markdownClass}>
                   <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
+                    remarkPlugins={remarkMarkdownPlugins}
+                    rehypePlugins={rehypeMarkdownPlugins}
                     components={markdownComponents}
                   >
                     {streamingText}
