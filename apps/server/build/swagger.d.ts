@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/me/oidc-admin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetOidcAdminStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hello": {
         parameters: {
             query?: never;
@@ -100,38 +116,6 @@ export interface paths {
         patch: operations["PatchChat"];
         trace?: never;
     };
-    "/me/oidc-admin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetOidcAdminStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/me/custom-llm": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetCustomLlmSettings"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["PatchCustomLlmSettings"];
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -170,20 +154,6 @@ export interface components {
             title?: string;
             isPublic?: boolean;
         };
-        CustomLlmSettingsDto: {
-            useCustomChat: boolean;
-            baseUrl: string;
-            model: string;
-            /** @description True when a non-empty API key is stored (value is never returned). */
-            apiKeySet: boolean;
-        };
-        PatchCustomLlmBody: {
-            useCustomChat?: boolean;
-            baseUrl?: string;
-            model?: string;
-            /** @description Omit to leave the stored key unchanged. */
-            apiKey?: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -193,6 +163,27 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetOidcAdminStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        isOidcAdmin: boolean;
+                    };
+                };
+            };
+        };
+    };
     GetHello: {
         parameters: {
             query?: never;
@@ -403,69 +394,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatListItemDto"];
-                };
-            };
-        };
-    };
-    GetOidcAdminStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        isOidcAdmin: boolean;
-                    };
-                };
-            };
-        };
-    };
-    GetCustomLlmSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomLlmSettingsDto"];
-                };
-            };
-        };
-    };
-    PatchCustomLlmSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PatchCustomLlmBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomLlmSettingsDto"];
                 };
             };
         };
