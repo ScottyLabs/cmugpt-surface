@@ -1,5 +1,5 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { LockOpen, Search, Settings } from "lucide-react";
+import { LockOpen, Search } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -166,27 +166,6 @@ function closeOpenBlockMathFence(streamingMarkdown: string): string {
   const fences = streamingMarkdown.match(/\$\$/g);
   const n = fences?.length ?? 0;
   return n % 2 === 1 ? `${streamingMarkdown}$$` : streamingMarkdown;
-}
-
-function getReadableApiError(err: unknown, context: string): string {
-  const raw =
-    err instanceof Error
-      ? err.message
-      : err != null &&
-          typeof err === "object" &&
-          "message" in err &&
-          (err as { message: unknown }).message != null
-        ? String((err as { message: unknown }).message)
-        : String(err);
-  const lower = raw.toLowerCase();
-  if (
-    raw === "Unauthenticated" ||
-    lower.includes("unauthenticated") ||
-    lower.includes("401")
-  ) {
-    return `Not signed in to the API (${context}). Try signing out and back in, or reload the page.`;
-  }
-  return raw.length > 0 ? raw : `Something went wrong (${context}). Try again.`;
 }
 
 /** Safe string input + LaTeX delimiters; optional streaming fence balance for partial SSE text. */
@@ -411,64 +390,6 @@ export function ChatShell() {
       }
     },
   });
-
-  const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
-  const [customLlmUse, setCustomLlmUse] = useState(false);
-  const [customLlmBaseUrl, setCustomLlmBaseUrl] = useState("");
-  const [customLlmModel, setCustomLlmModel] = useState("");
-  const [customLlmApiKey, setCustomLlmApiKey] = useState("");
-  const [customLlmSaveError, setCustomLlmSaveError] = useState<string | null>(
-    null,
-  );
-  const customLlmSeededRef = useRef(false);
-  const [llmSettingsGateError, setLlmSettingsGateError] = useState<
-    string | null
-  >(null);
-
-  const { data: oidcAdminStatus, refetch: refetchOidcAdmin } = $api.useQuery(
-    "get",
-    "/me/oidc-admin",
-    undefined,
-    { enabled: Boolean(auth?.user) },
-  );
-
-  const {
-    data: customLlmSettings,
-    refetch: refetchCustomLlmSettings,
-    error: customLlmLoadError,
-  } = $api.useQuery("get", "/me/custom-llm", undefined, {
-    enabled: Boolean(auth?.user && llmSettingsOpen),
-    retry: false,
-  });
-
-  const patchCustomLlm = $api.useMutation("patch", "/me/custom-llm", {
-    onMutate: () => {
-      setCustomLlmSaveError(null);
-    },
-    onSuccess: async () => {
-      setCustomLlmApiKey("");
-      await refetchCustomLlmSettings();
-      setLlmSettingsOpen(false);
-    },
-    onError: (err: unknown) => {
-      setCustomLlmSaveError(getReadableApiError(err, "save LLM settings"));
-    },
-  });
-
-  useEffect(() => {
-    if (!llmSettingsOpen) {
-      customLlmSeededRef.current = false;
-      return;
-    }
-    if (!customLlmSettings || customLlmSeededRef.current) {
-      return;
-    }
-    customLlmSeededRef.current = true;
-    setCustomLlmUse(customLlmSettings.useCustomChat);
-    setCustomLlmBaseUrl(customLlmSettings.baseUrl);
-    setCustomLlmModel(customLlmSettings.model);
-    setCustomLlmApiKey("");
-  }, [llmSettingsOpen, customLlmSettings]);
 
   const currentChat = chats.find((c) => c.id === chatId);
 
@@ -1113,37 +1034,6 @@ export function ChatShell() {
         </div>
         <div className="mt-auto border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2">
-            {oidcAdminStatus?.isOidcAdmin ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomLlmSaveError(null);
-                  setLlmSettingsGateError(null);
-                  void (async () => {
-                    const v = await refetchOidcAdmin();
-                    if (v.error) {
-                      setLlmSettingsGateError(
-                        "Could not verify session with the server. Try signing out and back in.",
-                      );
-                      return;
-                    }
-                    if (!v.data?.isOidcAdmin) {
-                      return;
-                    }
-                    setLlmSettingsOpen(true);
-                  })();
-                }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800"
-                aria-label="LLM settings"
-                title="LLM settings"
-              >
-                <Settings
-                  className="size-4"
-                  strokeWidth={2}
-                  aria-hidden={true}
-                />
-              </button>
-            ) : null}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
               {auth?.user?.image ? (
                 <img
@@ -1166,173 +1056,8 @@ export function ChatShell() {
               </button>
             </div>
           </div>
-          {llmSettingsGateError ? (
-            <p className="mt-2 text-xs text-red-600">{llmSettingsGateError}</p>
-          ) : null}
         </div>
       </aside>
-
-      {llmSettingsOpen ? (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30"
-            aria-hidden={true}
-            onClick={() => {
-              setLlmSettingsGateError(null);
-              setLlmSettingsOpen(false);
-            }}
-          />
-          <div
-            role="dialog"
-            aria-modal={true}
-            aria-labelledby="llm-settings-title"
-            className="fixed left-1/2 top-1/2 z-50 w-[min(28rem,calc(100vw-2rem))] max-h-[min(90vh,32rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-5 shadow-xl"
-          >
-            <h2
-              id="llm-settings-title"
-              className="text-lg font-semibold text-neutral-900"
-            >
-              LLM settings
-            </h2>
-            <p className="mt-1 text-sm text-neutral-600">
-              Custom OpenAI-compatible endpoint for your chats. When off, the
-              app uses the default server configuration.
-            </p>
-
-            {customLlmLoadError ? (
-              <p className="mt-3 text-sm text-red-600">
-                {getReadableApiError(customLlmLoadError, "load LLM settings")}
-              </p>
-            ) : customLlmSettings ? (
-              <div className="mt-4 space-y-4">
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={customLlmUse}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setCustomLlmUse(e.target.checked)
-                    }
-                    className="size-4 rounded border-neutral-300"
-                  />
-                  <span className="text-sm font-medium text-neutral-800">
-                    Use custom chat
-                  </span>
-                </label>
-
-                <div>
-                  <label
-                    htmlFor="custom-llm-base-url"
-                    className="block text-xs font-medium text-neutral-600"
-                  >
-                    Base URL
-                  </label>
-                  <input
-                    id="custom-llm-base-url"
-                    type="url"
-                    value={customLlmBaseUrl}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setCustomLlmBaseUrl(e.target.value)
-                    }
-                    disabled={!customLlmUse}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
-                    placeholder="https://…"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="custom-llm-model"
-                    className="block text-xs font-medium text-neutral-600"
-                  >
-                    Model name
-                  </label>
-                  <input
-                    id="custom-llm-model"
-                    type="text"
-                    value={customLlmModel}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setCustomLlmModel(e.target.value)
-                    }
-                    disabled={!customLlmUse}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="custom-llm-api-key"
-                    className="block text-xs font-medium text-neutral-600"
-                  >
-                    API key
-                  </label>
-                  <input
-                    id="custom-llm-api-key"
-                    type="password"
-                    value={customLlmApiKey}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setCustomLlmApiKey(e.target.value)
-                    }
-                    disabled={!customLlmUse}
-                    autoComplete="off"
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100"
-                    placeholder={
-                      customLlmSettings.apiKeySet
-                        ? "Leave blank to keep existing key"
-                        : "Required when custom chat is on"
-                    }
-                  />
-                </div>
-
-                {customLlmSaveError ? (
-                  <p className="text-sm text-red-600">{customLlmSaveError}</p>
-                ) : null}
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLlmSettingsGateError(null);
-                      setLlmSettingsOpen(false);
-                    }}
-                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    disabled={
-                      patchCustomLlm.isPending ||
-                      !customLlmSettings ||
-                      (customLlmUse &&
-                        (!customLlmBaseUrl.trim() ||
-                          !customLlmModel.trim() ||
-                          (!customLlmSettings.apiKeySet &&
-                            !customLlmApiKey.trim())))
-                    }
-                    onClick={() => {
-                      patchCustomLlm.mutate({
-                        body: {
-                          useCustomChat: customLlmUse,
-                          baseUrl: customLlmBaseUrl,
-                          model: customLlmModel,
-                          ...(customLlmApiKey.trim()
-                            ? { apiKey: customLlmApiKey.trim() }
-                            : {}),
-                        },
-                      });
-                    }}
-                    className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {patchCustomLlm.isPending ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="mt-4 text-sm text-neutral-500">Loading…</p>
-            )}
-          </div>
-        </>
-      ) : null}
 
       {sidebarMenu != null && sidebarMenuChat != null ? (
         <>

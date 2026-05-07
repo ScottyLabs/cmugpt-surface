@@ -15,13 +15,9 @@ const envSchema = z.object({
 
   DATABASE_URL: z.url(),
 
-  LLM_API_BASE_URL: z.url().default("https://openrouter.ai/api/v1"),
-  LLM_API_KEY: z.string().min(1),
-  LLM_MODEL: z.string().default("google/gemini-3.1-flash-lite-preview"),
-  LLM_HTTP_REFERER: z.url().optional(),
-  LLM_APP_NAME: z.string().optional(),
+  AGENT_API_URL: z.url(),
 
-  /** Keycloak (or IdP) group claim value that may configure custom LLM settings. */
+  /** Keycloak (or IdP) group claim value for admin checks. */
   ADMIN_GROUP: z.string().default("cmugpt-prod"),
 });
 

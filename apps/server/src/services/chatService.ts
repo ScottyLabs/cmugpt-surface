@@ -2,13 +2,10 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import type { ChatMessage } from "../lib/llm/chatCompletionPort.ts";
+import { callAgent } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
-import { userCustomLlmService } from "./userCustomLlmService.ts";
 
 const DEFAULT_CHAT_TITLE = "New chat";
-
-const SYSTEM_PROMPT = `You are cmuGPT, a concise and accurate assistant focused on Carnegie Mellon University (CMU): campus, academics, student life, and Pittsburgh context. If you are unsure, say so and suggest official CMU resources where appropriate.`;
 
 function titleFromFirstMessage(content: string): string {
   const line = content.trim().split("\n")[0]?.trim() ?? "";
@@ -100,12 +97,15 @@ function chatRowToListDto(row: ChatRow): ChatListItemDto {
   };
 }
 
-/** Persist user message, refresh chat title if needed, return rows for LLM context. */
+/** Persist user message, refresh chat title if needed, return rows for agent context. */
 async function prepareAssistantTurn(
   chatId: string,
   userSub: string,
   content: string,
-): Promise<{ userRow: MessageRow; llmMessages: ChatMessage[] }> {
+): Promise<{
+  userRow: MessageRow;
+  messageHistory: { role: string; content: string }[];
+}> {
   const trimmed = content.trim();
   if (!trimmed) {
     throw new BadRequestError("Message content is required");
@@ -137,6 +137,7 @@ async function prepareAssistantTurn(
       .where(eq(chats.id, chatId));
   }
 
+  // Build message history from prior messages (excluding the one we just inserted).
   const history = await db
     .select()
     .from(messages)
@@ -144,19 +145,15 @@ async function prepareAssistantTurn(
     .orderBy(asc(messages.createdAt))
     .limit(200);
 
-  const llmMessages: ChatMessage[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...history.map((m) => ({
-      role: m.role as ChatMessage["role"],
-      content: m.content,
-    })),
-  ];
+  const messageHistory = history
+    .filter((m) => m.id !== userRow?.id)
+    .map((m) => ({ role: m.role, content: m.content }));
 
   if (!userRow) {
     throw new Error("Failed to persist user message");
   }
 
-  return { userRow, llmMessages };
+  return { userRow, messageHistory };
 }
 
 export const chatService = {
@@ -212,14 +209,17 @@ export const chatService = {
     userSub: string,
     content: string,
   ): Promise<PostMessageResultDto> {
-    const { userRow, llmMessages } = await prepareAssistantTurn(
+    const { userRow, messageHistory } = await prepareAssistantTurn(
       chatId,
       userSub,
       content,
     );
 
-    const llm = await userCustomLlmService.getChatCompletionForUser(userSub);
-    const assistantText = await llm.complete({ messages: llmMessages });
+    const assistantText = await callAgent({
+      query: content.trim(),
+      ...(messageHistory.length > 0 && { messageHistory }),
+      userId: userSub,
+    });
 
     const [assistantRow] = await db
       .insert(messages)
@@ -251,7 +251,7 @@ export const chatService = {
     content: string,
     options: { signal?: AbortSignal } = {},
   ): AsyncGenerator<ChatStreamEvent, void, undefined> {
-    const { userRow, llmMessages } = await prepareAssistantTurn(
+    const { userRow, messageHistory } = await prepareAssistantTurn(
       chatId,
       userSub,
       content,
@@ -259,30 +259,24 @@ export const chatService = {
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
-    const llm = await userCustomLlmService.getChatCompletionForUser(userSub);
-
-    let full = "";
+    let full: string;
     try {
-      const llmInput: { messages: ChatMessage[]; signal?: AbortSignal } = {
-        messages: llmMessages,
-      };
-      if (options.signal !== undefined) {
-        llmInput.signal = options.signal;
-      }
-      for await (const delta of llm.completeStream(llmInput)) {
-        full += delta;
-        yield { type: "delta", text: delta };
-      }
+      full = await callAgent(
+        {
+          query: content.trim(),
+          ...(messageHistory.length > 0 && { messageHistory }),
+          userId: userSub,
+        },
+        options.signal,
+      );
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Stream failed";
+      const msg = e instanceof Error ? e.message : "Agent request failed";
       yield { type: "error", message: msg };
       return;
     }
 
-    if (!full.trim()) {
-      yield { type: "error", message: "Empty LLM response" };
-      return;
-    }
+    // Fake streaming: emit the full response as a single delta.
+    yield { type: "delta", text: full };
 
     const [assistantRow] = await db
       .insert(messages)
