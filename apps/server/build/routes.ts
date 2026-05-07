@@ -103,7 +103,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/me/oidc-admin',
-            authenticateMiddleware([{"oidcOrBearer":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getOidcAdminStatus)),
 
@@ -164,7 +164,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/authenticated',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAuthenticated)),
 
@@ -195,7 +195,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/admin',
-            authenticateMiddleware([{"oidc":["stack-admins"]},{"bearerAuth":["stack-admins"]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAdmin)),
 
@@ -227,7 +227,7 @@ export function RegisterRoutes(app: Router) {
                 q: {"in":"query","name":"q","dataType":"string"},
         };
         app.get('/chats',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.listChats)),
 
@@ -258,7 +258,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.post('/chats',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createChat)),
 
@@ -290,7 +290,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id/messages',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessages)),
 
@@ -322,7 +322,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getChat)),
 
@@ -355,7 +355,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PostChatMessageBody"},
         };
         app.post('/chats/:id/messages',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.postMessage)),
 
@@ -388,7 +388,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PatchChatBody"},
         };
         app.patch('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.patchChat)),
 
@@ -420,7 +420,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.delete('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat)),
 

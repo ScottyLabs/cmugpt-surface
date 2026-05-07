@@ -1,3 +1,4 @@
+import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { LockOpen, Search } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
@@ -9,11 +10,6 @@ import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { env } from "@/env.ts";
 import { $api } from "@/lib/api/client.ts";
-import {
-  getKeycloakAccessTokenForApi,
-  signOut,
-  useSession,
-} from "@/lib/auth/client.ts";
 
 const routeApi = getRouteApi("/");
 
@@ -270,7 +266,9 @@ type ChatStreamEvent =
 const NO_CHAT = "00000000-0000-0000-0000-000000000000";
 
 export function ChatShell() {
-  const { data: auth } = useSession();
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -464,11 +462,9 @@ export function ChatShell() {
   }, []);
 
   const displayName =
-    auth?.user?.name ??
-    auth?.user?.email ??
-    (typeof auth?.user === "object" && auth.user && "id" in auth.user
-      ? String(auth.user.id)
-      : "User");
+    user?.fullName ??
+    user?.primaryEmailAddress?.emailAddress ??
+    (user?.id ? String(user.id) : "User");
 
   const starred = chats.filter((c) => c.starred);
   const unstarred = chats.filter((c) => !c.starred);
@@ -818,9 +814,9 @@ export function ChatShell() {
       const streamHeaders: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      const bearer = await getKeycloakAccessTokenForApi();
-      if (bearer) {
-        streamHeaders.Authorization = `Bearer ${bearer}`;
+      const token = await getToken();
+      if (token) {
+        streamHeaders.Authorization = `Bearer ${token}`;
       }
       const res = await fetch(
         `${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`,
@@ -1035,9 +1031,9 @@ export function ChatShell() {
         <div className="mt-auto border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
-              {auth?.user?.image ? (
+              {user?.imageUrl ? (
                 <img
-                  src={auth.user.image}
+                  src={user.imageUrl}
                   alt=""
                   className="h-full w-full object-cover"
                 />
@@ -1049,7 +1045,7 @@ export function ChatShell() {
               <p className="truncate text-sm font-medium">{displayName}</p>
               <button
                 type="button"
-                onClick={() => signOut()}
+                onClick={() => void signOut()}
                 className="text-xs text-neutral-500 hover:text-neutral-800"
               >
                 Sign out

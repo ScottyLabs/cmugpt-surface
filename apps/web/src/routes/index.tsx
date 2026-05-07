@@ -1,7 +1,7 @@
+import { SignedIn, SignedOut, useClerk } from "@clerk/clerk-react";
 import { Button } from "@scottylabs/corgi";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChatShell } from "@/components/ChatShell.tsx";
-import { signIn, useSession } from "@/lib/auth/client.ts";
 
 export const Route = createFileRoute("/")({
   validateSearch: (raw: Record<string, unknown>) => ({
@@ -12,24 +12,33 @@ export const Route = createFileRoute("/")({
   component: App,
 });
 
-function App() {
-  const { data: auth } = useSession();
+function SignInPage() {
+  const { redirectToSignIn } = useClerk();
 
-  if (!auth?.user) {
-    return (
-      <div className="m-8 flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
-        <p className="text-neutral-600">Sign in to use cmuGPT.</p>
-        <Button
-          size="md"
-          theme="brand"
-          className="inline"
-          onClick={() => signIn()}
-        >
-          Sign In
-        </Button>
-      </div>
-    );
-  }
+  return (
+    <div className="m-8 flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+      <p className="text-neutral-600">Sign in to use cmuGPT.</p>
+      <Button
+        size="md"
+        theme="brand"
+        className="inline"
+        onClick={() => redirectToSignIn()}
+      >
+        Sign In
+      </Button>
+    </div>
+  );
+}
 
-  return <ChatShell />;
+export function App() {
+  return (
+    <>
+      <SignedOut>
+        <SignInPage />
+      </SignedOut>
+      <SignedIn>
+        <ChatShell />
+      </SignedIn>
+    </>
+  );
 }
