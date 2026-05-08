@@ -99,7 +99,7 @@ export function RegisterRoutes(app: Router) {
     // ###########################################################################################################
 
 
-    
+
         const argsMeController_getOidcAdminStatus: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
