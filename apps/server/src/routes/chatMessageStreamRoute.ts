@@ -48,8 +48,10 @@ export function registerChatMessageStreamRoute(router: Router): void {
       }
 
       const ac = new AbortController();
-      req.on("close", () => {
-        ac.abort();
+      res.on("close", () => {
+        if (!res.writableEnded) {
+          ac.abort();
+        }
       });
 
       let wrote = false;

@@ -38,6 +38,7 @@ const models: TsoaRoute.Models = {
             "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["user"]},{"dataType":"enum","enums":["assistant"]},{"dataType":"enum","enums":["system"]}],"required":true},
             "content": {"dataType":"string","required":true},
             "createdAt": {"dataType":"string","required":true},
+            "confidence": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -98,7 +99,7 @@ export function RegisterRoutes(app: Router) {
     // ###########################################################################################################
 
 
-
+    
         const argsMeController_getOidcAdminStatus: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };

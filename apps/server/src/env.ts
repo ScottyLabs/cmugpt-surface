@@ -16,6 +16,7 @@ const envSchema = z.object({
   DATABASE_URL: z.url(),
 
   AGENT_API_URL: z.url(),
+  AGENT_SHARED_SECRET: z.string().optional(),
 });
 
 // Validate `process.env` against our schema and return the result

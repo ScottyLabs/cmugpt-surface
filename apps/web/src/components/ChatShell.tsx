@@ -264,6 +264,8 @@ type ChatStreamEvent =
 
 /** Placeholder path param when no chat is selected; request stays disabled via `enabled`. */
 const NO_CHAT = "00000000-0000-0000-0000-000000000000";
+const STREAM_TICK_MS = 16;
+const STREAM_CHARS_PER_TICK = 3;
 
 export function ChatShell() {
   const { user } = useUser();
@@ -299,12 +301,79 @@ export function ChatShell() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftComposerRef = useRef<HTMLTextAreaElement>(null);
   const hasAutoFocusedComposerRef = useRef(false);
+  const streamQueueRef = useRef("");
+  const streamTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamDrainResolversRef = useRef<Array<() => void>>([]);
   const pendingAttachmentsRef = useRef(pendingAttachments);
   const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
 
   pendingAttachmentsRef.current = pendingAttachments;
+
+  function resolveStreamDrainWaiters() {
+    const resolvers = streamDrainResolversRef.current.splice(0);
+    for (const resolve of resolvers) {
+      resolve();
+    }
+  }
+
+  function stopStreamTimer() {
+    if (streamTimerRef.current) {
+      clearInterval(streamTimerRef.current);
+      streamTimerRef.current = null;
+    }
+  }
+
+  function startStreamDrain() {
+    if (streamTimerRef.current) {
+      return;
+    }
+
+    streamTimerRef.current = setInterval(() => {
+      const queued = streamQueueRef.current;
+      if (!queued) {
+        stopStreamTimer();
+        resolveStreamDrainWaiters();
+        return;
+      }
+
+      const take = Math.min(queued.length, STREAM_CHARS_PER_TICK);
+      const next = queued.slice(0, take);
+      streamQueueRef.current = queued.slice(take);
+      setStreamingText((current) => current + next);
+
+      if (!streamQueueRef.current) {
+        stopStreamTimer();
+        resolveStreamDrainWaiters();
+      }
+    }, STREAM_TICK_MS);
+  }
+
+  function enqueueStreamingText(text: string) {
+    if (!text) {
+      return;
+    }
+    streamQueueRef.current += text;
+    startStreamDrain();
+  }
+
+  function waitForStreamingDrain(): Promise<void> {
+    if (!streamQueueRef.current && !streamTimerRef.current) {
+      return Promise.resolve();
+    }
+    startStreamDrain();
+    return new Promise((resolve) => {
+      streamDrainResolversRef.current.push(resolve);
+    });
+  }
+
+  function resetStreamingAnimation() {
+    streamQueueRef.current = "";
+    stopStreamTimer();
+    resolveStreamDrainWaiters();
+    setStreamingText("");
+  }
 
   useEffect(() => {
     return () => {
@@ -315,6 +384,14 @@ export function ChatShell() {
       }
       if (shareFeedbackTimerRef.current) {
         clearTimeout(shareFeedbackTimerRef.current);
+      }
+      if (streamTimerRef.current) {
+        clearInterval(streamTimerRef.current);
+        streamTimerRef.current = null;
+      }
+      const resolvers = streamDrainResolversRef.current.splice(0);
+      for (const resolve of resolvers) {
+        resolve();
       }
     };
   }, []);
@@ -460,6 +537,15 @@ export function ChatShell() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
+
+  useEffect(() => {
+    if (!isStreaming && messages.length === 0 && streamingText.length === 0) {
+      return;
+    }
+    bottomRef.current?.scrollIntoView({
+      behavior: isStreaming ? "auto" : "smooth",
+    });
+  }, [isStreaming, messages.length, streamingText.length]);
 
   const displayName =
     user?.fullName ??
@@ -794,7 +880,7 @@ export function ChatShell() {
     }
 
     setStreamError(null);
-    setStreamingText("");
+    resetStreamingAnimation();
     setIsStreaming(true);
 
     function clearComposer() {
@@ -845,6 +931,7 @@ export function ChatShell() {
       }
 
       clearComposer();
+      let shouldRefreshAfterStream = false;
 
       const reader = res.body?.getReader();
       if (!reader) {
@@ -873,25 +960,31 @@ export function ChatShell() {
             continue;
           }
           if (ev.type === "user") {
-            await refetchMessages();
-            await refetchChats();
+            void refetchMessages();
+            void refetchChats();
           } else if (ev.type === "delta") {
-            setStreamingText((t) => t + ev.text);
+            enqueueStreamingText(ev.text);
           } else if (ev.type === "done") {
-            await refetchMessages();
-            await refetchChats();
+            shouldRefreshAfterStream = true;
           } else if (ev.type === "error") {
             setStreamError(ev.message);
             void refetchMessages();
           }
         }
       }
+      await waitForStreamingDrain();
+      if (shouldRefreshAfterStream) {
+        setIsStreaming(false);
+        resetStreamingAnimation();
+        await refetchMessages();
+        await refetchChats();
+      }
     } catch {
       setStreamError("Network error");
       void refetchMessages();
     } finally {
       setIsStreaming(false);
-      setStreamingText("");
+      resetStreamingAnimation();
     }
   }
 
@@ -1221,6 +1314,11 @@ export function ChatShell() {
                     >
                       {markdownForReactComponent(m.content)}
                     </ReactMarkdown>
+                    {typeof m.confidence === "number" && m.confidence < 0.5 && (
+                      <p className="mt-2 text-xs text-amber-700">
+                        Low confidence — verify with an official CMU source.
+                      </p>
+                    )}
                   </div>
                 ),
               )}

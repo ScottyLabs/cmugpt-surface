@@ -2,7 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { callAgent } from "../lib/agentClient.ts";
+import { callAgent, streamAgent } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 
 const DEFAULT_CHAT_TITLE = "New chat";
@@ -35,6 +35,9 @@ export interface MessageDto {
   role: "user" | "assistant" | "system";
   content: string;
   createdAt: string;
+  /** Agent confidence for the just-generated turn. Not persisted; only set on
+   *  fresh assistant messages, undefined when re-reading history. */
+  confidence?: number;
 }
 
 export interface PostMessageResultDto {
@@ -215,7 +218,7 @@ export const chatService = {
       content,
     );
 
-    const assistantText = await callAgent({
+    const agentResult = await callAgent({
       query: content.trim(),
       ...(messageHistory.length > 0 && { messageHistory }),
       userId: userSub,
@@ -226,7 +229,7 @@ export const chatService = {
       .values({
         chatId,
         role: "assistant",
-        content: assistantText,
+        content: agentResult.text,
       })
       .returning();
 
@@ -239,9 +242,13 @@ export const chatService = {
       throw new Error("Failed to persist messages");
     }
 
+    const assistantMessage: MessageDto = messageRowToDto(assistantRow);
+    if (typeof agentResult.confidence === "number") {
+      assistantMessage.confidence = agentResult.confidence;
+    }
     return {
       userMessage: messageRowToDto(userRow),
-      assistantMessage: messageRowToDto(assistantRow),
+      assistantMessage,
     };
   },
 
@@ -259,31 +266,52 @@ export const chatService = {
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
-    let full: string;
+    let result: Awaited<ReturnType<typeof callAgent>> | undefined;
+    let streamedText = "";
     try {
-      full = await callAgent(
+      for await (const ev of streamAgent(
         {
           query: content.trim(),
           ...(messageHistory.length > 0 && { messageHistory }),
           userId: userSub,
         },
         options.signal,
-      );
+      )) {
+        if (ev.type === "delta") {
+          streamedText += ev.text;
+          yield { type: "delta", text: ev.text };
+        } else if (ev.type === "done") {
+          ({ result } = ev);
+        } else if (ev.type === "error") {
+          yield { type: "error", message: ev.message };
+          return;
+        }
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Agent request failed";
       yield { type: "error", message: msg };
       return;
     }
 
-    // Fake streaming: emit the full response as a single delta.
-    yield { type: "delta", text: full };
+    if (!result) {
+      if (!streamedText.trim()) {
+        yield {
+          type: "error",
+          message: "Agent stream ended without a response",
+        };
+        return;
+      }
+      result = { text: streamedText };
+    } else if (!streamedText) {
+      yield { type: "delta", text: result.text };
+    }
 
     const [assistantRow] = await db
       .insert(messages)
       .values({
         chatId,
         role: "assistant",
-        content: full,
+        content: result.text,
       })
       .returning();
 
@@ -297,7 +325,11 @@ export const chatService = {
       return;
     }
 
-    yield { type: "done", message: messageRowToDto(assistantRow) };
+    const finalMessage: MessageDto = messageRowToDto(assistantRow);
+    if (typeof result.confidence === "number") {
+      finalMessage.confidence = result.confidence;
+    }
+    yield { type: "done", message: finalMessage };
   },
 
   async patchChat(

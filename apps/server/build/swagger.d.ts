@@ -133,6 +133,12 @@ export interface components {
             role: "user" | "assistant" | "system";
             content: string;
             createdAt: string;
+            /**
+             * Format: double
+             * @description Agent confidence for the just-generated turn. Not persisted; only set on
+             *     fresh assistant messages, undefined when re-reading history.
+             */
+            confidence?: number;
         };
         ChatDetailDto: {
             id: string;
