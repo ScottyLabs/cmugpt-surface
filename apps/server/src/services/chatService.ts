@@ -47,6 +47,7 @@ export interface PostMessageResultDto {
 
 export type ChatStreamEvent =
   | { type: "user"; message: MessageDto }
+  | { type: "status"; text: string }
   | { type: "delta"; text: string }
   | { type: "done"; message: MessageDto }
   | { type: "error"; message: string };
@@ -277,7 +278,9 @@ export const chatService = {
         },
         options.signal,
       )) {
-        if (ev.type === "delta") {
+        if (ev.type === "status") {
+          yield { type: "status", text: ev.text };
+        } else if (ev.type === "delta") {
           streamedText += ev.text;
           yield { type: "delta", text: ev.text };
         } else if (ev.type === "done") {

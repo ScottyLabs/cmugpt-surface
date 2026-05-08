@@ -258,14 +258,27 @@ async function buildOutgoingContent(
 
 type ChatStreamEvent =
   | { type: "user"; message: unknown }
+  | { type: "status"; text: string }
   | { type: "delta"; text: string }
   | { type: "done"; message: unknown }
   | { type: "error"; message: string };
 
 /** Placeholder path param when no chat is selected; request stays disabled via `enabled`. */
 const NO_CHAT = "00000000-0000-0000-0000-000000000000";
-const STREAM_TICK_MS = 16;
-const STREAM_CHARS_PER_TICK = 3;
+const STICKY_SCROLL_THRESHOLD_PX = 96;
+
+function StreamingStatus({ text }: { text: string }) {
+  const label = text.replace(/\.+$/, "");
+  return (
+    <output
+      aria-live="polite"
+      aria-label={text}
+      className="-mt-1 block font-normal text-neutral-400 text-sm leading-relaxed motion-safe:animate-pulse"
+    >
+      {label}
+    </output>
+  );
+}
 
 export function ChatShell() {
   const { user } = useUser();
@@ -281,7 +294,13 @@ export function ChatShell() {
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
+  const [streamStatus, setStreamStatus] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const [optimisticUserMessage, setOptimisticUserMessage] = useState<{
+    chatId: string;
+    content: string;
+    messageCountBeforeSend: number;
+  } | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<
     PendingAttachment[]
   >([]);
@@ -296,14 +315,16 @@ export function ChatShell() {
   } | null>(null);
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftComposerRef = useRef<HTMLTextAreaElement>(null);
   const hasAutoFocusedComposerRef = useRef(false);
-  const streamQueueRef = useRef("");
-  const streamTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const streamDrainResolversRef = useRef<Array<() => void>>([]);
+  const shouldStickToBottomRef = useRef(true);
+  const streamBufferRef = useRef("");
+  const streamFrameRef = useRef<number | null>(null);
+  const streamFlushResolversRef = useRef<Array<() => void>>([]);
   const pendingAttachmentsRef = useRef(pendingAttachments);
   const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -311,68 +332,55 @@ export function ChatShell() {
 
   pendingAttachmentsRef.current = pendingAttachments;
 
-  function resolveStreamDrainWaiters() {
-    const resolvers = streamDrainResolversRef.current.splice(0);
+  function resolveStreamFlushWaiters() {
+    const resolvers = streamFlushResolversRef.current.splice(0);
     for (const resolve of resolvers) {
       resolve();
     }
   }
 
-  function stopStreamTimer() {
-    if (streamTimerRef.current) {
-      clearInterval(streamTimerRef.current);
-      streamTimerRef.current = null;
+  function cancelStreamFlushFrame() {
+    if (streamFrameRef.current !== null) {
+      cancelAnimationFrame(streamFrameRef.current);
+      streamFrameRef.current = null;
     }
   }
 
-  function startStreamDrain() {
-    if (streamTimerRef.current) {
-      return;
-    }
-
-    streamTimerRef.current = setInterval(() => {
-      const queued = streamQueueRef.current;
-      if (!queued) {
-        stopStreamTimer();
-        resolveStreamDrainWaiters();
-        return;
-      }
-
-      const take = Math.min(queued.length, STREAM_CHARS_PER_TICK);
-      const next = queued.slice(0, take);
-      streamQueueRef.current = queued.slice(take);
+  function flushStreamingText() {
+    streamFrameRef.current = null;
+    const next = streamBufferRef.current;
+    streamBufferRef.current = "";
+    if (next) {
       setStreamingText((current) => current + next);
-
-      if (!streamQueueRef.current) {
-        stopStreamTimer();
-        resolveStreamDrainWaiters();
-      }
-    }, STREAM_TICK_MS);
+    }
+    resolveStreamFlushWaiters();
   }
 
   function enqueueStreamingText(text: string) {
     if (!text) {
       return;
     }
-    streamQueueRef.current += text;
-    startStreamDrain();
+    streamBufferRef.current += text;
+    if (streamFrameRef.current === null) {
+      streamFrameRef.current = requestAnimationFrame(flushStreamingText);
+    }
   }
 
-  function waitForStreamingDrain(): Promise<void> {
-    if (!streamQueueRef.current && !streamTimerRef.current) {
+  function waitForStreamingFlush(): Promise<void> {
+    if (!streamBufferRef.current && streamFrameRef.current === null) {
       return Promise.resolve();
     }
-    startStreamDrain();
     return new Promise((resolve) => {
-      streamDrainResolversRef.current.push(resolve);
+      streamFlushResolversRef.current.push(resolve);
     });
   }
 
-  function resetStreamingAnimation() {
-    streamQueueRef.current = "";
-    stopStreamTimer();
-    resolveStreamDrainWaiters();
+  function resetStreamingBuffer() {
+    streamBufferRef.current = "";
+    cancelStreamFlushFrame();
+    resolveStreamFlushWaiters();
     setStreamingText("");
+    setStreamStatus(null);
   }
 
   useEffect(() => {
@@ -385,11 +393,11 @@ export function ChatShell() {
       if (shareFeedbackTimerRef.current) {
         clearTimeout(shareFeedbackTimerRef.current);
       }
-      if (streamTimerRef.current) {
-        clearInterval(streamTimerRef.current);
-        streamTimerRef.current = null;
+      if (streamFrameRef.current !== null) {
+        cancelAnimationFrame(streamFrameRef.current);
+        streamFrameRef.current = null;
       }
-      const resolvers = streamDrainResolversRef.current.splice(0);
+      const resolvers = streamFlushResolversRef.current.splice(0);
       for (const resolve of resolvers) {
         resolve();
       }
@@ -467,6 +475,25 @@ export function ChatShell() {
   });
 
   const currentChat = chats.find((c) => c.id === chatId);
+  const optimisticMessageIsForVisibleChat =
+    optimisticUserMessage !== null &&
+    (!chatId || optimisticUserMessage.chatId === chatId);
+  const optimisticMessagePersisted =
+    optimisticUserMessage !== null &&
+    chatId === optimisticUserMessage.chatId &&
+    messages.length > optimisticUserMessage.messageCountBeforeSend;
+  const shouldShowOptimisticUserMessage =
+    optimisticMessageIsForVisibleChat && !optimisticMessagePersisted;
+  const shouldShowConversation =
+    Boolean(chatId) || shouldShowOptimisticUserMessage || isStreaming;
+  const showMessagesLoading =
+    Boolean(chatId) && messagesLoading && !shouldShowOptimisticUserMessage;
+
+  useEffect(() => {
+    if (optimisticMessagePersisted) {
+      setOptimisticUserMessage(null);
+    }
+  }, [optimisticMessagePersisted]);
 
   /** Sidebar only lists your chats; opening someone else's public chat needs GET /chats/:id. */
   const effectiveChatDetail = useMemo(() => {
@@ -535,11 +562,10 @@ export function ChatShell() {
   }, [isNewChatIntent]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
     if (!isStreaming && messages.length === 0 && streamingText.length === 0) {
+      return;
+    }
+    if (!shouldStickToBottomRef.current) {
       return;
     }
     bottomRef.current?.scrollIntoView({
@@ -880,7 +906,19 @@ export function ChatShell() {
     }
 
     setStreamError(null);
-    resetStreamingAnimation();
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) {
+      shouldStickToBottomRef.current =
+        scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight <=
+        STICKY_SCROLL_THRESHOLD_PX;
+    }
+    resetStreamingBuffer();
+    setStreamStatus("Thinking...");
+    setOptimisticUserMessage({
+      chatId: activeChatId,
+      content,
+      messageCountBeforeSend: messages.length,
+    });
     setIsStreaming(true);
 
     function clearComposer() {
@@ -925,6 +963,7 @@ export function ChatShell() {
           /* ignore */
         }
         setStreamError(detail || "Request failed");
+        setOptimisticUserMessage(null);
         void refetchMessages();
         void refetchChats();
         return;
@@ -962,7 +1001,10 @@ export function ChatShell() {
           if (ev.type === "user") {
             void refetchMessages();
             void refetchChats();
+          } else if (ev.type === "status") {
+            setStreamStatus(ev.text);
           } else if (ev.type === "delta") {
+            setStreamStatus(null);
             enqueueStreamingText(ev.text);
           } else if (ev.type === "done") {
             shouldRefreshAfterStream = true;
@@ -972,10 +1014,10 @@ export function ChatShell() {
           }
         }
       }
-      await waitForStreamingDrain();
+      await waitForStreamingFlush();
       if (shouldRefreshAfterStream) {
         setIsStreaming(false);
-        resetStreamingAnimation();
+        resetStreamingBuffer();
         await refetchMessages();
         await refetchChats();
       }
@@ -984,12 +1026,29 @@ export function ChatShell() {
       void refetchMessages();
     } finally {
       setIsStreaming(false);
-      resetStreamingAnimation();
+      resetStreamingBuffer();
     }
   }
 
-  const markdownClass =
-    "max-w-none text-sm leading-relaxed text-neutral-800 [&_.katex-display]:my-3 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[1em] [&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:font-semibold [&_p]:my-2 [&_p:first-child]:mt-0";
+  const markdownClass = [
+    "max-w-none text-sm leading-relaxed text-neutral-800",
+    "[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+    "[&_h2]:mb-2 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h2]:border-b [&_h2]:border-neutral-200 [&_h2]:pb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-neutral-950",
+    "[&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-neutral-950",
+    "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5",
+    "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5",
+    "[&_li]:pl-1 [&_li>p]:my-1 [&_li>ol]:mt-1 [&_li>ul]:mt-1",
+    "[&_strong]:font-semibold [&_strong]:text-neutral-950",
+    "[&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800",
+    "[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-neutral-100 [&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-[0.92em] [&_:not(pre)>code]:font-medium [&_:not(pre)>code]:text-neutral-900",
+    "[&_pre]:my-3 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-neutral-200 [&_pre]:bg-neutral-950 [&_pre]:p-3 [&_pre]:text-[13px] [&_pre]:leading-relaxed [&_pre]:text-neutral-50 [&_pre]:shadow-sm",
+    "[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit",
+    "[&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm",
+    "[&_th]:border-b [&_th]:border-neutral-300 [&_th]:bg-neutral-50 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-semibold",
+    "[&_td]:border-b [&_td]:border-neutral-200 [&_td]:px-2 [&_td]:py-1.5 [&_td]:align-top",
+    "[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-600",
+    "[&_.katex-display]:my-3 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[1em]",
+  ].join(" ");
 
   const userBubbleMarkdownClass =
     "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
@@ -1275,8 +1334,17 @@ export function ChatShell() {
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-          {!chatId &&
+        <div
+          ref={scrollContainerRef}
+          className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            shouldStickToBottomRef.current =
+              el.scrollHeight - el.scrollTop - el.clientHeight <=
+              STICKY_SCROLL_THRESHOLD_PX;
+          }}
+        >
+          {!shouldShowConversation &&
             !chatsLoading &&
             (chats.length === 0 || isNewChatIntent) && (
               <p className="text-center text-neutral-500 text-sm">
@@ -1285,10 +1353,10 @@ export function ChatShell() {
                   : "Type your first message below to start."}
               </p>
             )}
-          {Boolean(chatId) && messagesLoading && (
+          {showMessagesLoading ? (
             <p className="text-neutral-500 text-sm">Loading messages…</p>
-          )}
-          {Boolean(chatId) && !messagesLoading && (
+          ) : null}
+          {shouldShowConversation && !showMessagesLoading && (
             <div className="mx-auto flex max-w-3xl flex-col gap-4">
               {messages.map((m) =>
                 m.role === "user" ? (
@@ -1322,8 +1390,25 @@ export function ChatShell() {
                   </div>
                 ),
               )}
+              {shouldShowOptimisticUserMessage && optimisticUserMessage ? (
+                <div key="optimistic-user-message" className="flex justify-end">
+                  <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+                    <div className={userBubbleMarkdownClass}>
+                      <ReactMarkdown
+                        remarkPlugins={remarkMarkdownPlugins}
+                        rehypePlugins={rehypeMarkdownPlugins}
+                        components={userMarkdownComponents}
+                      >
+                        {markdownForReactComponent(
+                          optimisticUserMessage.content,
+                        )}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {isStreaming && !streamingText && (
-                <p className="text-neutral-400 text-sm">Thinking…</p>
+                <StreamingStatus text={streamStatus ?? "Thinking..."} />
               )}
               {isStreaming && streamingText.length > 0 && (
                 <div className={markdownClass}>

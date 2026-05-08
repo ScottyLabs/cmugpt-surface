@@ -21,6 +21,7 @@ export interface AgentResult {
 }
 
 export type AgentStreamEvent =
+  | { type: "status"; text: string }
   | { type: "delta"; text: string }
   | { type: "done"; result: AgentResult }
   | { type: "error"; message: string };
@@ -142,6 +143,16 @@ function normalizeAgentStreamEvent(parsed: {
   event: string;
   data: unknown;
 }): AgentStreamEvent | null {
+  if (
+    parsed.event === "status" &&
+    typeof parsed.data === "object" &&
+    parsed.data !== null &&
+    "text" in parsed.data &&
+    typeof parsed.data.text === "string"
+  ) {
+    return { type: "status", text: parsed.data.text };
+  }
+
   if (
     parsed.event === "delta" &&
     typeof parsed.data === "object" &&
