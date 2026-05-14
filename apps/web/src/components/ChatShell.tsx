@@ -1,6 +1,6 @@
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { ExternalLink, LockOpen, Search } from "lucide-react";
+import { ExternalLink, LockOpen } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -17,18 +17,79 @@ const routeApi = getRouteApi("/");
 function SidebarPanelIcon({ className }: { className?: string }) {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
       className={className}
-      width={18}
-      height={18}
-      viewBox="0 0 24 24"
+      width={20}
+      height={20}
+      viewBox="0 0 20 20"
       fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
       aria-hidden={true}
     >
       <title>Sidebar panel</title>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <line x1="9" y1="4" x2="9" y2="20" />
+      <path
+        d="M16.6667 14.9997C17.1269 14.9997 17.5 15.3728 17.5 15.833C17.5 16.2932 17.1269 16.6663 16.6667 16.6663H3.33333C2.8731 16.6663 2.5 16.2932 2.5 15.833C2.5 15.3728 2.8731 14.9997 3.33333 14.9997H16.6667ZM16.6667 9.16634C17.1269 9.16634 17.5 9.53944 17.5 9.99967C17.5 10.4599 17.1269 10.833 16.6667 10.833H3.33333C2.8731 10.833 2.5 10.4599 2.5 9.99967C2.5 9.53944 2.8731 9.16634 3.33333 9.16634H16.6667ZM16.6667 3.33301C17.1269 3.33301 17.5 3.7061 17.5 4.16634C17.5 4.62658 17.1269 4.99967 16.6667 4.99967H3.33333C2.8731 4.99967 2.5 4.62658 2.5 4.16634C2.5 3.7061 2.8731 3.33301 3.33333 3.33301H16.6667Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width={20}
+      height={20}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Plus</title>
+      <path
+        d="M9.16634 15.833V10.833H4.16634C3.7061 10.833 3.33301 10.4599 3.33301 9.99967C3.33301 9.53944 3.7061 9.16634 4.16634 9.16634H9.16634V4.16634C9.16634 3.7061 9.53944 3.33301 9.99967 3.33301C10.4599 3.33301 10.833 3.7061 10.833 4.16634V9.16634H15.833C16.2932 9.16634 16.6663 9.53944 16.6663 9.99967C16.6663 10.4599 16.2932 10.833 15.833 10.833H10.833V15.833C10.833 16.2932 10.4599 16.6663 9.99967 16.6663C9.53944 16.6663 9.16634 16.2932 9.16634 15.833Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width={20}
+      height={20}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Search</title>
+      <path
+        d="M15.0003 9.16699C15.0003 5.94533 12.3887 3.33366 9.16699 3.33366C5.94533 3.33366 3.33366 5.94533 3.33366 9.16699C3.33366 12.3887 5.94533 15.0003 9.16699 15.0003C12.3887 15.0003 15.0003 12.3887 15.0003 9.16699ZM16.667 9.16699C16.667 10.9378 16.0519 12.5641 15.0256 13.8472L18.0895 16.9111C18.4149 17.2366 18.4149 17.7641 18.0895 18.0895C17.7641 18.4149 17.2366 18.4149 16.9111 18.0895L13.8472 15.0256C12.5641 16.0519 10.9378 16.667 9.16699 16.667C5.02486 16.667 1.66699 13.3091 1.66699 9.16699C1.66699 5.02486 5.02486 1.66699 9.16699 1.66699C13.3091 1.66699 16.667 5.02486 16.667 9.16699Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width={20}
+      height={20}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Pin</title>
+      <path
+        d="M14.1663 3.33301C14.1663 3.11199 14.0785 2.9001 13.9222 2.74382C13.7659 2.58753 13.554 2.49967 13.333 2.49967H6.66634C6.44533 2.49967 6.23343 2.58753 6.07715 2.74382C5.92087 2.9001 5.83301 3.11199 5.83301 3.33301C5.83301 3.55402 5.92087 3.76592 6.07715 3.9222C6.21393 4.05899 6.39331 4.14336 6.58415 4.16227L6.83073 4.17448C7.21239 4.2123 7.57116 4.38105 7.84473 4.65462C8.15729 4.96718 8.33301 5.39098 8.33301 5.83301V8.96696C8.33273 9.43194 8.20287 9.88769 7.95784 10.2829C7.71364 10.6767 7.36404 10.9938 6.94954 11.2008L6.95036 11.2017L5.46761 11.952L5.46191 11.9544C5.32327 12.0234 5.20665 12.1297 5.125 12.2612C5.04334 12.3929 4.9998 12.5449 4.99967 12.6999V13.333H14.9997V12.6999C14.9995 12.5449 14.956 12.3929 14.8743 12.2612C14.7927 12.1297 14.6761 12.0234 14.5374 11.9544L14.5317 11.952L13.049 11.2017V11.2008C12.6348 10.9938 12.2856 10.6765 12.0415 10.2829C11.7965 9.88769 11.6666 9.43194 11.6663 8.96696V5.83301C11.6663 5.39098 11.8421 4.96718 12.1546 4.65462C12.4282 4.38105 12.787 4.2123 13.1686 4.17448L13.4152 4.16227C13.606 4.14336 13.7854 4.05899 13.9222 3.9222C14.0785 3.76592 14.1663 3.55402 14.1663 3.33301ZM15.833 3.33301C15.833 3.99605 15.5694 4.63175 15.1006 5.10059C14.6317 5.56943 13.996 5.83301 13.333 5.83301V8.96615L13.3411 9.08171C13.3572 9.19588 13.3971 9.30608 13.4583 9.40479C13.54 9.53636 13.6566 9.64263 13.7952 9.71159L13.8009 9.71403L15.2788 10.4619L15.4318 10.5449C15.7812 10.75 16.0767 11.0373 16.2912 11.3831C16.5362 11.7783 16.6661 12.2341 16.6663 12.6991V13.333C16.6663 13.775 16.4906 14.1988 16.1781 14.5114C15.8655 14.824 15.4417 14.9997 14.9997 14.9997H10.833V18.333C10.833 18.7932 10.4599 19.1663 9.99967 19.1663C9.53944 19.1663 9.16634 18.7932 9.16634 18.333V14.9997H4.99967C4.55765 14.9997 4.13385 14.824 3.82129 14.5114C3.50873 14.1988 3.33301 13.775 3.33301 13.333V12.6991L3.33952 12.5257C3.36786 12.1214 3.4937 11.7291 3.70817 11.3831C3.95328 10.9879 4.30404 10.6689 4.72054 10.4619L6.1984 9.71403L6.2041 9.71159C6.34275 9.64263 6.45937 9.53637 6.54102 9.40479C6.60223 9.30608 6.64212 9.19588 6.6582 9.08171L6.66634 8.96615V5.83301C6.0033 5.83301 5.3676 5.56943 4.89876 5.10059C4.42992 4.63175 4.16634 3.99605 4.16634 3.33301C4.16634 2.66997 4.42992 2.03427 4.89876 1.56543C5.3676 1.09659 6.0033 0.833008 6.66634 0.833008H13.333C13.996 0.833008 14.6317 1.09659 15.1006 1.56543C15.5694 2.03427 15.833 2.66997 15.833 3.33301Z"
+        fill="black"
+      />
     </svg>
   );
 }
@@ -453,7 +514,7 @@ export function ChatShell() {
   const isNewChatIntent = search.newChat;
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchQ, setSearchQ] = useState("");
+  const [searchQ /*setSearchQ*/] = useState("");
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -759,7 +820,7 @@ export function ChatShell() {
     user?.primaryEmailAddress?.emailAddress ??
     (user?.id ? String(user.id) : "User");
 
-  const starred = chats.filter((c) => c.starred);
+  /*const starred = chats.filter((c) => c.starred);*/
   const unstarred = chats.filter((c) => !c.starred);
 
   function scheduleShareFeedbackClear() {
@@ -1304,11 +1365,14 @@ export function ChatShell() {
   return (
     <div className="relative flex h-dvh min-h-[480px] bg-white text-neutral-900">
       <aside
-        className={`flex shrink-0 flex-col border-r border-neutral-200 bg-neutral-100 transition-[width] duration-200 ease-out ${
-          sidebarOpen ? "w-72" : "w-0 overflow-hidden border-r-0"
+        className={`flex shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled transition-[width] duration-200 ease-out ${
+          sidebarOpen ? "w-64" : "w-[4.375rem] overflow-hidden border-r-0"
         }`}
       >
-        <div className="flex h-12 items-center justify-end border-b border-neutral-200 px-2">
+        {/* Header */}
+        <div
+          className={`flex h-16 items-center px-4 ${sidebarOpen ? "gap-10" : "justify-center"}`}
+        >
           <button
             type="button"
             onClick={() => setSidebarOpen((o) => !o)}
@@ -1317,22 +1381,28 @@ export function ChatShell() {
           >
             <SidebarPanelIcon />
           </button>
+          {Boolean(sidebarOpen) && (
+            <div className="flex min-w-0 items-center gap-1.5">
+              <img
+                src="/sl-logo.svg"
+                alt=""
+                className="h-6 w-6 shrink-0 object-contain"
+                width={24}
+                height={24}
+              />
+              <span className="truncate text-lg font-semibold leading-none tracking-tight">
+                CMUGPT
+              </span>
+            </div>
+          )}
         </div>
-        <div className="px-3 pb-2">
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-6 -translate-y-1/2 text-neutral-400"
-              strokeWidth={2}
-              aria-hidden={true}
-            />
-            <input
-              type="search"
-              placeholder="Search Chats"
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-11 pr-2 text-sm outline-none focus:border-neutral-400"
-            />
-          </div>
+
+        {Boolean(sidebarOpen) && (
+          <div className="mx-6 border-b border-fg-disabled-brandneutral" />
+        )}
+
+        {/* Sidebar Navigation */}
+        <nav className="flex flex-col gap-1 px-3 pt-2">
           <button
             type="button"
             onClick={() =>
@@ -1341,34 +1411,58 @@ export function ChatShell() {
                 search: { chat: undefined, newChat: true },
               })
             }
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white py-2 text-sm font-medium hover:bg-neutral-50"
+            className={`flex items-center rounded-lg py-2 font-medium ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
           >
-            <span>+</span> New Chat
+            <div className="flex items-center justify-center rounded-full bg-white p-[0.56rem]">
+              <PlusIcon />
+            </div>
+            {Boolean(sidebarOpen) && <span>New Chat</span>}
           </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-          {starred.length > 0 && (
-            <div className="mb-3">
-              <p className="px-2 pb-1 text-xs font-medium text-neutral-500">
-                Starred
-              </p>
-              <ul className="space-y-0.5">
-                {starred.map((c) => renderSidebarChatRow(c, true))}
-              </ul>
+
+          <button
+            type="button"
+            className={`flex items-center rounded-lg py-2 font-medium ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
+          >
+            <div className="flex items-center justify-center p-[0.56rem]">
+              <SearchIcon />
+            </div>
+            {Boolean(sidebarOpen) && <span>Search</span>}
+          </button>
+
+          <button
+            type="button"
+            className={`flex items-center rounded-lg py-2 font-medium ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
+          >
+            <div className="flex items-center justify-center p-[0.56rem]">
+              <PinIcon />
+            </div>
+            {Boolean(sidebarOpen) && <span>Pin</span>}
+          </button>
+
+          {/* Recent Chats */}
+          {Boolean(sidebarOpen) && (
+            <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 mt-6">
+              <div>
+                <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">
+                  Recents
+                </p>
+                <ul className="space-y-0.5">
+                  {unstarred.map((c) => renderSidebarChatRow(c, false))}
+                </ul>
+              </div>
             </div>
           )}
-          <div>
-            <p className="px-2 pb-1 text-xs font-medium text-neutral-500">
-              Chats
-            </p>
-            <ul className="space-y-0.5">
-              {unstarred.map((c) => renderSidebarChatRow(c, false))}
-            </ul>
-          </div>
-        </div>
-        <div className="mt-auto border-t border-neutral-200 p-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
+        </nav>
+
+        {/* User Information */}
+        <div className="mt-auto p-4">
+          {Boolean(sidebarOpen) && (
+            <div className="mb-3 border-b border-fg-disabled-brandneutral" />
+          )}
+          <div
+            className={`flex items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
               {user?.imageUrl ? (
                 <img
                   src={user.imageUrl}
@@ -1379,16 +1473,18 @@ export function ChatShell() {
                 <span>{displayName.slice(0, 1).toUpperCase()}</span>
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{displayName}</p>
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                className="text-xs text-neutral-500 hover:text-neutral-800"
-              >
-                Sign out
-              </button>
-            </div>
+            {Boolean(sidebarOpen) && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{displayName}</p>
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="text-xs text-neutral-500 hover:text-neutral-800"
+                >
+                  <p className="text-sm">Sign out</p>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </aside>
@@ -1448,14 +1544,18 @@ export function ChatShell() {
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
           <div className="flex min-w-0 items-center gap-1 sm:gap-2">
             {!sidebarOpen && (
-              <button
-                type="button"
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
-                aria-label="Open sidebar"
-              >
-                <SidebarPanelIcon />
-              </button>
+              <div className="flex min-w-0 items-center gap-1.5">
+                <img
+                  src="/sl-logo.svg"
+                  alt=""
+                  className="h-6 w-6 shrink-0 object-contain"
+                  width={24}
+                  height={24}
+                />
+                <span className="truncate text-lg font-semibold leading-none tracking-tight">
+                  CMUGPT
+                </span>
+              </div>
             )}
             <div className="flex min-w-0 items-center gap-1.5">
               <img
