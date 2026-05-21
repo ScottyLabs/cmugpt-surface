@@ -94,6 +94,33 @@ function PinIcon({ className }: { className?: string }) {
   );
 }
 
+function SendIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+      aria-hidden={true}
+    >
+      <title>Send</title>
+      <g clip-path="url(#clip0_394_3547)">
+        <path 
+          d="M14.0091 0.720879C14.1621 0.667504 14.3254 0.65208 14.485 0.675957L14.5547 0.688978L14.6231 0.706556C14.7587 0.747076 14.884 0.816276 14.9909 0.90903L15.043 0.957207L15.0912 1.00864C15.1838 1.11548 15.2525 1.24098 15.293 1.37648L15.3112 1.44549L15.3242 1.51515C15.348 1.67441 15.3318 1.83713 15.2787 1.98976L15.2793 1.99041L10.946 14.6571V14.6577C10.8798 14.8506 10.7562 15.0188 10.5918 15.1395C10.4273 15.2602 10.2294 15.3276 10.0254 15.3329C9.82154 15.3381 9.62092 15.2808 9.45052 15.1688C9.28006 15.0567 9.1476 14.8946 9.07162 14.7053L6.95183 9.41814L6.92383 9.35695C6.8926 9.29751 6.85238 9.24312 6.80469 9.19549C6.741 9.13191 6.66493 9.08181 6.58138 9.04835V9.0477L1.29427 6.92791C1.10501 6.85197 0.9435 6.71999 0.831383 6.54965C0.719257 6.37918 0.662096 6.17811 0.667321 5.97413C0.672571 5.77021 0.739999 5.57285 0.86068 5.40838L0.907555 5.34848C1.02326 5.21364 1.17352 5.11214 1.34245 5.05421V5.05356L14.0091 0.720228V0.720879ZM8.13737 8.80356C8.15569 8.84182 8.17292 8.88064 8.18881 8.9201L8.18946 8.9214L9.97461 13.3752L13.3066 3.63494L8.13737 8.80356ZM2.6237 6.02426L7.07618 7.81007H7.07683C7.1165 7.82596 7.15554 7.84382 7.19401 7.86215L12.3646 2.69158L2.6237 6.02426Z" 
+          fill="black"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_394_3547">
+          <rect width="16" height="16" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+}
+
 const MAX_ATTACHMENTS = 8;
 const MAX_IMAGE_BYTES = 512 * 1024;
 const MAX_TEXT_FILE_BYTES = 400 * 1024;
@@ -911,10 +938,10 @@ export function ChatShell() {
     });
   }
 
-  function openAttachmentPicker() {
+  /* function openAttachmentPicker() {
     setAttachmentHint(null);
     fileInputRef.current?.click();
-  }
+  } */
 
   function onAttachmentFilesSelected(e: ChangeEvent<HTMLInputElement>) {
     const input = e.target;
@@ -1573,6 +1600,9 @@ export function ChatShell() {
               <ModelSelector />
             </div>
           </div>
+          {shouldShowConversation || chatsLoading || isNewChatIntent && (
+            <span className = "text-black text-lg font-medium leading-relaxed">{currentChat?.title}</span>
+          )}
           <div className="flex items-center gap-2">
             {showMakePrivate ? (
               <button
@@ -1625,7 +1655,7 @@ export function ChatShell() {
 
         <div
           ref={scrollContainerRef}
-          className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
+          className="min-h-0 flex-1 overflow-y-auto px-4 py-6 flex flex-col justify-center"
           onScroll={(e) => {
             const el = e.currentTarget;
             shouldStickToBottomRef.current =
@@ -1633,14 +1663,77 @@ export function ChatShell() {
               STICKY_SCROLL_THRESHOLD_PX;
           }}
         >
-          {!shouldShowConversation &&
-            !chatsLoading &&
-            (chats.length === 0 || isNewChatIntent) && (
-              <p className="text-center text-neutral-500 text-sm">
-                {isNewChatIntent && chats.length > 0
-                  ? "New chat — type your first message below."
-                  : "Type your first message below to start."}
-              </p>
+          {!shouldShowConversation && 
+            !chatsLoading && 
+            !chatId && 
+            !isNewChatIntent && (
+              <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">
+                    Hi there!
+                  </h1>
+                  <p className="text-left text-2xl font-medium text-black">
+                    Welcome to CMUGPT...
+                  </p>
+                </div>
+
+                <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      ref={draftComposerRef}
+                      rows={1}
+                      placeholder="How can I help you today?"
+                      value={draft}
+                      disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                      onChange={(e) => {
+                        setDraft(e.target.value);
+                        setAttachmentHint(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void send();
+                        }
+                      }}
+                      className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => send()}
+                      disabled={
+                        isStreaming ||
+                        createChat.isPending ||
+                        (Boolean(chatId) && !canEditChat) ||
+                        (!draft.trim() && pendingAttachments.length === 0)
+                      }
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
+                      aria-label="Send"
+                    >
+                      <SendIcon />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-center items-center gap-3">
+                  {[
+                    "What time does Hunan close today?",
+                    "Plan my Fall 26 schedule",
+                    "Navigate me from Tepper to Rotunda Hall",
+                  ].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        setDraft(s);
+                        draftComposerRef.current?.focus();
+                      }}
+                      className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           {showMessagesLoading ? (
             <p className="text-neutral-500 text-sm">Loading messages…</p>
@@ -1724,7 +1817,7 @@ export function ChatShell() {
           )}
         </div>
 
-        <div className="border-t border-neutral-100 bg-white px-4 pb-5 pt-3">
+        <div className=" bg-white px-4 pb-5 pt-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -1773,78 +1866,74 @@ export function ChatShell() {
               </p>
             )}
           </div>
-          <div className="mx-auto flex max-w-3xl items-end gap-1 rounded-[1.75rem] border border-neutral-200/90 bg-white px-2 py-1.5 shadow-sm transition-shadow focus-within:border-neutral-300 focus-within:shadow-md sm:gap-2 sm:px-3 sm:py-2">
-            <button
-              type="button"
-              onClick={openAttachmentPicker}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:pointer-events-none disabled:opacity-35"
-              aria-label="Attach files"
-              disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
-            >
-              <svg
-                width={20}
-                height={20}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                aria-hidden={true}
-              >
-                <title>Add attachment</title>
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
-            <textarea
-              ref={draftComposerRef}
-              rows={1}
-              placeholder="Ask me anything about Carnegie Mellon University"
-              value={draft}
-              disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
-              onChange={(e) => {
-                setDraft(e.target.value);
-                setAttachmentHint(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send();
-                }
-              }}
-              className="max-h-40 min-h-[2.25rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-neutral-400 placeholder:font-normal disabled:opacity-50"
-            />
-            <button
-              type="button"
-              onClick={() => send()}
-              disabled={
-                isStreaming ||
-                createChat.isPending ||
-                (Boolean(chatId) && !canEditChat) ||
-                (!draft.trim() && pendingAttachments.length === 0)
-              }
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-500 text-white transition-colors hover:bg-neutral-600 disabled:opacity-35"
-              aria-label="Send"
-            >
-              <svg
-                width={18}
-                height={18}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.25}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden={true}
-              >
-                <title>Send message</title>
-                <path d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </button>
-          </div>
-          {streamError != null && streamError !== "" && (
-            <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
-              {streamError}
-            </p>
+          {shouldShowConversation || chatsLoading || isNewChatIntent && (
+            <>
+              <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+                {/* <button
+                  type="button"
+                  onClick={openAttachmentPicker}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:pointer-events-none disabled:opacity-35"
+                  aria-label="Attach files"
+                  disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                >
+                  <svg
+                    width={20}
+                    height={20}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    aria-hidden={true}
+                  >
+                    <title>Add attachment</title>
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </button> */}
+                <div className="flex items-end gap-1 sm:gap-2">
+                  <textarea
+                    ref={draftComposerRef}
+                    rows={1}
+                    placeholder="How can I help you today?"
+                    value={draft}
+                    disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                    onChange={(e) => {
+                      setDraft(e.target.value);
+                      setAttachmentHint(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void send();
+                      }
+                    }}
+                    className="max-h-40 min-h-[7.625rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => send()}
+                    disabled={
+                      isStreaming ||
+                      createChat.isPending ||
+                      (Boolean(chatId) && !canEditChat) ||
+                      (!draft.trim() && pendingAttachments.length === 0)
+                    }
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
+                    aria-label="Send"
+                  >
+                    <SendIcon />
+                  </button>
+                </div>
+              </div>
+              <p className = "text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
+                CMUGPT is AI and can make mistakes. Please double-check responses.
+              </p>
+              {streamError != null && streamError !== "" && (
+                <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
+                  {streamError}
+                </p>
+              )}
+            </>
           )}
         </div>
       </main>
