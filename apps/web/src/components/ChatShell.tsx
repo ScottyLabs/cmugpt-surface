@@ -791,6 +791,9 @@ export function ChatShell() {
   const [activeModal, setActiveModal] = useState<"settings" | "about" | null>(
     null,
   );
+  const [mapsIsDisabled, setMapsIsDisabled] = useState(false);
+  const [eatsIsDisabled, setEatsIsDisabled] = useState(false);
+  const [coursesIsDisabled, setCoursesIsDisabled] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -2276,17 +2279,21 @@ export function ChatShell() {
                     <div className="flex gap-4 flex-wrap">
                       <button
                         type="button"
-                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-3.5 py-1.5 text-xs font-medium text-fg-neutral-primary"
+                        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${mapsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+                        onClick={() => setMapsIsDisabled((o) => !o)}
                       >
-                        <CmuMapsIcon className="shrink-0 w-auto" />
+                        <CmuMapsIcon
+                          className={`shrink-0 w-auto ${mapsIsDisabled ? "opacity-55" : "opacity-100"}`}
+                        />
                         CMUMaps
                       </button>
                       <button
                         type="button"
-                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2 text-xs font-medium text-fg-neutral-primary"
+                        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${coursesIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+                        onClick={() => setCoursesIsDisabled((o) => !o)}
                       >
                         <span
-                          className="w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat"
+                          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${coursesIsDisabled ? "opacity-55" : "opacity-100"}`}
                           style={{
                             aspectRatio: "18/17",
                             backgroundImage:
@@ -2297,10 +2304,11 @@ export function ChatShell() {
                       </button>
                       <button
                         type="button"
-                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2 text-xs font-medium text-fg-neutral-primary"
+                        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${eatsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+                        onClick={() => setEatsIsDisabled((o) => !o)}
                       >
                         <span
-                          className="w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat"
+                          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${eatsIsDisabled ? "opacity-55" : "opacity-100"}`}
                           style={{
                             backgroundImage:
                               "url('../../public/cmueatsicon.png')",
