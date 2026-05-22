@@ -106,7 +106,7 @@ function SendIcon({ className }: { className?: string }) {
       aria-hidden={true}
     >
       <title>Send</title>
-      <g clip-path="url(#clip0_394_3547)">
+      <g clipPath="url(#clip0_394_3547)">
         <path
           d="M14.0091 0.720879C14.1621 0.667504 14.3254 0.65208 14.485 0.675957L14.5547 0.688978L14.6231 0.706556C14.7587 0.747076 14.884 0.816276 14.9909 0.90903L15.043 0.957207L15.0912 1.00864C15.1838 1.11548 15.2525 1.24098 15.293 1.37648L15.3112 1.44549L15.3242 1.51515C15.348 1.67441 15.3318 1.83713 15.2787 1.98976L15.2793 1.99041L10.946 14.6571V14.6577C10.8798 14.8506 10.7562 15.0188 10.5918 15.1395C10.4273 15.2602 10.2294 15.3276 10.0254 15.3329C9.82154 15.3381 9.62092 15.2808 9.45052 15.1688C9.28006 15.0567 9.1476 14.8946 9.07162 14.7053L6.95183 9.41814L6.92383 9.35695C6.8926 9.29751 6.85238 9.24312 6.80469 9.19549C6.741 9.13191 6.66493 9.08181 6.58138 9.04835V9.0477L1.29427 6.92791C1.10501 6.85197 0.9435 6.71999 0.831383 6.54965C0.719257 6.37918 0.662096 6.17811 0.667321 5.97413C0.672571 5.77021 0.739999 5.57285 0.86068 5.40838L0.907555 5.34848C1.02326 5.21364 1.17352 5.11214 1.34245 5.05421V5.05356L14.0091 0.720228V0.720879ZM8.13737 8.80356C8.15569 8.84182 8.17292 8.88064 8.18881 8.9201L8.18946 8.9214L9.97461 13.3752L13.3066 3.63494L8.13737 8.80356ZM2.6237 6.02426L7.07618 7.81007H7.07683C7.1165 7.82596 7.15554 7.84382 7.19401 7.86215L12.3646 2.69158L2.6237 6.02426Z"
           fill="black"
@@ -232,6 +232,110 @@ function CloseIcon({ className }: { className?: string }) {
         d="M17.2929 5.29289C17.6834 4.90237 18.3164 4.90237 18.707 5.29289C19.0975 5.68342 19.0975 6.31643 18.707 6.70696L13.414 11.9999L18.707 17.2929C19.0975 17.6834 19.0975 18.3164 18.707 18.707C18.3164 19.0975 17.6834 19.0975 17.2929 18.707L11.9999 13.414L6.70696 18.707C6.31643 19.0975 5.68342 19.0975 5.29289 18.707C4.90237 18.3164 4.90237 17.6834 5.29289 17.2929L10.5859 11.9999L5.29289 6.70696C4.90237 6.31643 4.90237 5.68342 5.29289 5.29289C5.68342 4.90237 6.31643 4.90237 6.70696 5.29289L11.9999 10.5859L17.2929 5.29289Z"
         fill="black"
       />
+    </svg>
+  );
+}
+
+function CmuMapsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="24"
+      viewBox="0 0 15 24"
+      fill="none"
+      className={className}
+      aria-hidden={true}
+    >
+      <title>CMUMaps</title>
+      <path
+        d="M5.85793 15.8458C4.87087 14.3179 3.80101 13.603 2.61253 12.4817C1.42406 11.3603 0.810947 10.6234 0.327039 9.11752C-0.113701 7.74599 -0.0386306 6.33647 0.144199 5.43938C0.327029 4.54229 1.09976 3.10488 2.24685 2.03037C3.27669 1.0657 4.02296 0.587783 5.40083 0.236157C6.69655 -0.0945016 7.52532 -0.0625308 8.82907 0.236157C10.3067 0.57467 11.1731 0.988754 12.2573 2.03037C13.3649 3.09445 13.9943 4.45257 14.1771 5.43938C14.36 6.42619 14.4196 7.7413 13.9943 9.11752C13.5358 10.6012 12.9429 11.45 11.8459 12.4817C10.7489 13.5133 9.47457 14.3043 8.41768 15.8458C7.78929 16.7624 7.31356 16.1479 7.08503 16.1479C6.8565 16.1479 6.45211 16.7656 5.85793 15.8458Z"
+        fill="#2962C0"
+      />
+      <g
+        clipPath="url(#paint0_angular_358_4186_clip_path)"
+        data-figma-skip-parse="true"
+      >
+        <g transform="matrix(0 0.00817477 -0.00547624 0 9.02409 8.17477)">
+          <foreignObject
+            x="-1182.61"
+            y="-1182.61"
+            width="2365.21"
+            height="2365.21"
+          >
+            <div
+              style={{
+                background:
+                  "conic-gradient(from 90deg,rgba(37, 176, 236, 1) 0deg,rgba(197, 186, 186, 1) 111.6deg,rgba(255, 68, 68, 1) 189deg,rgba(191, 46, 194, 1) 244.8deg,rgba(37, 176, 236, 1) 360deg)",
+                height: "100%",
+                width: "100%",
+                opacity: 1,
+              }}
+            />
+          </foreignObject>
+        </g>
+      </g>
+      <path
+        d="M5.98933 14.0846C6.65106 12.396 5.07515 13.4117 3.88667 12.2904C2.6982 11.169 5.05627 10.2527 4.57236 8.7468C4.13162 7.37526 4.89228 7.26656 5.07511 6.36946C5.25794 5.47237 6.30495 5.56004 7.45205 4.48554C8.48188 3.52087 4.20714 0.587783 5.58502 0.236157C6.88073 -0.0945016 7.70951 -0.0625308 9.01326 0.236157C10.4908 0.57467 11.3573 0.988754 12.4415 2.03037C13.5491 3.09445 14.1785 4.45258 14.3613 5.43938C14.5442 6.42619 14.6038 7.7413 14.1785 9.11752C13.7199 10.6012 13.1271 11.45 12.0301 12.4817C10.9331 13.5133 9.65876 14.3043 8.60187 15.8458C7.97348 16.7624 7.26919 16.1928 7.08635 16.1479C6.90351 16.1031 5.58502 15.1163 5.98933 14.0846Z"
+        data-figma-gradient-fill="{&quot;type&quot;:&quot;GRADIENT_ANGULAR&quot;,&quot;stops&quot;:[{&quot;color&quot;:{&quot;r&quot;:0.14827786386013031,&quot;g&quot;:0.69388604164123535,&quot;b&quot;:0.92771810293197632,&quot;a&quot;:1.0},&quot;position&quot;:0.0},{&quot;color&quot;:{&quot;r&quot;:0.77327471971511841,&quot;g&quot;:0.73155266046524048,&quot;b&quot;:0.73155266046524048,&quot;a&quot;:1.0},&quot;position&quot;:0.31000000238418579},{&quot;color&quot;:{&quot;r&quot;:1.0,&quot;g&quot;:0.26948243379592896,&quot;b&quot;:0.26948243379592896,&quot;a&quot;:1.0},&quot;position&quot;:0.52499997615814209},{&quot;color&quot;:{&quot;r&quot;:0.75030344724655151,&quot;g&quot;:0.18219079077243805,&quot;b&quot;:0.76189780235290527,&quot;a&quot;:1.0},&quot;position&quot;:0.68000000715255737}],&quot;stopsVar&quot;:[{&quot;color&quot;:{&quot;r&quot;:0.14827786386013031,&quot;g&quot;:0.69388604164123535,&quot;b&quot;:0.92771810293197632,&quot;a&quot;:1.0},&quot;position&quot;:0.0},{&quot;color&quot;:{&quot;r&quot;:0.77327471971511841,&quot;g&quot;:0.73155266046524048,&quot;b&quot;:0.73155266046524048,&quot;a&quot;:1.0},&quot;position&quot;:0.31000000238418579},{&quot;color&quot;:{&quot;r&quot;:1.0,&quot;g&quot;:0.26948243379592896,&quot;b&quot;:0.26948243379592896,&quot;a&quot;:1.0},&quot;position&quot;:0.52499997615814209},{&quot;color&quot;:{&quot;r&quot;:0.75030344724655151,&quot;g&quot;:0.18219079077243805,&quot;b&quot;:0.76189780235290527,&quot;a&quot;:1.0},&quot;position&quot;:0.68000000715255737}],&quot;transform&quot;:{&quot;m00&quot;:6.7064643574115041e-16,&quot;m01&quot;:-10.952486991882324,&quot;m02&quot;:14.500338554382324,&quot;m10&quot;:16.349538803100586,&quot;m11&quot;:1.0011205223375928e-15,&quot;m12&quot;:4.8520739065580169e-23},&quot;opacity&quot;:1.0,&quot;blendMode&quot;:&quot;NORMAL&quot;,&quot;visible&quot;:true}"
+      />
+      <ellipse
+        cx="7.31302"
+        cy="7.35623"
+        rx="4.84525"
+        ry="4.75467"
+        fill="#ED2024"
+      />
+      <g filter="url(#filter0_d_358_4186)">
+        <path
+          d="M5.94305 18.8169C5.80115 18.1345 6.32206 17.4941 7.01899 17.4941H7.70639C8.43001 17.4941 8.95612 18.1814 8.76726 18.8799C8.63769 19.3592 8.20287 19.6921 7.70639 19.6921H7.01899C6.4983 19.6921 6.04907 19.3266 5.94305 18.8169Z"
+          fill="white"
+        />
+      </g>
+      <path
+        d="M10.0555 7.35539C10.0555 8.84176 8.8276 10.0467 7.3129 10.0467C5.79821 10.0467 4.57031 8.84176 4.57031 7.35539C4.57031 5.86901 5.79821 4.66406 7.3129 4.66406C8.8276 4.66406 10.0555 5.86901 10.0555 7.35539Z"
+        fill="white"
+      />
+      <defs>
+        <clipPath id="paint0_angular_358_4186_clip_path">
+          <path d="M5.98933 14.0846C6.65106 12.396 5.07515 13.4117 3.88667 12.2904C2.6982 11.169 5.05627 10.2527 4.57236 8.7468C4.13162 7.37526 4.89228 7.26656 5.07511 6.36946C5.25794 5.47237 6.30495 5.56004 7.45205 4.48554C8.48188 3.52087 4.20714 0.587783 5.58502 0.236157C6.88073 -0.0945016 7.70951 -0.0625308 9.01326 0.236157C10.4908 0.57467 11.3573 0.988754 12.4415 2.03037C13.5491 3.09445 14.1785 4.45258 14.3613 5.43938C14.5442 6.42619 14.6038 7.7413 14.1785 9.11752C13.7199 10.6012 13.1271 11.45 12.0301 12.4817C10.9331 13.5133 9.65876 14.3043 8.60187 15.8458C7.97348 16.7624 7.26919 16.1928 7.08635 16.1479C6.90351 16.1031 5.58502 15.1163 5.98933 14.0846Z" />
+        </clipPath>
+        <filter
+          id="filter0_d_358_4186"
+          x="1.91992"
+          y="13.4941"
+          width="10.8857"
+          height="10.1973"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="2" />
+          <feComposite in2="hardAlpha" operator="out" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="BackgroundImageFix"
+            result="effect1_dropShadow_358_4186"
+          />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="effect1_dropShadow_358_4186"
+            result="shape"
+          />
+        </filter>
+      </defs>
     </svg>
   );
 }
@@ -2137,12 +2241,12 @@ export function ChatShell() {
           >
             <div
               role="dialog"
-              className={`relative rounded-2xl bg-white p-6 shadow-xl w-[45.5625rem] ${activeModal === "settings" ? "h-[20rem]" : "h-[30rem]"}`}
+              className={`relative rounded-2xl bg-white p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] w-[45.5625rem] ${activeModal === "settings" ? "h-[20rem]" : "h-[30rem]"}`}
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl pt-4 pl-4 font-semibold leading-8">
+                <h2 className="text-2xl pt-4 pl-4 font-medium leading-8">
                   {activeModal === "settings" ? "Settings" : "About CMUGPT"}
                 </h2>
                 <button type="button" onClick={() => setActiveModal(null)}>
@@ -2151,31 +2255,67 @@ export function ChatShell() {
               </div>
 
               {activeModal === "settings" && (
-                <>
-                  <div className="border-b border-neutral-200 pb-3 mb-3 flex items-center justify-between">
-                    <span className="text-sm">Language</span>
-                    <select className="text-sm text-neutral-600 border border-neutral-200 rounded px-2 py-1">
-                      <option>Auto-detect</option>
-                    </select>
+                <div className="flex flex-col gap-6 px-2 pt-2">
+                  <div className="flex flex-col gap-4">
+                    <div className="pl-4 flex items-center justify-between">
+                      <span className="text-sm font-medium text-black">
+                        Language
+                      </span>
+                      <select className="text-sm font-medium text-black bg-transparent outline-none cursor-pointer">
+                        <option>Auto-detect</option>
+                        <option>English (US)</option>
+                      </select>
+                    </div>
+                    <div className="ml-4 border-b border-fg-disabled-brandneutral" />
                   </div>
-                  <p className="text-sm font-medium mb-2">Tools</p>
-                  <div className="flex gap-2">
-                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
-                      CMUMaps
-                    </span>
-                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
-                      CMUCourses
-                    </span>
-                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
-                      CMUEats
-                    </span>
+
+                  <div className="flex flex-col gap-4 pl-4">
+                    <p className="text-left text-sm font-medium text-black">
+                      Tools
+                    </p>
+                    <div className="flex gap-4 flex-wrap">
+                      <button
+                        type="button"
+                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-3.5 py-1.5 text-xs font-medium text-fg-neutral-primary"
+                      >
+                        <CmuMapsIcon className="shrink-0 w-auto" />
+                        CMUMaps
+                      </button>
+                      <button
+                        type="button"
+                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2 text-xs font-medium text-fg-neutral-primary"
+                      >
+                        <span
+                          className="w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat"
+                          style={{
+                            aspectRatio: "18/17",
+                            backgroundImage:
+                              "url('../../public/cmucoursesicon.png')",
+                          }}
+                        ></span>
+                        CMUCourses
+                      </button>
+                      <button
+                        type="button"
+                        className="flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2 text-xs font-medium text-fg-neutral-primary"
+                      >
+                        <span
+                          className="w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat"
+                          style={{
+                            backgroundImage:
+                              "url('../../public/cmueatsicon.png')",
+                          }}
+                        ></span>
+                        CMUEats
+                      </button>
+                    </div>
                   </div>
-                </>
+                </div>
               )}
 
               {activeModal === "about" && (
                 <>
-                  <p className="text-sm text-black pl-4 font-normal">
+                  <p className="text-left text-sm text-black pl-4 font-normal">
                     CMUGPT is an AI tool for CMU community ..... made by
                     Scottylabs...........
                   </p>
