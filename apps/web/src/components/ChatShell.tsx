@@ -340,6 +340,46 @@ function CmuMapsIcon({ className }: { className?: string }) {
   );
 }
 
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Checkmark</title>
+      <path
+        d="M12.8619 3.52925C13.1223 3.2689 13.5443 3.2689 13.8046 3.52925C14.065 3.7896 14.065 4.21161 13.8046 4.47195L6.4713 11.8053C6.21095 12.0656 5.78894 12.0656 5.5286 11.8053L2.19526 8.47195C1.93491 8.21161 1.93491 7.7896 2.19526 7.52925C2.45561 7.2689 2.87762 7.2689 3.13797 7.52925L5.99995 10.3912L12.8619 3.52925Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+function DownArrowIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width="10"
+      height="6"
+      viewBox="0 0 10 6"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Down Arrow</title>
+      <path
+        d="M8.70747 0.207466C8.98409 -0.0691554 9.43247 -0.0691554 9.70909 0.207466C9.98572 0.484087 9.98572 0.932472 9.70909 1.20909L5.45909 5.45909C5.18247 5.73572 4.73409 5.73572 4.45747 5.45909L0.207466 1.20909C-0.0691554 0.932472 -0.0691554 0.484087 0.207466 0.207466C0.484087 -0.0691554 0.932472 -0.0691554 1.20909 0.207466L4.95828 3.95665L8.70747 0.207466Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
 const MAX_ATTACHMENTS = 8;
 const MAX_IMAGE_BYTES = 512 * 1024;
 const MAX_TEXT_FILE_BYTES = 400 * 1024;
@@ -794,6 +834,8 @@ export function ChatShell() {
   const [mapsIsDisabled, setMapsIsDisabled] = useState(false);
   const [eatsIsDisabled, setEatsIsDisabled] = useState(false);
   const [coursesIsDisabled, setCoursesIsDisabled] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [lang, setLang] = useState("Auto-detect");
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -1985,7 +2027,7 @@ export function ChatShell() {
                           void send();
                         }
                       }}
-                      className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+                      className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
                     />
                     <button
                       type="button"
@@ -2264,10 +2306,53 @@ export function ChatShell() {
                       <span className="text-sm font-medium text-black">
                         Language
                       </span>
-                      <select className="text-sm font-medium text-black bg-transparent outline-none cursor-pointer">
-                        <option>Auto-detect</option>
-                        <option>English (US)</option>
-                      </select>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLangOpen((o) => !o);
+                          }}
+                          className="flex items-center gap-2 text-sm font-medium text-black"
+                        >
+                          {lang}
+                          <DownArrowIcon />
+                        </button>
+
+                        {Boolean(langOpen) && (
+                          <div className="absolute right-0 top-full mt-2 z-50 w-[14.5625rem] rounded-[0.75rem] bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] overflow-y-auto py-2">
+                            {[
+                              { id: "auto-detect", label: "Auto-detect" },
+                              { id: "english-us", label: "English (US)" },
+                              { id: "language-1", label: "Language" },
+                              { id: "language-2", label: "Language" },
+                              { id: "language-3", label: "Language" },
+                              { id: "language-4", label: "Language" },
+                            ].map((option, i) => (
+                              <>
+                                {i === 2 && (
+                                  <div
+                                    key="divider"
+                                    className="mx-3 my-2 border-b border-fg-disabled-brandneutral"
+                                  />
+                                )}
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setLang(option.label);
+                                    setLangOpen(false);
+                                  }}
+                                  className="flex px-4 py-2 w-full items-center justify-between text-black text-xs font-medium text-left hover:bg-neutral-50"
+                                >
+                                  {option.label}
+                                  {lang === option.label && <CheckIcon />}
+                                </button>
+                              </>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="ml-4 border-b border-fg-disabled-brandneutral" />
                   </div>
