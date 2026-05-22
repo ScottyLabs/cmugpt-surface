@@ -216,6 +216,26 @@ function LogOutIcon({ className }: { className?: string }) {
   );
 }
 
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden={true}
+    >
+      <title>Close</title>
+      <path
+        d="M17.2929 5.29289C17.6834 4.90237 18.3164 4.90237 18.707 5.29289C19.0975 5.68342 19.0975 6.31643 18.707 6.70696L13.414 11.9999L18.707 17.2929C19.0975 17.6834 19.0975 18.3164 18.707 18.707C18.3164 19.0975 17.6834 19.0975 17.2929 18.707L11.9999 13.414L6.70696 18.707C6.31643 19.0975 5.68342 19.0975 5.29289 18.707C4.90237 18.3164 4.90237 17.6834 5.29289 17.2929L10.5859 11.9999L5.29289 6.70696C4.90237 6.31643 4.90237 5.68342 5.29289 5.29289C5.68342 4.90237 6.31643 4.90237 6.70696 5.29289L11.9999 10.5859L17.2929 5.29289Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
 const MAX_ATTACHMENTS = 8;
 const MAX_IMAGE_BYTES = 512 * 1024;
 const MAX_TEXT_FILE_BYTES = 400 * 1024;
@@ -664,6 +684,9 @@ export function ChatShell() {
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<"settings" | "about" | null>(
+    null,
+  );
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -1598,6 +1621,10 @@ export function ChatShell() {
             <div className="absolute bottom-full mb-2 flex w-[14.5625rem] px-2 flex-col items-start rounded-xl bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] py-2 left-1/2 -translate-x-1/2">
               <button
                 type="button"
+                onClick={() => {
+                  setActiveModal("settings");
+                  setUserMenuOpen(false);
+                }}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
               >
                 <SettingsIcon />
@@ -1605,6 +1632,10 @@ export function ChatShell() {
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  setActiveModal("about");
+                  setUserMenuOpen(false);
+                }}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
               >
                 <AboutIcon />
@@ -2006,7 +2037,7 @@ export function ChatShell() {
                       className="shrink-0 rounded-full p-0.5 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-800"
                       aria-label={`Remove ${p.file.name}`}
                     >
-                      ×
+                      x
                     </button>
                   </li>
                 ))}
@@ -2093,6 +2124,87 @@ export function ChatShell() {
               </>
             ))}
         </div>
+        {/* Modal (Settings + About Popup) */}
+        {Boolean(activeModal) && (
+          <button
+            type="button"
+            aria-label="Close modal"
+            className="fixed inset-0 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full"
+            onClick={() => setActiveModal(null)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setActiveModal(null);
+            }}
+          >
+            <div
+              role="dialog"
+              className={`relative rounded-2xl bg-white p-6 shadow-xl w-[45.5625rem] ${activeModal === "settings" ? "h-[20rem]" : "h-[30rem]"}`}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl pt-4 pl-4 font-semibold leading-8">
+                  {activeModal === "settings" ? "Settings" : "About CMUGPT"}
+                </h2>
+                <button type="button" onClick={() => setActiveModal(null)}>
+                  <CloseIcon />
+                </button>
+              </div>
+
+              {activeModal === "settings" && (
+                <>
+                  <div className="border-b border-neutral-200 pb-3 mb-3 flex items-center justify-between">
+                    <span className="text-sm">Language</span>
+                    <select className="text-sm text-neutral-600 border border-neutral-200 rounded px-2 py-1">
+                      <option>Auto-detect</option>
+                    </select>
+                  </div>
+                  <p className="text-sm font-medium mb-2">Tools</p>
+                  <div className="flex gap-2">
+                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
+                      CMUMaps
+                    </span>
+                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
+                      CMUCourses
+                    </span>
+                    <span className="rounded-full border border-neutral-200 px-3 py-1 text-xs">
+                      CMUEats
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {activeModal === "about" && (
+                <>
+                  <p className="text-sm text-black pl-4 font-normal">
+                    CMUGPT is an AI tool for CMU community ..... made by
+                    Scottylabs...........
+                  </p>
+                  <div className="flex items-center justify-end gap-2 mt-[19rem] mr-4">
+                    <p className="text-base font-medium text-black">
+                      With love,
+                    </p>
+                    <button
+                      type="button"
+                      className="rounded-[6.25rem] px-3.5 py-1"
+                      style={{
+                        background: "white",
+                        border: "2px solid transparent",
+                        backgroundImage:
+                          "linear-gradient(white, white), linear-gradient(to bottom, #2B0D77, #29DAFA, #29DAFA, #FC1833)",
+                        backgroundOrigin: "border-box",
+                        backgroundClip: "padding-box, border-box",
+                      }}
+                    >
+                      <span className="text-sm font-semibold text-fg-neutral-primary">
+                        ScottyLabs
+                      </span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </button>
+        )}
       </main>
     </div>
   );
