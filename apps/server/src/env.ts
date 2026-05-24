@@ -7,18 +7,16 @@ const envSchema = z.object({
   SERVER_PORT: z.coerce.number().default(80),
 
   ALLOWED_ORIGINS_REGEX: z.string(),
-  AUTH_ISSUER: z.url(),
-  AUTH_CLIENT_ID: z.string(),
-  AUTH_CLIENT_SECRET: z.string(),
-  AUTH_JWKS_URI: z.url(),
-  BETTER_AUTH_URL: z.url(), // https://www.better-auth.com/docs/installation#set-environment-variables
+  CLERK_SECRET_KEY: z.string(),
+  CLERK_ISSUER_URL: z.url(),
+  CLERK_PEM_KEY: z.string(),
+  CLERK_LOGIN_HOST: z.string().url().optional(),
+  ADMIN_GROUP: z.string().default(""),
 
   DATABASE_URL: z.url(),
 
   AGENT_API_URL: z.url(),
-
-  /** Keycloak (or IdP) group claim value for admin checks. */
-  ADMIN_GROUP: z.string().default("cmugpt-prod"),
+  AGENT_SHARED_SECRET: z.string().optional(),
 });
 
 // Validate `process.env` against our schema and return the result

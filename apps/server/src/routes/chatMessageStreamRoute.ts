@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response, Router } from "express";
-import { requireOidcOrBearer } from "../lib/authentication.ts";
+import { requireClerkAuth } from "../lib/authentication.ts";
 import {
   AuthenticationError,
   BadRequestError,
@@ -13,7 +13,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 export function registerChatMessageStreamRoute(router: Router): void {
   router.post(
     "/chats/:id/messages/stream",
-    requireOidcOrBearer,
+    requireClerkAuth,
     async (req: Request, res: Response, next: NextFunction) => {
       const rawChatId = req.params["id"];
       const chatId =
@@ -30,7 +30,7 @@ export function registerChatMessageStreamRoute(router: Router): void {
       if (!userSub) {
         next(
           new AuthenticationError(
-            "stream: req.user.sub missing after requireOidcOrBearer (unexpected)",
+            "stream: req.user.sub missing after requireClerkAuth (unexpected)",
           ),
         );
         return;
@@ -48,8 +48,10 @@ export function registerChatMessageStreamRoute(router: Router): void {
       }
 
       const ac = new AbortController();
-      req.on("close", () => {
-        ac.abort();
+      res.on("close", () => {
+        if (!res.writableEnded) {
+          ac.abort();
+        }
       });
 
       let wrote = false;

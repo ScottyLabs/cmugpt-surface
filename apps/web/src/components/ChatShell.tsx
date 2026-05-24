@@ -1,7 +1,8 @@
+import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { LockOpen, Search } from "lucide-react";
+import { ExternalLink, LockOpen, Search } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -9,11 +10,7 @@ import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { env } from "@/env.ts";
 import { $api } from "@/lib/api/client.ts";
-import {
-  getKeycloakAccessTokenForApi,
-  signOut,
-  useSession,
-} from "@/lib/auth/client.ts";
+import { ModelSelector } from "./ModelSelector.tsx";
 
 const routeApi = getRouteApi("/");
 
@@ -181,6 +178,27 @@ function markdownForReactComponent(
   return md;
 }
 
+function assistantDisplayContent(
+  content: string,
+  cmuMaps?: CmuMapsPayload | null,
+): string {
+  const trimmed = content.trim();
+  let text = content;
+  if (trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      const responseText = parsed["response_text"];
+      text = typeof responseText === "string" ? responseText : content;
+    } catch {
+      text = content;
+    }
+  }
+  if (cmuMaps?.url && MAP_FAILURE_CLAIM_RE.test(text)) {
+    return cmuMapsSuccessText(cmuMaps);
+  }
+  return text;
+}
+
 /**
  * `unist-util-visit-parents` (used by rehype-katex) does `"children" in node` for
  * each child — null/undefined entries in `children[]` throw. Strip them recursively.
@@ -262,15 +280,173 @@ async function buildOutgoingContent(
 
 type ChatStreamEvent =
   | { type: "user"; message: unknown }
+  | { type: "status"; text: string }
+  | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; message: unknown }
   | { type: "error"; message: string };
 
+interface CmuMapsPayload {
+  url: string | null;
+  mode: string | null;
+  target: string | null;
+  targetLabel: string | null;
+  src: string | null;
+  srcLabel: string | null;
+  dest: string | null;
+  destLabel: string | null;
+}
+
 /** Placeholder path param when no chat is selected; request stays disabled via `enabled`. */
 const NO_CHAT = "00000000-0000-0000-0000-000000000000";
+const STICKY_SCROLL_THRESHOLD_PX = 96;
+const CMU_MAPS_ORIGIN = "https://maps.scottylabs.org";
+const MAP_FAILURE_CLAIM_RE =
+  /\b(wasn['’]?t able|was not able|couldn['’]?t|could not|unable|failed|didn['’]?t find|did not find)\b.{0,240}\b(location|building|map|directions?|path|route|tool|tools|retrieve)\b/is;
+
+function StreamingStatus({ text }: { text: string }) {
+  const label = text.replace(/\.+$/, "");
+  return (
+    <output
+      aria-live="polite"
+      aria-label={text}
+      className="-mt-1 block font-normal text-neutral-400 text-sm leading-relaxed motion-safe:animate-pulse"
+    >
+      {label}
+    </output>
+  );
+}
+
+function mapDisplayValue(value: string | null | undefined): string {
+  return value?.trim() ? value : "N/A";
+}
+
+function cmuMapsSuccessText(cmuMaps: CmuMapsPayload): string {
+  if (cmuMaps.mode === "directions") {
+    if (cmuMaps.src === "TEP" && cmuMaps.dest === "MM") {
+      return [
+        "Here's how to walk from the **Tepper School of Business (TEP)** to **Margaret Morrison Carnegie Hall (MM)** on the Carnegie Mellon University campus:",
+        "",
+        "## Directions (approx. 2-5 minute walk)",
+        "1. Exit the Tepper Building (TEP).",
+        "2. Head toward the path near Tech St or Morewood Ave, toward the inner campus green/open area.",
+        "3. Follow the path toward the location marked **MM** (Margaret Morrison). It is a short distance from TEP.",
+        "4. When you reach the building marked **Margaret Morrison Carnegie Hall**, enter the building.",
+      ].join("\n");
+    }
+    const src = mapDisplayValue(cmuMaps.srcLabel ?? cmuMaps.src);
+    const dest = mapDisplayValue(cmuMaps.destLabel ?? cmuMaps.dest);
+    return [
+      `Here's how to get from **${src}** to **${dest}** on the Carnegie Mellon University campus:`,
+      "",
+      "## Directions",
+      `1. Start at **${src}**.`,
+      `2. Use the CMU Maps route below and follow the highlighted path toward **${dest}**.`,
+      "3. Confirm the destination using the building label on the map.",
+      "4. Enter the destination building when you arrive.",
+    ].join("\n");
+  }
+  return `Here's **${mapDisplayValue(
+    cmuMaps.targetLabel ?? cmuMaps.target,
+  )}** on CMU Maps.`;
+}
+
+function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
+  if (!url) {
+    return false;
+  }
+  try {
+    return new URL(url).origin === CMU_MAPS_ORIGIN;
+  } catch {
+    return false;
+  }
+}
+
+function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
+  if (!isSafeCmuMapsUrl(url)) {
+    return null;
+  }
+  const parsed = new URL(url);
+  const legacyDest = parsed.searchParams.get("dest");
+  if (legacyDest && !parsed.searchParams.has("dst")) {
+    parsed.searchParams.set("dst", legacyDest);
+    parsed.searchParams.delete("dest");
+  }
+  return parsed.toString();
+}
+
+function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
+  const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
+  if (!cmuMaps || !mapUrl) {
+    return null;
+  }
+  return (
+    <div className="mt-3 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-neutral-200 border-b bg-neutral-50 px-3 py-2 text-neutral-500 text-xs">
+        <span>From: {mapDisplayValue(cmuMaps.srcLabel ?? cmuMaps.src)}</span>
+        <span>To: {mapDisplayValue(cmuMaps.destLabel ?? cmuMaps.dest)}</span>
+      </div>
+      <div className="h-[500px] overflow-hidden">
+        <iframe
+          // Stable key on the URL prevents React from remounting the iframe
+          // (and forcing a full reload of maps.scottylabs.org) when this
+          // component re-renders with the same map.
+          key={mapUrl}
+          title="CMU Maps"
+          src={mapUrl}
+          className="border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          // Grant Permissions Policy delegations the maps app uses.
+          // Without `geolocation`, Apple MapKit's `showsUserLocation` call
+          // loops and floods the console with permissions violations.
+          allow="geolocation 'self' https://maps.scottylabs.org; clipboard-write"
+          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+          style={{
+            height: "556px",
+            transform: "scale(0.9)",
+            transformOrigin: "top left",
+            width: "111.111%",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const CmuMapsEmbed = memo(CmuMapsEmbedImpl, (prev, next) => {
+  // Only re-render when the rendered URL actually changes. Other field
+  // changes (labels, etc.) are cosmetic and shouldn't trigger an iframe
+  // reflow.
+  return (
+    normalizedCmuMapsUrl(prev.cmuMaps?.url) ===
+    normalizedCmuMapsUrl(next.cmuMaps?.url)
+  );
+});
+
+function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
+  const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
+  if (!cmuMaps || !mapUrl) {
+    return null;
+  }
+  const label = cmuMaps.targetLabel ?? cmuMaps.destLabel ?? "CMU Maps";
+  return (
+    <a
+      href={mapUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex items-center gap-1 rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-neutral-700 text-xs hover:border-neutral-300 hover:bg-neutral-100"
+    >
+      <ExternalLink className="h-3 w-3" aria-hidden={true} />
+      View on CMU Maps: {label}
+    </a>
+  );
+}
 
 export function ChatShell() {
-  const { data: auth } = useSession();
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -281,7 +457,15 @@ export function ChatShell() {
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
+  const [streamStatus, setStreamStatus] = useState<string | null>(null);
+  const [streamingCmuMaps, setStreamingCmuMaps] =
+    useState<CmuMapsPayload | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const [optimisticUserMessage, setOptimisticUserMessage] = useState<{
+    chatId: string;
+    content: string;
+    messageCountBeforeSend: number;
+  } | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<
     PendingAttachment[]
   >([]);
@@ -296,17 +480,74 @@ export function ChatShell() {
   } | null>(null);
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftComposerRef = useRef<HTMLTextAreaElement>(null);
   const hasAutoFocusedComposerRef = useRef(false);
+  const shouldStickToBottomRef = useRef(true);
+  const streamBufferRef = useRef("");
+  const streamFrameRef = useRef<number | null>(null);
+  const streamFlushResolversRef = useRef<Array<() => void>>([]);
   const pendingAttachmentsRef = useRef(pendingAttachments);
   const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
 
   pendingAttachmentsRef.current = pendingAttachments;
+
+  function resolveStreamFlushWaiters() {
+    const resolvers = streamFlushResolversRef.current.splice(0);
+    for (const resolve of resolvers) {
+      resolve();
+    }
+  }
+
+  function cancelStreamFlushFrame() {
+    if (streamFrameRef.current !== null) {
+      cancelAnimationFrame(streamFrameRef.current);
+      streamFrameRef.current = null;
+    }
+  }
+
+  function flushStreamingText() {
+    streamFrameRef.current = null;
+    const next = streamBufferRef.current;
+    streamBufferRef.current = "";
+    if (next) {
+      setStreamingText((current) => current + next);
+    }
+    resolveStreamFlushWaiters();
+  }
+
+  function enqueueStreamingText(text: string) {
+    if (!text) {
+      return;
+    }
+    streamBufferRef.current += text;
+    if (streamFrameRef.current === null) {
+      streamFrameRef.current = requestAnimationFrame(flushStreamingText);
+    }
+  }
+
+  function waitForStreamingFlush(): Promise<void> {
+    if (!streamBufferRef.current && streamFrameRef.current === null) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      streamFlushResolversRef.current.push(resolve);
+    });
+  }
+
+  function resetStreamingBuffer() {
+    streamBufferRef.current = "";
+    cancelStreamFlushFrame();
+    resolveStreamFlushWaiters();
+    setStreamingText("");
+    setStreamStatus(null);
+    setStreamingCmuMaps(null);
+  }
 
   useEffect(() => {
     return () => {
@@ -317,6 +558,14 @@ export function ChatShell() {
       }
       if (shareFeedbackTimerRef.current) {
         clearTimeout(shareFeedbackTimerRef.current);
+      }
+      if (streamFrameRef.current !== null) {
+        cancelAnimationFrame(streamFrameRef.current);
+        streamFrameRef.current = null;
+      }
+      const resolvers = streamFlushResolversRef.current.splice(0);
+      for (const resolve of resolvers) {
+        resolve();
       }
     };
   }, []);
@@ -352,6 +601,21 @@ export function ChatShell() {
     { params: { path: { id: chatId ?? NO_CHAT } } },
     { enabled: Boolean(chatId) },
   );
+
+  // The single live map for this conversation: the in-flight streaming map
+  // if present, otherwise the latest persisted assistant map. Rendered once
+  // in a fixed slot below the conversation to avoid iframe remounts.
+  const lastAssistantCmuMaps = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m?.role === "assistant" && m.cmuMaps?.url) {
+        return m.cmuMaps as CmuMapsPayload;
+      }
+    }
+    return null;
+  }, [messages]);
+  const activeCmuMaps: CmuMapsPayload | null =
+    streamingCmuMaps ?? lastAssistantCmuMaps;
 
   const createChat = $api.useMutation("post", "/chats", {
     onSuccess: () => {
@@ -392,6 +656,25 @@ export function ChatShell() {
   });
 
   const currentChat = chats.find((c) => c.id === chatId);
+  const optimisticMessageIsForVisibleChat =
+    optimisticUserMessage !== null &&
+    (!chatId || optimisticUserMessage.chatId === chatId);
+  const optimisticMessagePersisted =
+    optimisticUserMessage !== null &&
+    chatId === optimisticUserMessage.chatId &&
+    messages.length > optimisticUserMessage.messageCountBeforeSend;
+  const shouldShowOptimisticUserMessage =
+    optimisticMessageIsForVisibleChat && !optimisticMessagePersisted;
+  const shouldShowConversation =
+    Boolean(chatId) || shouldShowOptimisticUserMessage || isStreaming;
+  const showMessagesLoading =
+    Boolean(chatId) && messagesLoading && !shouldShowOptimisticUserMessage;
+
+  useEffect(() => {
+    if (optimisticMessagePersisted) {
+      setOptimisticUserMessage(null);
+    }
+  }, [optimisticMessagePersisted]);
 
   /** Sidebar only lists your chats; opening someone else's public chat needs GET /chats/:id. */
   const effectiveChatDetail = useMemo(() => {
@@ -460,15 +743,21 @@ export function ChatShell() {
   }, [isNewChatIntent]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    if (!isStreaming && messages.length === 0 && streamingText.length === 0) {
+      return;
+    }
+    if (!shouldStickToBottomRef.current) {
+      return;
+    }
+    bottomRef.current?.scrollIntoView({
+      behavior: isStreaming ? "auto" : "smooth",
+    });
+  }, [isStreaming, messages.length, streamingText.length]);
 
   const displayName =
-    auth?.user?.name ??
-    auth?.user?.email ??
-    (typeof auth?.user === "object" && auth.user && "id" in auth.user
-      ? String(auth.user.id)
-      : "User");
+    user?.fullName ??
+    user?.primaryEmailAddress?.emailAddress ??
+    (user?.id ? String(user.id) : "User");
 
   const starred = chats.filter((c) => c.starred);
   const unstarred = chats.filter((c) => !c.starred);
@@ -798,7 +1087,19 @@ export function ChatShell() {
     }
 
     setStreamError(null);
-    setStreamingText("");
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) {
+      shouldStickToBottomRef.current =
+        scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight <=
+        STICKY_SCROLL_THRESHOLD_PX;
+    }
+    resetStreamingBuffer();
+    setStreamStatus("Thinking...");
+    setOptimisticUserMessage({
+      chatId: activeChatId,
+      content,
+      messageCountBeforeSend: messages.length,
+    });
     setIsStreaming(true);
 
     function clearComposer() {
@@ -818,9 +1119,9 @@ export function ChatShell() {
       const streamHeaders: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      const bearer = await getKeycloakAccessTokenForApi();
-      if (bearer) {
-        streamHeaders.Authorization = `Bearer ${bearer}`;
+      const token = await getToken();
+      if (token) {
+        streamHeaders.Authorization = `Bearer ${token}`;
       }
       const res = await fetch(
         `${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`,
@@ -843,12 +1144,14 @@ export function ChatShell() {
           /* ignore */
         }
         setStreamError(detail || "Request failed");
+        setOptimisticUserMessage(null);
         void refetchMessages();
         void refetchChats();
         return;
       }
 
       clearComposer();
+      let shouldRefreshAfterStream = false;
 
       const reader = res.body?.getReader();
       if (!reader) {
@@ -877,30 +1180,61 @@ export function ChatShell() {
             continue;
           }
           if (ev.type === "user") {
-            await refetchMessages();
-            await refetchChats();
+            void refetchMessages();
+            void refetchChats();
+          } else if (ev.type === "status") {
+            setStreamStatus(ev.text);
+          } else if (ev.type === "map") {
+            setStreamingCmuMaps(ev.cmuMaps);
           } else if (ev.type === "delta") {
-            setStreamingText((t) => t + ev.text);
+            setStreamStatus(null);
+            enqueueStreamingText(ev.text);
           } else if (ev.type === "done") {
-            await refetchMessages();
-            await refetchChats();
+            shouldRefreshAfterStream = true;
           } else if (ev.type === "error") {
             setStreamError(ev.message);
             void refetchMessages();
           }
         }
       }
+      await waitForStreamingFlush();
+      if (shouldRefreshAfterStream) {
+        // Refetch BEFORE clearing streaming state so the iframe's source
+        // (activeCmuMaps) hands off cleanly from streamingCmuMaps to the
+        // persisted message — no intermediate frame with no map.
+        await refetchMessages();
+        await refetchChats();
+        setIsStreaming(false);
+        resetStreamingBuffer();
+      }
     } catch {
       setStreamError("Network error");
       void refetchMessages();
     } finally {
       setIsStreaming(false);
-      setStreamingText("");
+      resetStreamingBuffer();
     }
   }
 
-  const markdownClass =
-    "max-w-none text-sm leading-relaxed text-neutral-800 [&_.katex-display]:my-3 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[1em] [&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:font-semibold [&_p]:my-2 [&_p:first-child]:mt-0";
+  const markdownClass = [
+    "max-w-none text-sm leading-relaxed text-neutral-800",
+    "[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0",
+    "[&_h2]:mb-2 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h2]:border-b [&_h2]:border-neutral-200 [&_h2]:pb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-neutral-950",
+    "[&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-neutral-950",
+    "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5",
+    "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5",
+    "[&_li]:pl-1 [&_li>p]:my-1 [&_li>ol]:mt-1 [&_li>ul]:mt-1",
+    "[&_strong]:font-semibold [&_strong]:text-neutral-950",
+    "[&_a]:inline-flex [&_a]:items-center [&_a]:gap-0.5 [&_a]:font-medium [&_a]:text-red-800 [&_a]:underline [&_a]:decoration-red-800/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-red-800",
+    "[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-neutral-100 [&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-[0.92em] [&_:not(pre)>code]:font-medium [&_:not(pre)>code]:text-neutral-900",
+    "[&_pre]:my-3 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-neutral-200 [&_pre]:bg-neutral-950 [&_pre]:p-3 [&_pre]:text-[13px] [&_pre]:leading-relaxed [&_pre]:text-neutral-50 [&_pre]:shadow-sm",
+    "[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit",
+    "[&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm",
+    "[&_th]:border-b [&_th]:border-neutral-300 [&_th]:bg-neutral-50 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-semibold",
+    "[&_td]:border-b [&_td]:border-neutral-200 [&_td]:px-2 [&_td]:py-1.5 [&_td]:align-top",
+    "[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-300 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-600",
+    "[&_.katex-display]:my-3 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[1em]",
+  ].join(" ");
 
   const userBubbleMarkdownClass =
     "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
@@ -1035,9 +1369,9 @@ export function ChatShell() {
         <div className="mt-auto border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
-              {auth?.user?.image ? (
+              {user?.imageUrl ? (
                 <img
-                  src={auth.user.image}
+                  src={user.imageUrl}
                   alt=""
                   className="h-full w-full object-cover"
                 />
@@ -1049,7 +1383,7 @@ export function ChatShell() {
               <p className="truncate text-sm font-medium">{displayName}</p>
               <button
                 type="button"
-                onClick={() => signOut()}
+                onClick={() => void signOut()}
                 className="text-xs text-neutral-500 hover:text-neutral-800"
               >
                 Sign out
@@ -1135,6 +1469,9 @@ export function ChatShell() {
                 cmuGPT
               </span>
             </div>
+            <div className="ml-2 hidden sm:block">
+              <ModelSelector />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {showMakePrivate ? (
@@ -1186,8 +1523,17 @@ export function ChatShell() {
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-          {!chatId &&
+        <div
+          ref={scrollContainerRef}
+          className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            shouldStickToBottomRef.current =
+              el.scrollHeight - el.scrollTop - el.clientHeight <=
+              STICKY_SCROLL_THRESHOLD_PX;
+          }}
+        >
+          {!shouldShowConversation &&
             !chatsLoading &&
             (chats.length === 0 || isNewChatIntent) && (
               <p className="text-center text-neutral-500 text-sm">
@@ -1196,10 +1542,10 @@ export function ChatShell() {
                   : "Type your first message below to start."}
               </p>
             )}
-          {Boolean(chatId) && messagesLoading && (
+          {showMessagesLoading ? (
             <p className="text-neutral-500 text-sm">Loading messages…</p>
-          )}
-          {Boolean(chatId) && !messagesLoading && (
+          ) : null}
+          {shouldShowConversation && !showMessagesLoading && (
             <div className="mx-auto flex max-w-3xl flex-col gap-4">
               {messages.map((m) =>
                 m.role === "user" ? (
@@ -1223,13 +1569,38 @@ export function ChatShell() {
                       rehypePlugins={rehypeMarkdownPlugins}
                       components={markdownComponents}
                     >
-                      {markdownForReactComponent(m.content)}
+                      {markdownForReactComponent(
+                        assistantDisplayContent(m.content, m.cmuMaps),
+                      )}
                     </ReactMarkdown>
+                    {typeof m.confidence === "number" && m.confidence < 0.5 && (
+                      <p className="mt-2 text-xs text-amber-700">
+                        Low confidence — verify with an official CMU source.
+                      </p>
+                    )}
+                    <CmuMapsLink cmuMaps={m.cmuMaps} />
                   </div>
                 ),
               )}
+              {shouldShowOptimisticUserMessage && optimisticUserMessage ? (
+                <div key="optimistic-user-message" className="flex justify-end">
+                  <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+                    <div className={userBubbleMarkdownClass}>
+                      <ReactMarkdown
+                        remarkPlugins={remarkMarkdownPlugins}
+                        rehypePlugins={rehypeMarkdownPlugins}
+                        components={userMarkdownComponents}
+                      >
+                        {markdownForReactComponent(
+                          optimisticUserMessage.content,
+                        )}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {isStreaming && !streamingText && (
-                <p className="text-neutral-400 text-sm">Thinking…</p>
+                <StreamingStatus text={streamStatus ?? "Thinking..."} />
               )}
               {isStreaming && streamingText.length > 0 && (
                 <div className={markdownClass}>
@@ -1244,6 +1615,10 @@ export function ChatShell() {
                   </ReactMarkdown>
                 </div>
               )}
+              {/* Single stable slot for the active CMU Maps iframe — same
+                  DOM position across streaming/done transitions so the
+                  iframe doesn't remount and reload. */}
+              <CmuMapsEmbed cmuMaps={activeCmuMaps} />
               <div ref={bottomRef} />
             </div>
           )}

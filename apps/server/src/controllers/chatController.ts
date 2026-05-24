@@ -12,7 +12,7 @@ import {
   Security,
   SuccessResponse,
 } from "tsoa";
-import { BEARER_AUTH, OIDC_AUTH } from "../lib/authentication.ts";
+import { CLERK_AUTH } from "../lib/authentication.ts";
 import { AuthenticationError } from "../middlewares/errorHandler.ts";
 import type {
   ChatDetailDto,
@@ -44,8 +44,7 @@ function authenticatedSub(req: ExpressRequest): string {
 
 @Route("chats")
 export class ChatController {
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Get("/")
   @SuccessResponse(200)
   public listChats(
@@ -55,16 +54,14 @@ export class ChatController {
     return chatService.listChats(authenticatedSub(req), q);
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Post("/")
   @SuccessResponse(201)
   public createChat(@Request() req: ExpressRequest): Promise<ChatListItemDto> {
     return chatService.createChat(authenticatedSub(req));
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Get("{id}/messages")
   @SuccessResponse(200)
   public getMessages(
@@ -74,8 +71,7 @@ export class ChatController {
     return chatService.getMessages(id, authenticatedSub(req));
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Get("{id}")
   @SuccessResponse(200)
   public getChat(
@@ -85,8 +81,7 @@ export class ChatController {
     return chatService.getChat(id, authenticatedSub(req));
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Post("{id}/messages")
   @SuccessResponse(200)
   public postMessage(
@@ -97,8 +92,7 @@ export class ChatController {
     return chatService.postMessage(id, authenticatedSub(req), body.content);
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Patch("{id}")
   @SuccessResponse(200)
   public patchChat(
@@ -109,8 +103,7 @@ export class ChatController {
     return chatService.patchChat(id, authenticatedSub(req), body);
   }
 
-  @Security(OIDC_AUTH)
-  @Security(BEARER_AUTH)
+  @Security(CLERK_AUTH)
   @Delete("{id}")
   @SuccessResponse(204)
   public deleteChat(

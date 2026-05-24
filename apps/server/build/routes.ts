@@ -19,6 +19,32 @@ const expressAuthenticationRecasted = expressAuthentication as (req: ExRequest, 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "AgentModelOption": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "label": {"dataType":"string","required":true},
+            "description": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UserPreferencesDto": {
+        "dataType": "refObject",
+        "properties": {
+            "preferredModel": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PatchUserPreferencesBody": {
+        "dataType": "refObject",
+        "properties": {
+            "preferredModel": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ChatListItemDto": {
         "dataType": "refObject",
         "properties": {
@@ -31,6 +57,21 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CmuMapsDto": {
+        "dataType": "refObject",
+        "properties": {
+            "url": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "mode": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "target": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "targetLabel": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "src": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "srcLabel": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "dest": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "destLabel": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "MessageDto": {
         "dataType": "refObject",
         "properties": {
@@ -38,6 +79,8 @@ const models: TsoaRoute.Models = {
             "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["user"]},{"dataType":"enum","enums":["assistant"]},{"dataType":"enum","enums":["system"]}],"required":true},
             "content": {"dataType":"string","required":true},
             "createdAt": {"dataType":"string","required":true},
+            "cmuMaps": {"dataType":"union","subSchemas":[{"ref":"CmuMapsDto"},{"dataType":"enum","enums":[null]}]},
+            "confidence": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -103,7 +146,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/me/oidc-admin',
-            authenticateMiddleware([{"oidcOrBearer":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getOidcAdminStatus)),
 
@@ -119,6 +162,99 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'getOidcAdminStatus',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_listModels: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/me/models',
+            authenticateMiddleware([{"clerk":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.listModels)),
+
+            async function MeController_listModels(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_listModels, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'listModels',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_getPreferences: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+        };
+        app.get('/me/preferences',
+            authenticateMiddleware([{"clerk":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getPreferences)),
+
+            async function MeController_getPreferences(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_getPreferences, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'getPreferences',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMeController_updatePreferences: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                body: {"in":"body","name":"body","required":true,"ref":"PatchUserPreferencesBody"},
+        };
+        app.patch('/me/preferences',
+            authenticateMiddleware([{"clerk":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MeController)),
+            ...(fetchMiddlewares<RequestHandler>(MeController.prototype.updatePreferences)),
+
+            async function MeController_updatePreferences(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMeController_updatePreferences, request, response });
+
+                const controller = new MeController();
+
+              await templateService.apiHandler({
+                methodName: 'updatePreferences',
                 controller,
                 response,
                 next,
@@ -164,7 +300,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/authenticated',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAuthenticated)),
 
@@ -195,7 +331,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/admin',
-            authenticateMiddleware([{"oidc":["stack-admins"]},{"bearerAuth":["stack-admins"]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAdmin)),
 
@@ -227,7 +363,7 @@ export function RegisterRoutes(app: Router) {
                 q: {"in":"query","name":"q","dataType":"string"},
         };
         app.get('/chats',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.listChats)),
 
@@ -258,7 +394,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.post('/chats',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createChat)),
 
@@ -290,7 +426,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id/messages',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessages)),
 
@@ -322,7 +458,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getChat)),
 
@@ -355,7 +491,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PostChatMessageBody"},
         };
         app.post('/chats/:id/messages',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.postMessage)),
 
@@ -388,7 +524,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PatchChatBody"},
         };
         app.patch('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.patchChat)),
 
@@ -420,7 +556,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.delete('/chats/:id',
-            authenticateMiddleware([{"oidc":[]},{"bearerAuth":[]}]),
+            authenticateMiddleware([{"clerk":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat)),
 

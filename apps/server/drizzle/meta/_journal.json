@@ -29,6 +29,20 @@
       "when": 1742840600000,
       "tag": "0003_user_custom_llm",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778880000000,
+      "tag": "0004_message_cmu_maps",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779100000000,
+      "tag": "0005_user_preferences",
+      "breakpoints": true
     }
   ]
 }
