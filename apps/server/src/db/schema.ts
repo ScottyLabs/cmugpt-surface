@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -103,6 +104,16 @@ export const messages = pgTable("messages", {
     .references(() => chats.id, { onDelete: "cascade" }),
   role: messageRoleEnum("role").notNull(),
   content: text("content").notNull(),
+  cmuMaps: jsonb("cmu_maps").$type<{
+    url: string | null;
+    mode: string | null;
+    target: string | null;
+    targetLabel: string | null;
+    src: string | null;
+    srcLabel: string | null;
+    dest: string | null;
+    destLabel: string | null;
+  } | null>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -113,3 +124,10 @@ export const chatsRelations = relations(chats, ({ many }) => ({
 export const messagesRelations = relations(messages, ({ one }) => ({
   chat: one(chats, { fields: [messages.chatId], references: [chats.id] }),
 }));
+
+export const userPreferences = pgTable("user_preferences", {
+  userSub: text("user_sub").primaryKey(),
+  preferredModel: text("preferred_model").notNull().default("openai/gpt-4o"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

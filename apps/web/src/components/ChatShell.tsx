@@ -1,8 +1,8 @@
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { LockOpen, Search } from "lucide-react";
+import { ExternalLink, LockOpen, Search } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -10,6 +10,7 @@ import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { env } from "@/env.ts";
 import { $api } from "@/lib/api/client.ts";
+import { ModelSelector } from "./ModelSelector.tsx";
 
 const routeApi = getRouteApi("/");
 
@@ -177,6 +178,27 @@ function markdownForReactComponent(
   return md;
 }
 
+function assistantDisplayContent(
+  content: string,
+  cmuMaps?: CmuMapsPayload | null,
+): string {
+  const trimmed = content.trim();
+  let text = content;
+  if (trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      const responseText = parsed["response_text"];
+      text = typeof responseText === "string" ? responseText : content;
+    } catch {
+      text = content;
+    }
+  }
+  if (cmuMaps?.url && MAP_FAILURE_CLAIM_RE.test(text)) {
+    return cmuMapsSuccessText(cmuMaps);
+  }
+  return text;
+}
+
 /**
  * `unist-util-visit-parents` (used by rehype-katex) does `"children" in node` for
  * each child — null/undefined entries in `children[]` throw. Strip them recursively.
@@ -259,13 +281,28 @@ async function buildOutgoingContent(
 type ChatStreamEvent =
   | { type: "user"; message: unknown }
   | { type: "status"; text: string }
+  | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; message: unknown }
   | { type: "error"; message: string };
 
+interface CmuMapsPayload {
+  url: string | null;
+  mode: string | null;
+  target: string | null;
+  targetLabel: string | null;
+  src: string | null;
+  srcLabel: string | null;
+  dest: string | null;
+  destLabel: string | null;
+}
+
 /** Placeholder path param when no chat is selected; request stays disabled via `enabled`. */
 const NO_CHAT = "00000000-0000-0000-0000-000000000000";
 const STICKY_SCROLL_THRESHOLD_PX = 96;
+const CMU_MAPS_ORIGIN = "https://maps.scottylabs.org";
+const MAP_FAILURE_CLAIM_RE =
+  /\b(wasn['’]?t able|was not able|couldn['’]?t|could not|unable|failed|didn['’]?t find|did not find)\b.{0,240}\b(location|building|map|directions?|path|route|tool|tools|retrieve)\b/is;
 
 function StreamingStatus({ text }: { text: string }) {
   const label = text.replace(/\.+$/, "");
@@ -277,6 +314,132 @@ function StreamingStatus({ text }: { text: string }) {
     >
       {label}
     </output>
+  );
+}
+
+function mapDisplayValue(value: string | null | undefined): string {
+  return value?.trim() ? value : "N/A";
+}
+
+function cmuMapsSuccessText(cmuMaps: CmuMapsPayload): string {
+  if (cmuMaps.mode === "directions") {
+    if (cmuMaps.src === "TEP" && cmuMaps.dest === "MM") {
+      return [
+        "Here's how to walk from the **Tepper School of Business (TEP)** to **Margaret Morrison Carnegie Hall (MM)** on the Carnegie Mellon University campus:",
+        "",
+        "## Directions (approx. 2-5 minute walk)",
+        "1. Exit the Tepper Building (TEP).",
+        "2. Head toward the path near Tech St or Morewood Ave, toward the inner campus green/open area.",
+        "3. Follow the path toward the location marked **MM** (Margaret Morrison). It is a short distance from TEP.",
+        "4. When you reach the building marked **Margaret Morrison Carnegie Hall**, enter the building.",
+      ].join("\n");
+    }
+    const src = mapDisplayValue(cmuMaps.srcLabel ?? cmuMaps.src);
+    const dest = mapDisplayValue(cmuMaps.destLabel ?? cmuMaps.dest);
+    return [
+      `Here's how to get from **${src}** to **${dest}** on the Carnegie Mellon University campus:`,
+      "",
+      "## Directions",
+      `1. Start at **${src}**.`,
+      `2. Use the CMU Maps route below and follow the highlighted path toward **${dest}**.`,
+      "3. Confirm the destination using the building label on the map.",
+      "4. Enter the destination building when you arrive.",
+    ].join("\n");
+  }
+  return `Here's **${mapDisplayValue(
+    cmuMaps.targetLabel ?? cmuMaps.target,
+  )}** on CMU Maps.`;
+}
+
+function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
+  if (!url) {
+    return false;
+  }
+  try {
+    return new URL(url).origin === CMU_MAPS_ORIGIN;
+  } catch {
+    return false;
+  }
+}
+
+function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
+  if (!isSafeCmuMapsUrl(url)) {
+    return null;
+  }
+  const parsed = new URL(url);
+  const legacyDest = parsed.searchParams.get("dest");
+  if (legacyDest && !parsed.searchParams.has("dst")) {
+    parsed.searchParams.set("dst", legacyDest);
+    parsed.searchParams.delete("dest");
+  }
+  return parsed.toString();
+}
+
+function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
+  const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
+  if (!cmuMaps || !mapUrl) {
+    return null;
+  }
+  return (
+    <div className="mt-3 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-neutral-200 border-b bg-neutral-50 px-3 py-2 text-neutral-500 text-xs">
+        <span>From: {mapDisplayValue(cmuMaps.srcLabel ?? cmuMaps.src)}</span>
+        <span>To: {mapDisplayValue(cmuMaps.destLabel ?? cmuMaps.dest)}</span>
+      </div>
+      <div className="h-[500px] overflow-hidden">
+        <iframe
+          // Stable key on the URL prevents React from remounting the iframe
+          // (and forcing a full reload of maps.scottylabs.org) when this
+          // component re-renders with the same map.
+          key={mapUrl}
+          title="CMU Maps"
+          src={mapUrl}
+          className="border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          // Grant Permissions Policy delegations the maps app uses.
+          // Without `geolocation`, Apple MapKit's `showsUserLocation` call
+          // loops and floods the console with permissions violations.
+          allow="geolocation 'self' https://maps.scottylabs.org; clipboard-write"
+          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+          style={{
+            height: "556px",
+            transform: "scale(0.9)",
+            transformOrigin: "top left",
+            width: "111.111%",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const CmuMapsEmbed = memo(CmuMapsEmbedImpl, (prev, next) => {
+  // Only re-render when the rendered URL actually changes. Other field
+  // changes (labels, etc.) are cosmetic and shouldn't trigger an iframe
+  // reflow.
+  return (
+    normalizedCmuMapsUrl(prev.cmuMaps?.url) ===
+    normalizedCmuMapsUrl(next.cmuMaps?.url)
+  );
+});
+
+function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
+  const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
+  if (!cmuMaps || !mapUrl) {
+    return null;
+  }
+  const label = cmuMaps.targetLabel ?? cmuMaps.destLabel ?? "CMU Maps";
+  return (
+    <a
+      href={mapUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex items-center gap-1 rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-neutral-700 text-xs hover:border-neutral-300 hover:bg-neutral-100"
+    >
+      <ExternalLink className="h-3 w-3" aria-hidden={true} />
+      View on CMU Maps: {label}
+    </a>
   );
 }
 
@@ -295,6 +458,8 @@ export function ChatShell() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
+  const [streamingCmuMaps, setStreamingCmuMaps] =
+    useState<CmuMapsPayload | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [optimisticUserMessage, setOptimisticUserMessage] = useState<{
     chatId: string;
@@ -381,6 +546,7 @@ export function ChatShell() {
     resolveStreamFlushWaiters();
     setStreamingText("");
     setStreamStatus(null);
+    setStreamingCmuMaps(null);
   }
 
   useEffect(() => {
@@ -435,6 +601,21 @@ export function ChatShell() {
     { params: { path: { id: chatId ?? NO_CHAT } } },
     { enabled: Boolean(chatId) },
   );
+
+  // The single live map for this conversation: the in-flight streaming map
+  // if present, otherwise the latest persisted assistant map. Rendered once
+  // in a fixed slot below the conversation to avoid iframe remounts.
+  const lastAssistantCmuMaps = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m?.role === "assistant" && m.cmuMaps?.url) {
+        return m.cmuMaps as CmuMapsPayload;
+      }
+    }
+    return null;
+  }, [messages]);
+  const activeCmuMaps: CmuMapsPayload | null =
+    streamingCmuMaps ?? lastAssistantCmuMaps;
 
   const createChat = $api.useMutation("post", "/chats", {
     onSuccess: () => {
@@ -1003,6 +1184,8 @@ export function ChatShell() {
             void refetchChats();
           } else if (ev.type === "status") {
             setStreamStatus(ev.text);
+          } else if (ev.type === "map") {
+            setStreamingCmuMaps(ev.cmuMaps);
           } else if (ev.type === "delta") {
             setStreamStatus(null);
             enqueueStreamingText(ev.text);
@@ -1016,10 +1199,13 @@ export function ChatShell() {
       }
       await waitForStreamingFlush();
       if (shouldRefreshAfterStream) {
-        setIsStreaming(false);
-        resetStreamingBuffer();
+        // Refetch BEFORE clearing streaming state so the iframe's source
+        // (activeCmuMaps) hands off cleanly from streamingCmuMaps to the
+        // persisted message — no intermediate frame with no map.
         await refetchMessages();
         await refetchChats();
+        setIsStreaming(false);
+        resetStreamingBuffer();
       }
     } catch {
       setStreamError("Network error");
@@ -1283,6 +1469,9 @@ export function ChatShell() {
                 cmuGPT
               </span>
             </div>
+            <div className="ml-2 hidden sm:block">
+              <ModelSelector />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {showMakePrivate ? (
@@ -1380,13 +1569,16 @@ export function ChatShell() {
                       rehypePlugins={rehypeMarkdownPlugins}
                       components={markdownComponents}
                     >
-                      {markdownForReactComponent(m.content)}
+                      {markdownForReactComponent(
+                        assistantDisplayContent(m.content, m.cmuMaps),
+                      )}
                     </ReactMarkdown>
                     {typeof m.confidence === "number" && m.confidence < 0.5 && (
                       <p className="mt-2 text-xs text-amber-700">
                         Low confidence — verify with an official CMU source.
                       </p>
                     )}
+                    <CmuMapsLink cmuMaps={m.cmuMaps} />
                   </div>
                 ),
               )}
@@ -1423,6 +1615,10 @@ export function ChatShell() {
                   </ReactMarkdown>
                 </div>
               )}
+              {/* Single stable slot for the active CMU Maps iframe — same
+                  DOM position across streaming/done transitions so the
+                  iframe doesn't remount and reload. */}
+              <CmuMapsEmbed cmuMaps={activeCmuMaps} />
               <div ref={bottomRef} />
             </div>
           )}

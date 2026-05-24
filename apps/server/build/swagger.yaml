@@ -6,6 +6,41 @@ components:
   requestBodies: {}
   responses: {}
   schemas:
+    AgentModelOption:
+      description: >-
+        List of LLM models the user can pick from. The `id` is the
+
+        OpenRouter model slug forwarded to the agent's `/agent/respond`
+        endpoint.
+
+        Surface UX assumes 4-6 options.
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - label
+        - description
+      type: object
+      additionalProperties: false
+    UserPreferencesDto:
+      properties:
+        preferredModel:
+          type: string
+      required:
+        - preferredModel
+      type: object
+      additionalProperties: false
+    PatchUserPreferencesBody:
+      properties:
+        preferredModel:
+          type: string
+      type: object
+      additionalProperties: false
     ChatListItemDto:
       properties:
         id:
@@ -26,6 +61,43 @@ components:
         - updatedAt
       type: object
       additionalProperties: false
+    CmuMapsDto:
+      properties:
+        url:
+          type: string
+          nullable: true
+        mode:
+          type: string
+          nullable: true
+        target:
+          type: string
+          nullable: true
+        targetLabel:
+          type: string
+          nullable: true
+        src:
+          type: string
+          nullable: true
+        srcLabel:
+          type: string
+          nullable: true
+        dest:
+          type: string
+          nullable: true
+        destLabel:
+          type: string
+          nullable: true
+      required:
+        - url
+        - mode
+        - target
+        - targetLabel
+        - src
+        - srcLabel
+        - dest
+        - destLabel
+      type: object
+      additionalProperties: false
     MessageDto:
       properties:
         id:
@@ -40,6 +112,10 @@ components:
           type: string
         createdAt:
           type: string
+        cmuMaps:
+          allOf:
+            - $ref: "#/components/schemas/CmuMapsDto"
+          nullable: true
         confidence:
           type: number
           format: double
@@ -120,7 +196,8 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Better Auth session cookie and/or Keycloak access token as Bearer;
+      description:
+        Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
   title: "@cmugpt-frontend/server"
@@ -145,6 +222,62 @@ paths:
       security:
         - clerk: []
       parameters: []
+  /me/models:
+    get:
+      operationId: ListModels
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  models:
+                    items:
+                      $ref: "#/components/schemas/AgentModelOption"
+                    type: array
+                required:
+                  - models
+                type: object
+      description: Curated list of LLM models the user can pick from.
+      security:
+        - clerk: []
+      parameters: []
+  /me/preferences:
+    get:
+      operationId: GetPreferences
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferencesDto"
+      description: Read the user's preferences (preferred model, etc.).
+      security:
+        - clerk: []
+      parameters: []
+    patch:
+      operationId: UpdatePreferences
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferencesDto"
+      description:
+        Update the user's preferences. Only fields present in the body are
+        changed.
+      security:
+        - clerk: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserPreferencesBody"
   /hello:
     get:
       operationId: GetHello

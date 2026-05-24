@@ -4,6 +4,7 @@ import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
 import { callAgent, streamAgent } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
+import { userPreferencesService } from "./userPreferencesService.ts";
 
 const DEFAULT_CHAT_TITLE = "New chat";
 
@@ -30,11 +31,23 @@ export interface ChatDetailDto extends ChatListItemDto {
   isOwner: boolean;
 }
 
+export interface CmuMapsDto {
+  url: string | null;
+  mode: string | null;
+  target: string | null;
+  targetLabel: string | null;
+  src: string | null;
+  srcLabel: string | null;
+  dest: string | null;
+  destLabel: string | null;
+}
+
 export interface MessageDto {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   createdAt: string;
+  cmuMaps?: CmuMapsDto | null;
   /** Agent confidence for the just-generated turn. Not persisted; only set on
    *  fresh assistant messages, undefined when re-reading history. */
   confidence?: number;
@@ -48,6 +61,7 @@ export interface PostMessageResultDto {
 export type ChatStreamEvent =
   | { type: "user"; message: MessageDto }
   | { type: "status"; text: string }
+  | { type: "map"; cmuMaps: CmuMapsDto }
   | { type: "delta"; text: string }
   | { type: "done"; message: MessageDto }
   | { type: "error"; message: string };
@@ -60,6 +74,7 @@ function messageRowToDto(row: MessageRow): MessageDto {
     role: row.role,
     content: row.content,
     createdAt: row.createdAt.toISOString(),
+    cmuMaps: row.cmuMaps ?? null,
   };
 }
 
@@ -205,6 +220,7 @@ export const chatService = {
       role: m.role,
       content: m.content,
       createdAt: m.createdAt.toISOString(),
+      cmuMaps: m.cmuMaps ?? null,
     }));
   },
 
@@ -219,10 +235,13 @@ export const chatService = {
       content,
     );
 
+    const preferredModel =
+      await userPreferencesService.getPreferredModel(userSub);
     const agentResult = await callAgent({
       query: content.trim(),
       ...(messageHistory.length > 0 && { messageHistory }),
       userId: userSub,
+      model: preferredModel,
     });
 
     const [assistantRow] = await db
@@ -231,6 +250,7 @@ export const chatService = {
         chatId,
         role: "assistant",
         content: agentResult.text,
+        cmuMaps: agentResult.cmuMaps ?? null,
       })
       .returning();
 
@@ -267,19 +287,26 @@ export const chatService = {
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
+    const preferredModel =
+      await userPreferencesService.getPreferredModel(userSub);
     let result: Awaited<ReturnType<typeof callAgent>> | undefined;
     let streamedText = "";
+    let streamedCmuMaps: CmuMapsDto | null = null;
     try {
       for await (const ev of streamAgent(
         {
           query: content.trim(),
           ...(messageHistory.length > 0 && { messageHistory }),
           userId: userSub,
+          model: preferredModel,
         },
         options.signal,
       )) {
         if (ev.type === "status") {
           yield { type: "status", text: ev.text };
+        } else if (ev.type === "map") {
+          streamedCmuMaps = ev.cmuMaps;
+          yield { type: "map", cmuMaps: ev.cmuMaps };
         } else if (ev.type === "delta") {
           streamedText += ev.text;
           yield { type: "delta", text: ev.text };
@@ -308,6 +335,10 @@ export const chatService = {
     } else if (!streamedText) {
       yield { type: "delta", text: result.text };
     }
+    if (result.cmuMaps && !streamedCmuMaps) {
+      streamedCmuMaps = result.cmuMaps;
+      yield { type: "map", cmuMaps: result.cmuMaps };
+    }
 
     const [assistantRow] = await db
       .insert(messages)
@@ -315,6 +346,7 @@ export const chatService = {
         chatId,
         role: "assistant",
         content: result.text,
+        cmuMaps: result.cmuMaps ?? streamedCmuMaps,
       })
       .returning();
 

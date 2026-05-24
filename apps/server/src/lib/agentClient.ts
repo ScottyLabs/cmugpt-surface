@@ -6,22 +6,50 @@ interface AgentRequest {
   query: string;
   messageHistory?: { role: string; content: string }[];
   userId?: string;
+  /** OpenRouter model slug forwarded to the agent. Falls back to the
+   *  agent's own default when omitted. */
+  model?: string;
 }
 
 interface AgentResponseBody {
   response_text: string;
   thought?: { reasoning?: string; confidence?: number };
   services_used?: string[];
+  cmu_maps?: AgentCmuMapsBody | null;
+}
+
+interface AgentCmuMapsBody {
+  url?: string | null;
+  mode?: string | null;
+  target?: string | null;
+  target_label?: string | null;
+  src?: string | null;
+  src_label?: string | null;
+  dest?: string | null;
+  dest_label?: string | null;
+}
+
+export interface CmuMapsPayload {
+  url: string | null;
+  mode: string | null;
+  target: string | null;
+  targetLabel: string | null;
+  src: string | null;
+  srcLabel: string | null;
+  dest: string | null;
+  destLabel: string | null;
 }
 
 export interface AgentResult {
   text: string;
   confidence?: number;
   servicesUsed?: string[];
+  cmuMaps?: CmuMapsPayload | null;
 }
 
 export type AgentStreamEvent =
   | { type: "status"; text: string }
+  | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; result: AgentResult }
   | { type: "error"; message: string };
@@ -30,17 +58,22 @@ function buildAgentPayload(request: AgentRequest): {
   query: string;
   message_history?: { role: string; content: string }[];
   user_id?: string;
+  model?: string;
 } {
   const payload: {
     query: string;
     message_history?: { role: string; content: string }[];
     user_id?: string;
+    model?: string;
   } = { query: request.query };
   if (request.messageHistory !== undefined) {
     payload.message_history = request.messageHistory;
   }
   if (request.userId !== undefined) {
     payload.user_id = request.userId;
+  }
+  if (request.model !== undefined) {
+    payload.model = request.model;
   }
   return payload;
 }
@@ -80,7 +113,33 @@ function agentBodyToResult(body: AgentResponseBody): AgentResult {
   if (Array.isArray(body.services_used)) {
     result.servicesUsed = body.services_used;
   }
+  result.cmuMaps = normalizeCmuMaps(body.cmu_maps);
   return result;
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function normalizeCmuMaps(raw: unknown): CmuMapsPayload | null {
+  if (typeof raw !== "object" || raw === null) {
+    return null;
+  }
+  const body = raw as AgentCmuMapsBody;
+  const url = nullableString(body.url);
+  const payload: CmuMapsPayload = {
+    url,
+    mode: nullableString(body.mode),
+    target: nullableString(body.target),
+    targetLabel: nullableString(body.target_label),
+    src: nullableString(body.src),
+    srcLabel: nullableString(body.src_label),
+    dest: nullableString(body.dest),
+    destLabel: nullableString(body.dest_label),
+  };
+  return Object.values(payload).some((value) => value !== null)
+    ? payload
+    : null;
 }
 
 export async function callAgent(
@@ -151,6 +210,14 @@ function normalizeAgentStreamEvent(parsed: {
     typeof parsed.data.text === "string"
   ) {
     return { type: "status", text: parsed.data.text };
+  }
+
+  if (parsed.event === "map") {
+    const cmuMaps = normalizeCmuMaps(parsed.data);
+    if (cmuMaps) {
+      return { type: "map", cmuMaps };
+    }
+    return null;
   }
 
   if (

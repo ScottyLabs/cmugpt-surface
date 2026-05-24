@@ -20,6 +20,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List of LLM models the user can pick from. */
+        get: operations["ListModels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Read the user's preferences (preferred model, etc.). */
+        get: operations["GetPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Update the user's preferences. Only fields present in the body are changed. */
+        patch: operations["UpdatePreferences"];
+        trace?: never;
+    };
     "/hello": {
         parameters: {
             query?: never;
@@ -120,6 +155,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description List of LLM models the user can pick from. The `id` is the
+         *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
+         *     Surface UX assumes 4-6 options.
+         */
+        AgentModelOption: {
+            id: string;
+            label: string;
+            description: string;
+        };
+        UserPreferencesDto: {
+            preferredModel: string;
+        };
+        PatchUserPreferencesBody: {
+            preferredModel?: string;
+        };
         ChatListItemDto: {
             id: string;
             title: string;
@@ -127,12 +178,23 @@ export interface components {
             isPublic: boolean;
             updatedAt: string;
         };
+        CmuMapsDto: {
+            url: string | null;
+            mode: string | null;
+            target: string | null;
+            targetLabel: string | null;
+            src: string | null;
+            srcLabel: string | null;
+            dest: string | null;
+            destLabel: string | null;
+        };
         MessageDto: {
             id: string;
             /** @enum {string} */
             role: "user" | "assistant" | "system";
             content: string;
             createdAt: string;
+            cmuMaps?: components["schemas"]["CmuMapsDto"] | null;
             /**
              * Format: double
              * @description Agent confidence for the just-generated turn. Not persisted; only set on
@@ -186,6 +248,69 @@ export interface operations {
                     "application/json": {
                         isOidcAdmin: boolean;
                     };
+                };
+            };
+        };
+    };
+    ListModels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        models: components["schemas"]["AgentModelOption"][];
+                    };
+                };
+            };
+        };
+    };
+    GetPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPreferencesDto"];
+                };
+            };
+        };
+    };
+    UpdatePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchUserPreferencesBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPreferencesDto"];
                 };
             };
         };
