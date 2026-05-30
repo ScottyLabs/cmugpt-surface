@@ -1,4 +1,4 @@
-import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
+import { useAuth } from "react-oidc-context";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ExternalLink, LockOpen, Search } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
@@ -444,9 +444,8 @@ function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
 }
 
 export function ChatShell() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  const { signOut } = useClerk();
+  const auth = useAuth();
+  const profile = auth.user?.profile;
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -755,9 +754,12 @@ export function ChatShell() {
   }, [isStreaming, messages.length, streamingText.length]);
 
   const displayName =
-    user?.fullName ??
-    user?.primaryEmailAddress?.emailAddress ??
-    (user?.id ? String(user.id) : "User");
+    profile?.name ??
+    profile?.preferred_username ??
+    profile?.email ??
+    profile?.sub ??
+    "User";
+  const avatarUrl = typeof profile?.picture === "string" ? profile.picture : null;
 
   const starred = chats.filter((c) => c.starred);
   const unstarred = chats.filter((c) => !c.starred);
@@ -1119,7 +1121,7 @@ export function ChatShell() {
       const streamHeaders: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      const token = await getToken();
+      const token = auth.user?.access_token;
       if (token) {
         streamHeaders.Authorization = `Bearer ${token}`;
       }
@@ -1369,9 +1371,9 @@ export function ChatShell() {
         <div className="mt-auto border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300 text-xs">
-              {user?.imageUrl ? (
+              {avatarUrl ? (
                 <img
-                  src={user.imageUrl}
+                  src={avatarUrl}
                   alt=""
                   className="h-full w-full object-cover"
                 />
@@ -1383,7 +1385,7 @@ export function ChatShell() {
               <p className="truncate text-sm font-medium">{displayName}</p>
               <button
                 type="button"
-                onClick={() => void signOut()}
+                  onClick={() => void auth.signoutRedirect()}
                 className="text-xs text-neutral-500 hover:text-neutral-800"
               >
                 Sign out

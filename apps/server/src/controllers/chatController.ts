@@ -12,7 +12,7 @@ import {
   Security,
   SuccessResponse,
 } from "tsoa";
-import { CLERK_AUTH } from "../lib/authentication.ts";
+import { OIDC_AUTH } from "../lib/authentication.ts";
 import { AuthenticationError } from "../middlewares/errorHandler.ts";
 import type {
   ChatDetailDto,
@@ -44,7 +44,7 @@ function authenticatedSub(req: ExpressRequest): string {
 
 @Route("chats")
 export class ChatController {
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("/")
   @SuccessResponse(200)
   public listChats(
@@ -54,14 +54,14 @@ export class ChatController {
     return chatService.listChats(authenticatedSub(req), q);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Post("/")
   @SuccessResponse(201)
   public createChat(@Request() req: ExpressRequest): Promise<ChatListItemDto> {
     return chatService.createChat(authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("{id}/messages")
   @SuccessResponse(200)
   public getMessages(
@@ -71,7 +71,7 @@ export class ChatController {
     return chatService.getMessages(id, authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("{id}")
   @SuccessResponse(200)
   public getChat(
@@ -81,7 +81,7 @@ export class ChatController {
     return chatService.getChat(id, authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Post("{id}/messages")
   @SuccessResponse(200)
   public postMessage(
@@ -92,7 +92,7 @@ export class ChatController {
     return chatService.postMessage(id, authenticatedSub(req), body.content);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Patch("{id}")
   @SuccessResponse(200)
   public patchChat(
@@ -103,7 +103,7 @@ export class ChatController {
     return chatService.patchChat(id, authenticatedSub(req), body);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Delete("{id}")
   @SuccessResponse(204)
   public deleteChat(

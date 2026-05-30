@@ -8,7 +8,7 @@ import {
   Security,
   SuccessResponse,
 } from "tsoa";
-import { CLERK_AUTH } from "../lib/authentication.ts";
+import { OIDC_AUTH } from "../lib/authentication.ts";
 import type { AgentModelOption } from "../lib/models.ts";
 import { AGENT_MODELS } from "../lib/models.ts";
 import { userIsOidcAdmin } from "../lib/oidcAdmin.ts";
@@ -32,7 +32,7 @@ function authenticatedSub(req: ExpressRequest): string {
 
 @Route("me")
 export class MeController {
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("oidc-admin")
   @SuccessResponse(200)
   public getOidcAdminStatus(@Request() req: ExpressRequest): {
@@ -42,7 +42,7 @@ export class MeController {
   }
 
   /** Curated list of LLM models the user can pick from. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("models")
   @SuccessResponse(200)
   public listModels(): {
@@ -52,7 +52,7 @@ export class MeController {
   }
 
   /** Read the user's preferences (preferred model, etc.). */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("preferences")
   @SuccessResponse(200)
   public getPreferences(
@@ -62,7 +62,7 @@ export class MeController {
   }
 
   /** Update the user's preferences. Only fields present in the body are changed. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Patch("preferences")
   @SuccessResponse(200)
   public updatePreferences(

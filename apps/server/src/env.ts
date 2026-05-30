@@ -7,10 +7,9 @@ const envSchema = z.object({
   SERVER_PORT: z.coerce.number().default(80),
 
   ALLOWED_ORIGINS_REGEX: z.string(),
-  CLERK_SECRET_KEY: z.string(),
-  CLERK_ISSUER_URL: z.url(),
-  CLERK_PEM_KEY: z.string(),
-  CLERK_LOGIN_HOST: z.string().url().optional(),
+  OIDC_ISSUER_URL: z.url(),
+  OIDC_JWKS_URL: z.url().optional(),
+  OIDC_AUDIENCE: z.string().optional(),
   ADMIN_GROUP: z.string().default(""),
 
   DATABASE_URL: z.url(),
