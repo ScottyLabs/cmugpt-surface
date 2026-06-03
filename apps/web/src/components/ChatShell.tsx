@@ -1676,7 +1676,7 @@ export function ChatShell() {
       >
         {/* Header */}
         <div
-          className={`flex h-16 items-center px-4 ${sidebarOpen ? "gap-10" : "justify-center"}`}
+          className={`flex h-16 mt-3 items-center px-4 ${sidebarOpen ? "gap-10" : "justify-center"}`}
         >
           <button
             type="button"
@@ -1726,7 +1726,7 @@ export function ChatShell() {
 
           <button
             type="button"
-            className={`flex items-center rounded-lg py-2 font-medium ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
+            className={`flex items-center rounded-lg py-2 font-medium active:bg-white ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
           >
             <div className="flex items-center justify-center p-[0.56rem]">
               <SearchIcon />
@@ -1736,7 +1736,7 @@ export function ChatShell() {
 
           <button
             type="button"
-            className={`flex items-center rounded-lg py-2 font-medium ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
+            className={`flex items-center rounded-lg py-2 font-medium active:bg-white ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
           >
             <div className="flex items-center justify-center p-[0.56rem]">
               <PinIcon />
@@ -1894,10 +1894,10 @@ export function ChatShell() {
       ) : null}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
+        <header className="mt-3 flex h-14 shrink-0 items-center justify-between px-3 sm:px-4">
           <div className="flex min-w-0 items-center gap-1 sm:gap-2">
             {!sidebarOpen && (
-              <div className="flex min-w-0 items-center gap-1.5">
+              <div className="ml-3 flex min-w-0 items-center gap-1.5">
                 <img
                   src="/sl-logo.svg"
                   alt=""
@@ -1910,19 +1910,7 @@ export function ChatShell() {
                 </span>
               </div>
             )}
-            <div className="flex min-w-0 items-center gap-1.5">
-              <img
-                src="/sl-logo.svg"
-                alt=""
-                className="h-6 w-6 shrink-0 object-contain"
-                width={24}
-                height={24}
-              />
-              <span className="truncate text-lg font-semibold leading-none tracking-tight">
-                cmuGPT
-              </span>
-            </div>
-            <div className="ml-2 hidden sm:block">
+            <div className="ml-2 mr-2 hidden sm:block">
               <ModelSelector />
             </div>
           </div>
@@ -1982,6 +1970,7 @@ export function ChatShell() {
             )}
           </div>
         </header>
+        <div className="mx-6 mt-2 border-b border-fg-disabled-brandneutral" />
 
         <div
           ref={scrollContainerRef}
