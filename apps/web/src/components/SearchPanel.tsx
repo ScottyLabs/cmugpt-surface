@@ -25,15 +25,15 @@ export function SearchPanel({
 }: SearchPanelProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="mt-3 flex h-14 shrink-0 items-center justify-center px-4 sm:px-6">
-        <div className="flex w-full max-w-2xl items-center gap-3 rounded-full bg-neutral-100 px-4 py-2.5">
-          <SearchIcon />
+      <div className="mt-3 flex h-14 shrink-0 items-center justify-start px-4 sm:px-6 mt-6 ml-6">
+        <div className="flex w-full max-w-[22.5rem] items-center gap-3 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2.5">
+          <SearchIcon className="text-fg-neutral-primary" />
           <input
             ref={searchInputRef}
             value={searchQ}
             onChange={(e) => setSearchQ(e.target.value)}
             placeholder="Search Chat History"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+            className="flex-1 bg-transparent text-base font-normal outline-none placeholder:text-neutral-500"
           />
         </div>
       </div>
@@ -76,21 +76,11 @@ export function SearchPanel({
             </ul>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-neutral-400">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 20 20"
-              fill="none"
-              aria-hidden={true}
-            >
-              <path
-                d="M15.0003 9.16699C15.0003 5.94533 12.3887 3.33366 9.16699 3.33366C5.94533 3.33366 3.33366 5.94533 3.33366 9.16699C3.33366 12.3887 5.94533 15.0003 9.16699 15.0003C12.3887 15.0003 15.0003 12.3887 15.0003 9.16699ZM16.667 9.16699C16.667 10.9378 16.0519 12.5641 15.0256 13.8472L18.0895 16.9111C18.4149 17.2366 18.4149 17.7641 18.0895 18.0895C17.7641 18.4149 17.2366 18.4149 16.9111 18.0895L13.8472 15.0256C12.5641 16.0519 10.9378 16.667 9.16699 16.667C5.02486 16.667 1.66699 13.3091 1.66699 9.16699C1.66699 5.02486 5.02486 1.66699 9.16699 1.66699C13.3091 1.66699 16.667 5.02486 16.667 9.16699Z"
-                fill="#d4d4d4"
-              />
-            </svg>
-            <p className="text-base">Try Searching something!</p>
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-neutral-400">
+            <SearchIcon className="text-fg-neutral-tertiary w-[2.34375rem] h-[2.34375rem]" />
+            <p className="text-xl font-medium text-fg-neutral-tertiary">
+              Try Searching something!
+            </p>
           </div>
         )}
       </div>

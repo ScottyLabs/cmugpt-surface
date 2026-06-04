@@ -202,7 +202,7 @@ export function ChatSidebar({
           className={`flex items-center rounded-lg py-2 font-medium ${searchMode ? "bg-white" : "active:bg-white"} ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
         >
           <div className="flex items-center justify-center p-[0.56rem]">
-            <SearchIcon />
+            <SearchIcon className="text-black" />
           </div>
           {Boolean(sidebarOpen) && <span>Search</span>}
         </button>
