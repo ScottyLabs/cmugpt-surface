@@ -1,9 +1,14 @@
 import type { RefObject } from "react";
-import { FrownIcon, SearchIcon } from "@/components/icons/ChatIcons.tsx";
+import {
+  CloseIcon,
+  FrownIcon,
+  SearchIcon,
+} from "@/components/icons/ChatIcons.tsx";
 
 interface SearchResult {
   id: string;
   title: string;
+  updatedAt?: string;
 }
 
 interface SearchPanelProps {
@@ -13,6 +18,21 @@ interface SearchPanelProps {
   chats: SearchResult[];
   chatsLoading: boolean;
   onSelectSearchResult: (id: string) => void;
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
+  const years = Math.floor(months / 12);
+  return `${years} year${years === 1 ? "" : "s"} ago`;
 }
 
 export function SearchPanel({
@@ -27,7 +47,7 @@ export function SearchPanel({
     <div className="flex flex-col h-full">
       <div className="mt-3 flex h-14 shrink-0 items-center justify-start px-4 sm:px-6 mt-6 ml-6">
         <div className="flex w-full max-w-[22.5rem] items-center gap-3 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2.5">
-          <SearchIcon className="text-fg-neutral-primary" />
+          <SearchIcon className="text-fg-neutral-primary shrink-0" />
           <input
             ref={searchInputRef}
             value={searchQ}
@@ -35,9 +55,19 @@ export function SearchPanel({
             placeholder="Search Chat History"
             className="flex-1 bg-transparent text-base font-normal outline-none text-fg-neutral-primary placeholder:text-neutral-500"
           />
+          {searchQ && (
+            <button
+              type="button"
+              onClick={() => setSearchQ("")}
+              className="shrink-0 text-neutral-400 hover:text-neutral-600"
+              aria-label="Clear search"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {searchQ.trim() ? (
           chatsLoading ? (
             <div className="p-6 text-center text-sm text-fg-neutral-tertiary">
@@ -58,19 +88,30 @@ export function SearchPanel({
               </div>
             </>
           ) : (
-            <ul className="p-4 space-y-1 max-w-2xl mx-auto">
-              {chats.map((c) => (
-                <li key={c.id}>
+            <div className="px-10 pt-8 pb-6">
+              <p className="text-fg-neutral-tertiary text-base font-medium mb-6">
+                Results for: <span className="text-black">{searchQ}</span>
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                {chats.map((c) => (
                   <button
+                    key={c.id}
                     type="button"
                     onClick={() => onSelectSearchResult(c.id)}
-                    className="w-full text-left rounded-lg px-4 py-3 text-sm hover:bg-neutral-100 truncate"
+                    className="flex flex-col items-start gap-2.5 w-full h-[13.625rem] p-6 text-left rounded-xl border bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
                   >
-                    {c.title}
+                    <p className="font-medium text-lg text-black truncate">
+                      {c.title}
+                    </p>
+                    {!!c.updatedAt && (
+                      <p className="text-xs text-fg-neutral-tertiary font-normal">
+                        {relativeTime(c.updatedAt!)}
+                      </p>
+                    )}
                   </button>
-                </li>
-              ))}
-            </ul>
+                ))}
+              </div>
+            </div>
           )
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-neutral-400">
