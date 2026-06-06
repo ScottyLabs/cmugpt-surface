@@ -30,7 +30,7 @@ const app = express();
 /** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
 app.use(express.json({ limit: "12mb" }));
 
-// Parse cookies for Clerk session tokens
+// Parse cookies for auth flows that rely on cookies
 app.use(express.urlencoded({ extended: true }));
 
 const defaultAllowedOrigins = [

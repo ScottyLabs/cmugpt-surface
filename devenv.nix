@@ -2,8 +2,6 @@
 {
   imports = [ inputs.scottylabs.devenvModules.default ];
 
-  nixpkgs.overlays = [ inputs.self.overlays.default ];
-
   scottylabs = {
     enable = true;
     project.name = "chat";
@@ -20,11 +18,22 @@
     postgres.enable = true;
   };
 
+  packages = [ pkgs.bun ];
+
   processes.server = {
-    exec = "${pkgs.webapp}/bin/cmugpt-surface-server";
+    exec = "bun run --cwd apps/server server";
     ready.http.get = {
-      port = 80;
+      port = 8081;
+      path = "/";
+    };
+  };
+
+  processes.web = {
+    exec = "bun run --cwd apps/web dev";
+    ready.http.get = {
+      port = 3000;
       path = "/";
     };
   };
 }
+

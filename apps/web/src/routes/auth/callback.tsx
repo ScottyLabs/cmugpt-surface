@@ -11,23 +11,22 @@ function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let active = true;
-    async function finishSignIn() {
-      try {
-        await auth.signinRedirectCallback();
-        if (active) {
-          await navigate({ to: "/" });
-        }
-      } catch (error) {
-        console.error("OIDC callback failed", error);
+    // Wait for the AuthProvider to finish processing the signin callback.
+    // `react-oidc-context` handles the callback internally (via the
+    // AuthProvider onSigninCallback), so we simply wait until the
+    // auth provider finishes loading and then navigate to the root.
+    let mounted = true;
+    if (!auth.isLoading && mounted) {
+      if (auth.isAuthenticated) {
+        void navigate({ to: "/", search: { chat: undefined, newChat: false } });
+      } else if (auth.error) {
+        console.error("OIDC callback failed", auth.error);
       }
     }
-
-    void finishSignIn();
     return () => {
-      active = false;
+      mounted = false;
     };
-  }, [auth, navigate]);
+  }, [auth.isLoading, auth.isAuthenticated, auth.error, navigate]);
 
   if (auth.error) {
     return (

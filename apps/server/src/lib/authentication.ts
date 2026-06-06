@@ -196,7 +196,7 @@ async function verifyOidcAuth(
 }
 
 /**
- * Middleware to protect routes with Clerk authentication
+ * Middleware to protect routes with OIDC authentication
  */
 export async function requireOidcAuth(
   request: express.Request,

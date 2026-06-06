@@ -76,29 +76,23 @@
         };
     in
     {
-      overlays.default = final: prev:
-        let
-          isLinuxX86 = final.stdenv.isLinux && final.system == "x86_64-linux";
-        in
-        lib.optionalAttrs isLinuxX86 {
-          server = mkServer final;
-          webapp = mkServer final;
-          web = mkWeb final;
-        };
+      overlays.default = final: prev: {
+        server = mkServer final;
+        webapp = mkServer final;
+        web = mkWeb final;
+      };
 
       packages = forAllSystems (
         system:
-        lib.optionalAttrs (system == "x86_64-linux") (
-          let
-            pkgs = pkgsFor system;
-          in
-          {
-            server = mkServer pkgs;
-            webapp = mkServer pkgs;
-            web = mkWeb pkgs;
-            default = mkServer pkgs;
-          }
-        )
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          server = mkServer pkgs;
+          webapp = mkServer pkgs;
+          web = mkWeb pkgs;
+          default = mkServer pkgs;
+        }
       );
     };
 }
