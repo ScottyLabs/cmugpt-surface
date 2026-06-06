@@ -162,7 +162,7 @@ export function ChatShell() {
     };
   }, []);
 
-  const chatsQueryInit = useMemo(() => {
+  const searchChatsQueryInit = useMemo(() => {
     const q = searchQ.trim();
     if (!q) return undefined;
     return { params: { query: { q } } } as const;
@@ -172,7 +172,12 @@ export function ChatShell() {
     data: chats = [],
     refetch: refetchChats,
     isLoading: chatsLoading,
-  } = $api.useQuery("get", "/chats", chatsQueryInit);
+  } = $api.useQuery("get", "/chats", undefined);
+
+  const { data: searchChats = [], isLoading: searchChatsLoading } =
+    $api.useQuery("get", "/chats", searchChatsQueryInit, {
+      enabled: Boolean(searchQ.trim()),
+    });
 
   const {
     data: messages = [],
@@ -705,7 +710,6 @@ export function ChatShell() {
         sidebarMenuChat={sidebarMenuChat}
         closeSidebarMenu={closeSidebarMenu}
         beginRename={beginRename}
-        onShare={shareChatById}
         onDelete={confirmDeleteChatRow}
         deleteIsPending={deleteChat.isPending}
       />
@@ -716,12 +720,20 @@ export function ChatShell() {
             searchQ={searchQ}
             setSearchQ={setSearchQ}
             searchInputRef={searchInputRef}
-            chats={chats}
-            chatsLoading={chatsLoading}
+            chats={searchChats}
+            chatsLoading={searchChatsLoading}
             onSelectSearchResult={(id) => {
               selectChat(id);
               setSearchMode(false);
               setSearchQ("");
+            }}
+            onNewChat={() => {
+              setSearchMode(false);
+              setSearchQ("");
+              void navigate({
+                to: "/",
+                search: { chat: undefined, newChat: true },
+              });
             }}
           />
         ) : (

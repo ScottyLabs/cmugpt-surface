@@ -1,4 +1,5 @@
 import { LockOpen } from "lucide-react";
+import { PinIcon, UnpinIcon } from "@/components/icons/ChatIcons.tsx";
 import { ModelSelector } from "./ModelSelector.tsx";
 
 interface ChatHeaderProps {
@@ -21,10 +22,7 @@ export function ChatHeader({
   showMakePrivate,
   makeChatPrivate,
   patchChatIsPending,
-  shareChat,
   chatId,
-  effectiveChatDetailExists,
-  shareFeedback,
   currentChat,
   toggleStarChat,
   isNewChatIntent,
@@ -50,12 +48,12 @@ export function ChatHeader({
         <div className="ml-2 mr-2 hidden sm:block">
           <ModelSelector />
         </div>
+        {!isNewChatIntent && currentChatTitle ? (
+          <span className="truncate text-black text-lg font-medium leading-relaxed">
+            {currentChatTitle}
+          </span>
+        ) : null}
       </div>
-      {isNewChatIntent ? (
-        <span className="text-black text-lg font-medium leading-relaxed">
-          {currentChatTitle}
-        </span>
-      ) : null}
       <div className="flex items-center gap-2">
         {showMakePrivate ? (
           <button
@@ -69,36 +67,28 @@ export function ChatHeader({
             <LockOpen className="h-4 w-4" aria-hidden={true} />
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={() => void shareChat()}
-          disabled={!chatId || !effectiveChatDetailExists || patchChatIsPending}
-          className="min-w-[5.5rem] rounded-lg px-2 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
-          aria-label={
-            shareFeedback === "copied"
-              ? "Chat link copied to clipboard"
-              : shareFeedback === "shared"
-                ? "Chat link shared"
-                : "Share chat link"
-          }
-        >
-          <span className="inline-flex items-center gap-1">
-            <span aria-hidden={true}>↗</span>
-            {shareFeedback === "copied"
-              ? "Copied"
-              : shareFeedback === "shared"
-                ? "Shared"
-                : "Share"}
-          </span>
-        </button>
         {Boolean(chatId) && currentChat != null && (
           <button
             type="button"
             onClick={() => toggleStarChat(currentChat.id, !currentChat.starred)}
-            className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100"
+            className="mr-3 flex flex-row items-center gap-2 rounded-sm border border-stroke-neutral-1 bg-white px-2.5 py-1.5 hover:bg-neutral-50"
             aria-label={currentChat.starred ? "Unstar" : "Star"}
           >
-            {currentChat.starred ? "★" : "☆"}
+            {currentChat.starred ? (
+              <>
+                <UnpinIcon />
+                <span className="text-fg-neutral-primary text-sm font-semibold">
+                  Unpin chat
+                </span>
+              </>
+            ) : (
+              <>
+                <PinIcon />
+                <span className="text-fg-neutral-primary text-sm font-semibold">
+                  Pin chat
+                </span>
+              </>
+            )}
           </button>
         )}
       </div>

@@ -94,56 +94,54 @@ export function ChatComposer({
           </p>
         )}
       </div>
-      {shouldShowConversation ||
-        chatsLoading ||
-        (isNewChatIntent && (
-          <>
-            <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-              <div className="flex items-end gap-1 sm:gap-2">
-                <textarea
-                  ref={draftComposerRef}
-                  rows={1}
-                  placeholder="How can I help you today?"
-                  value={draft}
-                  disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
-                  onChange={(e) => {
-                    setDraft(e.target.value);
-                    setAttachmentHint(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void onSend();
-                    }
-                  }}
-                  className="max-h-40 min-h-[7.625rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  onClick={() => onSend()}
-                  disabled={
-                    isStreaming ||
-                    createChatIsPending ||
-                    (Boolean(chatId) && !canEditChat) ||
-                    (!draft.trim() && pendingAttachments.length === 0)
+      {(shouldShowConversation || chatsLoading || isNewChatIntent) ? (
+        <>
+          <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+            <div className="flex items-end gap-1 sm:gap-2">
+              <textarea
+                ref={draftComposerRef}
+                rows={1}
+                placeholder="How can I help you today?"
+                value={draft}
+                disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  setAttachmentHint(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void onSend();
                   }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
-                  aria-label="Send"
-                >
-                  <SendIcon />
-                </button>
-              </div>
+                }}
+                className="max-h-40 min-h-[7.625rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => onSend()}
+                disabled={
+                  isStreaming ||
+                  createChatIsPending ||
+                  (Boolean(chatId) && !canEditChat) ||
+                  (!draft.trim() && pendingAttachments.length === 0)
+                }
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
+                aria-label="Send"
+              >
+                <SendIcon />
+              </button>
             </div>
-            <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
-              CMUGPT is AI and can make mistakes. Please double-check responses.
+          </div>
+          <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
+            CMUGPT is AI and can make mistakes. Please double-check responses.
+          </p>
+          {streamError != null && streamError !== "" && (
+            <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
+              {streamError}
             </p>
-            {streamError != null && streamError !== "" && (
-              <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
-                {streamError}
-              </p>
-            )}
-          </>
-        ))}
+          )}
+        </>
+      ) : null}
     </div>
   );
 }

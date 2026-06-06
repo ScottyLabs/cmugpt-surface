@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import {
   CloseIcon,
   FrownIcon,
+  PlusIcon,
   SearchIcon,
 } from "@/components/icons/ChatIcons.tsx";
 
@@ -18,6 +19,7 @@ interface SearchPanelProps {
   chats: SearchResult[];
   chatsLoading: boolean;
   onSelectSearchResult: (id: string) => void;
+  onNewChat: () => void;
 }
 
 function relativeTime(iso: string): string {
@@ -42,6 +44,7 @@ export function SearchPanel({
   chats,
   chatsLoading,
   onSelectSearchResult,
+  onNewChat,
 }: SearchPanelProps) {
   return (
     <div className="flex flex-col h-full">
@@ -55,7 +58,7 @@ export function SearchPanel({
             placeholder="Search Chat History"
             className="flex-1 bg-transparent text-base font-normal outline-none text-fg-neutral-primary placeholder:text-neutral-500"
           />
-          {searchQ && (
+          {Boolean(searchQ) && (
             <button
               type="button"
               onClick={() => setSearchQ("")}
@@ -98,18 +101,30 @@ export function SearchPanel({
                     key={c.id}
                     type="button"
                     onClick={() => onSelectSearchResult(c.id)}
-                    className="flex flex-col items-start gap-2.5 w-full h-[13.625rem] p-6 text-left rounded-xl border bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
+                    className="flex flex-col items-start gap-2.5 w-full h-[13.625rem] p-6 text-left rounded-xl bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
                   >
-                    <p className="font-medium text-lg text-black truncate">
+                    <p className="font-medium text-lg text-black wrap-break-word w-full">
                       {c.title}
                     </p>
-                    {!!c.updatedAt && (
+                    {c.updatedAt ? (
                       <p className="text-xs text-fg-neutral-tertiary font-normal">
-                        {relativeTime(c.updatedAt!)}
+                        {relativeTime(c.updatedAt)}
                       </p>
-                    )}
+                    ) : null}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={onNewChat}
+                  className="flex flex-col items-center justify-center gap-2.5 w-full h-[13.625rem] p-6 text-left rounded-xl bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
+                >
+                  <div className="flex flex-col justify-center items-center gap-4">
+                    <div className="flex items-center justify-center rounded-full bg-neutral-secondary-enabled p-[0.75rem]">
+                      <PlusIcon />
+                    </div>
+                    <p className="text-lg font-medium text-black">New Chat</p>
+                  </div>
+                </button>
               </div>
             </div>
           )
