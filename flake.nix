@@ -17,14 +17,38 @@
       forAllSystems = lib.genAttrs supportedSystems;
       pkgsFor = system: nixpkgs.legacyPackages.${system};
 
-      mkWorkspaceInstall = ''
-        export HOME=$TMPDIR
-        export BUN_INSTALL=$TMPDIR/bun
-        export BUN_CACHE_DIR=$TMPDIR/bun-cache
-        bun install --frozen-lockfile
-      '';
+      # 1. Fixed-Output Derivation to cache ALL package contents cleanly without symlinks
+      mkBunStore = pkgs: pkgs.stdenv.mkDerivation {
+        pname = "cmugpt-surface-store";
+        version = "0.0.0";
+        src = ./.;
 
-      mkServer = pkgs:
+        nativeBuildInputs = [ pkgs.bun ];
+
+        buildPhase = ''
+          export HOME=$TMPDIR
+          bun install --frozen-lockfile
+        '';
+
+        installPhase = ''
+          mkdir -p $out
+          if [ -d ~/.bun/install/cache ]; then
+            cp -r ~/.bun/install/cache/* $out/
+          fi
+          
+          # CRITICAL: Find and delete all internal symlinks inside the cache folder
+          # Bun doesn't actually need these symlinks to run an offline installation;
+          # it just needs the flat physical tarball objects.
+          find $out -type l -delete
+        '';
+
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
+        outputHash = "sha256-7EeAKl8XB24jWsVyXCK3/otxTGhjbcrFRYcgCw9hcO4=";
+      };
+
+      # 2. Server Compilation
+      mkServer = pkgs: bunStore:
         pkgs.stdenv.mkDerivation {
           pname = "cmugpt-surface-server";
           version = "0.0.0";
@@ -34,7 +58,16 @@
 
           buildPhase = ''
             runHook preBuild
-            ${mkWorkspaceInstall}
+            
+            export HOME=$TMPDIR
+            mkdir -p ~/.bun/install/cache
+            
+            # Feed the offline tarballs back into Bun's sandbox profile
+            cp -r ${bunStore}/* ~/.bun/install/cache/
+
+            # Tell Bun to handle the workspace creation completely offline
+            bun install --frozen-lockfile --offline
+
             bun run --cwd apps/server build
             runHook postBuild
           '';
@@ -43,8 +76,10 @@
             runHook preInstall
             mkdir -p $out/share/cmugpt-surface/server
             cp -r apps/server/dist $out/share/cmugpt-surface/server/
-            cp -r apps/server/build $out/share/cmugpt-surface/server/
-            cp -r apps/server/drizzle $out/share/cmugpt-surface/server/
+            
+            if [ -d apps/server/build ]; then cp -r apps/server/build $out/share/cmugpt-surface/server/; fi
+            if [ -d apps/server/drizzle ]; then cp -r apps/server/drizzle $out/share/cmugpt-surface/server/; fi
+            
             makeWrapper ${pkgs.bun}/bin/bun $out/bin/cmugpt-surface-server \
               --chdir $out/share/cmugpt-surface/server \
               --add-flags "dist/server.js"
@@ -52,7 +87,8 @@
           '';
         };
 
-      mkWeb = pkgs:
+      # 3. Static Web Client compilation
+      mkWeb = pkgs: bunStore:
         pkgs.stdenv.mkDerivation {
           pname = "cmugpt-surface-web";
           version = "0.0.0";
@@ -62,7 +98,13 @@
 
           buildPhase = ''
             runHook preBuild
-            ${mkWorkspaceInstall}
+            
+            export HOME=$TMPDIR
+            mkdir -p ~/.bun/install/cache
+            cp -r ${bunStore}/* ~/.bun/install/cache/
+            
+            bun install --frozen-lockfile --offline
+
             bun run --cwd apps/web build
             runHook postBuild
           '';
@@ -76,22 +118,23 @@
         };
     in
     {
-      overlays.default = final: prev: {
-        server = mkServer final;
-        webapp = mkServer final;
-        web = mkWeb final;
-      };
+      overlays.default = final: prev:
+        let bunStore = mkBunStore final;
+        in {
+          server = mkServer final bunStore;
+          web = mkWeb final bunStore;
+        };
 
       packages = forAllSystems (
         system:
         let
           pkgs = pkgsFor system;
+          bunStore = mkBunStore pkgs;
         in
         {
-          server = mkServer pkgs;
-          webapp = mkServer pkgs;
-          web = mkWeb pkgs;
-          default = mkServer pkgs;
+          server = mkServer pkgs bunStore;
+          web = mkWeb pkgs bunStore;
+          default = mkServer pkgs bunStore;
         }
       );
     };

@@ -65,8 +65,9 @@ export function expressAuthentication(
   return verifyOidcAuth(request);
 }
 
-const issuer = env.OIDC_ISSUER_URL.replace(/\/$/, "");
-const jwksUri = env.OIDC_JWKS_URL ?? `${issuer}/protocol/openid-connect/certs`;
+const issuer = "https://idp.scottylabs.org/realms/scottylabs";
+const jwksUri = "https://idp.scottylabs.org/realms/scottylabs/protocol/openid-connect/certs";
+
 const jwksClient = jwksRsa({
   jwksUri,
   cache: true,
@@ -141,7 +142,8 @@ async function verifyOidcAuth(
         signingKey,
         {
           issuer,
-          audience: env.OIDC_AUDIENCE || undefined,
+          // Fall back to using the OIDC_CLIENT_ID from secretspec.toml if OIDC_AUDIENCE isn't set
+          audience: env.OIDC_AUDIENCE || env.OIDC_CLIENT_ID || undefined,
         },
         (err, decoded) => {
           if (err || !decoded || typeof decoded === "string") {

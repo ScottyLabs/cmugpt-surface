@@ -10,6 +10,8 @@ const envSchema = z.object({
   OIDC_ISSUER_URL: z.url(),
   OIDC_JWKS_URL: z.url().optional(),
   OIDC_AUDIENCE: z.string().optional(),
+  OIDC_CLIENT_ID: z.string(),
+  OIDC_CLIENT_SECRET: z.string(),
   ADMIN_GROUP: z.string().default(""),
 
   DATABASE_URL: z.url(),

@@ -5,26 +5,30 @@
   scottylabs = {
     enable = true;
     project.name = "cmugpt-surface";
-
-    kennel.services.webapp = {
-      oidc.redirectPaths = [ "/auth/callback" ];
-    };
-
-    kennel.sites.web = {
-      customDomain = "cmugpt-surface.scottylabs.org";
-      spa = true;
-    };
-
+    bun.enable = true;
+    secrets.enable = true;
     postgres.enable = true;
+
+    # Kennel deployment configuration
+    kennel = {
+      # Deploys your backend API
+      services.server = {
+        # customDomain = "api.cmugpt.scottylabs.org"; # (Optional) Uncomment and change if needed
+      };
+
+      # Deploys your frontend React app
+      sites.web = {
+        spa = true; # Set to true since React apps are typically Single Page Applications
+      };
+    };
   };
 
-  packages = [ pkgs.bun ];
-
+  # Local Development Processes (used when you run `devenv up`)
   processes.server = {
     exec = "bun run --cwd apps/server server";
     ready.http.get = {
       port = 8081;
-      path = "/";
+      path = "/"; # Consider updating to "/health" if you have a specific health check route
     };
   };
 
@@ -36,4 +40,3 @@
     };
   };
 }
-
