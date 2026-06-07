@@ -2,10 +2,13 @@
 {
   imports = [ inputs.scottylabs.devenvModules.default ];
 
+  packages = [
+    pkgs.bun
+  ];
+
   scottylabs = {
     enable = true;
     project.name = "cmugpt-surface";
-    bun.enable = true;
     secrets.enable = true;
     postgres.enable = true;
 
