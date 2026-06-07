@@ -4,14 +4,14 @@
 
   scottylabs = {
     enable = true;
-    project.name = "chat";
+    project.name = "cmugpt-surface";
 
     kennel.services.webapp = {
       oidc.redirectPaths = [ "/auth/callback" ];
     };
 
     kennel.sites.web = {
-      customDomain = "chat.scottylabs.org";
+      customDomain = "cmugpt-surface.scottylabs.org";
       spa = true;
     };
 
