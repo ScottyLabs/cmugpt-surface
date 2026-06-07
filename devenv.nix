@@ -11,7 +11,7 @@
     };
 
     kennel.sites.web = {
-      customDomain = "chat.scottylabs.net";
+      customDomain = "chat.scottylabs.org";
       spa = true;
     };
 
