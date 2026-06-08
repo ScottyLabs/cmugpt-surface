@@ -94,7 +94,7 @@ export function ChatComposer({
           </p>
         )}
       </div>
-      {(shouldShowConversation || chatsLoading || isNewChatIntent) ? (
+      {shouldShowConversation || chatsLoading || isNewChatIntent ? (
         <>
           <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
             <div className="flex items-end gap-1 sm:gap-2">

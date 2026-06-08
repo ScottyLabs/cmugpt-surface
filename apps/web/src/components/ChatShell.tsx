@@ -701,7 +701,6 @@ export function ChatShell() {
         signOut={() => void signOut()}
         setActiveModal={setActiveModal}
         selectChat={selectChat}
-        toggleStarChat={toggleStarChat}
         beginRename={beginRename}
       />
 

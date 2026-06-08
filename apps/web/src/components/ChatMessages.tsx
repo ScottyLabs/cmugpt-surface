@@ -176,7 +176,7 @@ export function ChatMessages({
   return (
     <div
       ref={scrollContainerRef}
-      className="min-h-0 flex-1 overflow-y-auto px-4 py-6 flex flex-col justify-center"
+      className="min-h-0 flex-1 overflow-y-auto px-4 py-6 flex flex-col"
       onScroll={(e) => {
         const el = e.currentTarget;
         shouldStickToBottomRef.current =
@@ -188,71 +188,73 @@ export function ChatMessages({
         !chatsLoading &&
         !chatId &&
         !isNewChatIntent && (
-          <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
-            <div className="flex flex-col items-start gap-2">
-              <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">
-                Hi there!
-              </h1>
-              <p className="text-left text-2xl font-medium text-black">
-                Welcome to CMUGPT...
-              </p>
-            </div>
-
-            <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-              <div className="flex items-end gap-2">
-                <textarea
-                  ref={draftComposerRef}
-                  rows={1}
-                  placeholder="How can I help you today?"
-                  value={draft}
-                  disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
-                  onChange={(e) => {
-                    setDraft(e.target.value);
-                    setAttachmentHint(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void onSend();
-                    }
-                  }}
-                  className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  onClick={() => onSend()}
-                  disabled={
-                    isStreaming ||
-                    createChatIsPending ||
-                    (Boolean(chatId) && !canEditChat) ||
-                    (!draft.trim() && pendingAttachments.length === 0)
-                  }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
-                  aria-label="Send"
-                >
-                  <SendIcon />
-                </button>
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
+              <div className="flex flex-col items-start gap-2">
+                <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">
+                  Hi there!
+                </h1>
+                <p className="text-left text-2xl font-medium text-black">
+                  Welcome to CMUGPT...
+                </p>
               </div>
-            </div>
 
-            <div className="flex justify-center items-center gap-3">
-              {[
-                "What time does Hunan close today?",
-                "Plan my Fall 26 schedule",
-                "Navigate me from Tepper to Rotunda Hall",
-              ].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => {
-                    setDraft(s);
-                    draftComposerRef.current?.focus();
-                  }}
-                  className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
-                >
-                  {s}
-                </button>
-              ))}
+              <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    ref={draftComposerRef}
+                    rows={1}
+                    placeholder="How can I help you today?"
+                    value={draft}
+                    disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                    onChange={(e) => {
+                      setDraft(e.target.value);
+                      setAttachmentHint(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void onSend();
+                      }
+                    }}
+                    className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onSend()}
+                    disabled={
+                      isStreaming ||
+                      createChatIsPending ||
+                      (Boolean(chatId) && !canEditChat) ||
+                      (!draft.trim() && pendingAttachments.length === 0)
+                    }
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
+                    aria-label="Send"
+                  >
+                    <SendIcon />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-center items-center gap-3">
+                {[
+                  "What time does Hunan close today?",
+                  "Plan my Fall 26 schedule",
+                  "Navigate me from Tepper to Rotunda Hall",
+                ].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setDraft(s);
+                      draftComposerRef.current?.focus();
+                    }}
+                    className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -264,7 +266,7 @@ export function ChatMessages({
           {messages.map((m) =>
             m.role === "user" ? (
               <div key={m.id} className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+                <div className="max-w-[85%] rounded-2xl bg-blue-gray-50 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
                   <div className={userBubbleMarkdownClass}>
                     <ReactMarkdown
                       remarkPlugins={remarkPlugins}

@@ -53,7 +53,6 @@ interface ChatSidebarProps {
   signOut: () => void;
   setActiveModal: (m: "settings" | "about" | null) => void;
   selectChat: (id: string) => void;
-  toggleStarChat: (id: string, next: boolean) => void;
   beginRename: (c: { id: string; title: string }) => void;
 }
 
@@ -81,12 +80,11 @@ export function ChatSidebar({
   signOut,
   setActiveModal,
   selectChat,
-  toggleStarChat,
   beginRename,
 }: ChatSidebarProps) {
-  function renderChatRow(c: ChatListItem, starFilled: boolean) {
-    const rowClass = `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
-      c.id === chatId ? "bg-neutral-200" : ""
+  function renderChatRow(c: ChatListItem) {
+    const rowClass = `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white ${
+      c.id === chatId ? "bg-white" : ""
     }`;
     return (
       <li
@@ -97,18 +95,6 @@ export function ChatSidebar({
           setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: c.id });
         }}
       >
-        <button
-          type="button"
-          onClick={() => toggleStarChat(c.id, !starFilled)}
-          className={
-            starFilled
-              ? "shrink-0 text-amber-500"
-              : "shrink-0 text-neutral-400 hover:text-amber-500"
-          }
-          aria-label={starFilled ? "Remove from starred" : "Add to starred"}
-        >
-          {starFilled ? "★" : "☆"}
-        </button>
         {renamingChatId === c.id ? (
           <input
             ref={renameInputRef}
@@ -129,7 +115,7 @@ export function ChatSidebar({
               beginRename(c);
             }}
             title="Double-click to rename"
-            className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
+            className="min-w-0 flex-1 truncate text-left hover:bg-white text-lg font-medium"
           >
             {c.title}
           </button>
@@ -140,7 +126,7 @@ export function ChatSidebar({
 
   return (
     <aside
-      className={`flex shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled transition-[width] duration-200 ease-out ${
+      className={`flex h-full shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled transition-[width] duration-200 ease-out ${
         sidebarOpen ? "w-64" : "w-[4.375rem] overflow-hidden border-r-0"
       }`}
     >
@@ -177,7 +163,7 @@ export function ChatSidebar({
       )}
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-1 px-3 pt-2">
+      <nav className="flex min-h-0 flex-1 flex-col gap-1 px-3 pt-2">
         <button
           type="button"
           onClick={onNewChat}
@@ -221,11 +207,11 @@ export function ChatSidebar({
         {Boolean(sidebarOpen) && (
           <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 mt-6">
             <div>
-              <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">
+              <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary text-base">
                 Recents
               </p>
               <ul className="space-y-0.5">
-                {unstarred.map((c) => renderChatRow(c, false))}
+                {unstarred.map((c) => renderChatRow(c))}
               </ul>
             </div>
           </div>
