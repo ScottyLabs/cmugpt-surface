@@ -333,8 +333,6 @@ export function ChatShell() {
     user?.primaryEmailAddress?.emailAddress ??
     (user?.id ? String(user.id) : "User");
 
-  const unstarred = chats.filter((c) => !c.starred);
-
   function scheduleShareFeedbackClear() {
     if (shareFeedbackTimerRef.current) {
       clearTimeout(shareFeedbackTimerRef.current);
@@ -686,7 +684,7 @@ export function ChatShell() {
           void navigate({ to: "/", search: { chat: undefined, newChat: true } })
         }
         chatId={chatId}
-        unstarred={unstarred}
+        unstarred={chats}
         renamingChatId={renamingChatId}
         renameDraft={renameDraft}
         setRenameDraft={setRenameDraft}
