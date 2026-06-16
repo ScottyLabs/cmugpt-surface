@@ -247,6 +247,12 @@ export function ChatShell() {
     },
   });
 
+  const starredChats = useMemo(() => chats.filter((c) => c.starred), [chats]);
+  const unstarredChats = useMemo(
+    () => chats.filter((c) => !c.starred),
+    [chats],
+  );
+
   const currentChat = chats.find((c) => c.id === chatId);
   const optimisticMessageIsForVisibleChat =
     optimisticUserMessage !== null &&
@@ -684,7 +690,9 @@ export function ChatShell() {
           void navigate({ to: "/", search: { chat: undefined, newChat: true } })
         }
         chatId={chatId}
-        unstarred={chats}
+        starred={starredChats}
+        unstarred={unstarredChats}
+        toggleStarChat={toggleStarChat}
         renamingChatId={renamingChatId}
         renameDraft={renameDraft}
         setRenameDraft={setRenameDraft}
@@ -707,6 +715,7 @@ export function ChatShell() {
         sidebarMenuChat={sidebarMenuChat}
         closeSidebarMenu={closeSidebarMenu}
         beginRename={beginRename}
+        toggleStarChat={toggleStarChat}
         onDelete={confirmDeleteChatRow}
         deleteIsPending={deleteChat.isPending}
       />

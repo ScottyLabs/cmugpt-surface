@@ -8,6 +8,7 @@ import {
   SearchIcon,
   SettingsIcon,
   SidebarPanelIcon,
+  UnpinIcon,
 } from "@/components/icons/ChatIcons.tsx";
 
 interface ChatListItem {
@@ -26,7 +27,9 @@ interface ChatSidebarProps {
   searchInputRef: RefObject<HTMLInputElement | null>;
   onNewChat: () => void;
   chatId: string | undefined;
+  starred: ChatListItem[];
   unstarred: ChatListItem[];
+  toggleStarChat: (id: string, next: boolean) => void;
   renamingChatId: string | null;
   renameDraft: string;
   setRenameDraft: (s: string) => void;
@@ -65,7 +68,9 @@ export function ChatSidebar({
   searchInputRef,
   onNewChat,
   chatId,
+  starred,
   unstarred,
+  toggleStarChat,
   renamingChatId,
   renameDraft,
   setRenameDraft,
@@ -83,7 +88,7 @@ export function ChatSidebar({
   beginRename,
 }: ChatSidebarProps) {
   function renderChatRow(c: ChatListItem) {
-    const rowClass = `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white ${
+    const rowClass = `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white ${
       c.id === chatId ? "bg-white" : ""
     }`;
     return (
@@ -107,18 +112,38 @@ export function ChatSidebar({
             onPointerDown={(e) => e.stopPropagation()}
           />
         ) : (
-          <button
-            type="button"
-            onClick={() => selectChat(c.id)}
-            onDoubleClick={(e) => {
-              e.preventDefault();
-              beginRename(c);
-            }}
-            title="Double-click to rename"
-            className="min-w-0 flex-1 truncate text-left hover:bg-white text-lg font-medium"
-          >
-            {c.title}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => selectChat(c.id)}
+              onDoubleClick={(e) => {
+                e.preventDefault();
+                beginRename(c);
+              }}
+              title="Double-click to rename"
+              className="min-w-0 flex-1 truncate text-left hover:bg-white text-lg font-medium"
+            >
+              {c.title}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStarChat(c.id, !c.starred);
+              }}
+              className={`shrink-0 rounded p-0.5 transition-opacity hover:bg-neutral-200/60 ${
+                c.starred ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              }`}
+              aria-label={c.starred ? "Unpin chat" : "Pin chat"}
+              title={c.starred ? "Unpin chat" : "Pin chat"}
+            >
+              {c.starred ? (
+                <UnpinIcon className="h-3.5 w-3.5" />
+              ) : (
+                <PinIcon className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </>
         )}
       </li>
     );
@@ -193,19 +218,19 @@ export function ChatSidebar({
           {Boolean(sidebarOpen) && <span>Search</span>}
         </button>
 
-        <button
-          type="button"
-          className={`flex items-center rounded-lg py-2 font-medium active:bg-white ${sidebarOpen ? "gap-3 px-3" : "justify-center"}`}
-        >
-          <div className="flex items-center justify-center p-[0.56rem]">
-            <PinIcon />
-          </div>
-          {Boolean(sidebarOpen) && <span>Pin</span>}
-        </button>
-
-        {/* Recent Chats */}
+        {/* Chat Lists — Pinned + Recents */}
         {Boolean(sidebarOpen) && (
           <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 mt-6">
+            {starred.length > 0 && (
+              <div className="mb-4">
+                <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary text-base">
+                  Pinned
+                </p>
+                <ul className="space-y-0.5">
+                  {starred.map((c) => renderChatRow(c))}
+                </ul>
+              </div>
+            )}
             <div>
               <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary text-base">
                 Recents

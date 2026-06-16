@@ -29,17 +29,18 @@ async function customFetch(
     try {
       const token = await tokenGetter();
       if (token) {
-        const headers = new Headers(initWithHeaders.headers);
+        // When openapi-fetch passes a Request object as `input` with no
+        // separate `init`, we must preserve the Request's own headers
+        // (which include Content-Type) before merging in Authorization.
+        const existingHeaders =
+          initWithHeaders.headers ??
+          (input instanceof Request ? input.headers : undefined);
+        const headers = new Headers(existingHeaders);
         headers.set("Authorization", `Bearer ${token}`);
         initWithHeaders.headers = headers;
-        console.log(
-          "✅ Authorization header injected (length:",
-          token.length,
-          ")",
-        );
       }
     } catch (error) {
-      console.error("❌ Error getting token:", error);
+      console.error("Error getting token:", error);
     }
   }
 

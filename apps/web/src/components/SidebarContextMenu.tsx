@@ -1,6 +1,7 @@
 interface SidebarMenuChat {
   id: string;
   title: string;
+  starred: boolean;
   isPublic: boolean;
 }
 
@@ -9,6 +10,7 @@ interface SidebarContextMenuProps {
   sidebarMenuChat: SidebarMenuChat | undefined;
   closeSidebarMenu: () => void;
   beginRename: (c: { id: string; title: string }) => void;
+  toggleStarChat: (id: string, next: boolean) => void;
   onDelete: (id: string) => void;
   deleteIsPending: boolean;
 }
@@ -18,6 +20,7 @@ export function SidebarContextMenu({
   sidebarMenuChat,
   closeSidebarMenu,
   beginRename,
+  toggleStarChat,
   onDelete,
   deleteIsPending,
 }: SidebarContextMenuProps) {
@@ -39,6 +42,17 @@ export function SidebarContextMenu({
         style={{ left: sidebarMenu.x, top: sidebarMenu.y }}
         role="menu"
       >
+        <button
+          type="button"
+          role="menuitem"
+          className="flex w-full px-3 py-2 text-left hover:bg-neutral-100"
+          onClick={() => {
+            toggleStarChat(sidebarMenuChat.id, !sidebarMenuChat.starred);
+            closeSidebarMenu();
+          }}
+        >
+          {sidebarMenuChat.starred ? "Unpin" : "Pin"}
+        </button>
         <button
           type="button"
           role="menuitem"
