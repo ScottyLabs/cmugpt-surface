@@ -8,9 +8,24 @@ body {
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.625rem;
 }
 
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+@theme {
+  --color-brand-secondary-enabled: #e7f5fa;
+  --color-fg-disabled-brandneutral: #aebdcc;
+  --color-fg-neutral-tertiary: #808080;
+  --color-fg-neutral-secondary: #666666;
+  --color-brandneutral-secondary-enabled: #f0f4f8;
+  --color-fg-neutral-primary: #1e1e1e;
+  --color-neutral-secondary-enabled: #f5f5f5;
+  --color-fg-disabled-neutral: #bababa;
 }
