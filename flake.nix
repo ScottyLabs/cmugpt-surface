@@ -109,8 +109,7 @@
             export VITE_OIDC_ISSUER_URL="https://idp.scottylabs.org/realms/scottylabs"
             export VITE_OIDC_CLIENT_ID="cmugpt-surface"
             export VITE_OIDC_REDIRECT_URI="https://cmugpt-surface-web-main.scottylabs.net/auth/callback"
-            export VITE_OIDC_POST_LOGOUT_REDIRECT_URI="https://cmugpt-surface-web-main.scottylabs.net"
-
+            
             bun run --cwd apps/web build
             runHook postBuild
           '';
