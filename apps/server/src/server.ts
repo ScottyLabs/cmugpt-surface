@@ -107,7 +107,8 @@ app.get("/", (_req, res) => {
 app.use(errorHandler as ErrorRequestHandler);
 app.use(notFoundHandler);
 
-const port = env.SERVER_PORT;
+// Use kennel - provided port or fallback to env config - to test, added by Jiya 6/18/26
+const port = Number(process.env.PORT) || env.SERVER_PORT; 
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

@@ -14,6 +14,7 @@
       # Deploys your backend API
       services.server = {
         # customDomain = "api.cmugpt.scottylabs.org"; # (Optional) Uncomment and change if needed
+        oidc.redirectPaths = [ "/auth/callback" ];
       };
 
       # Deploys your frontend React app
