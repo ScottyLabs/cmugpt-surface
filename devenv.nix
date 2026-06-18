@@ -1,4 +1,4 @@
-{ pkgs, config, inputs, ... }:
+{ pkgs, inputs, ... }:
 {
   imports = [ inputs.scottylabs.devenvModules.default ];
 
@@ -24,20 +24,8 @@
     };
   };
 
-  # Local Development Processes (used when you run `devenv up`)
-  processes.server = {
-    exec = "bun run --cwd apps/server server";
-    ready.http.get = {
-      port = 8081;
-      path = "/"; # Consider updating to "/health" if you have a specific health check route
-    };
-  };
-
-  processes.web = {
-    exec = "bun run --cwd apps/web dev";
-    ready.http.get = {
-      port = 3000;
-      path = "/";
-    };
+  processes = {
+    api.exec = "bun run --cwd apps/server dev";
+    web.exec = "bun run --cwd apps/web dev";
   };
 }

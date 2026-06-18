@@ -126,7 +126,7 @@
       overlays.default = final: prev:
         let bunStore = mkBunStore final;
         in {
-          server = mkServer final bunStore;
+          api = mkServer final bunStore;
           web = mkWeb final bunStore;
         };
 
@@ -137,7 +137,7 @@
           bunStore = mkBunStore pkgs;
         in
         {
-          server = mkServer pkgs bunStore;
+          api = mkServer pkgs bunStore;
           web = mkWeb pkgs bunStore;
           default = mkServer pkgs bunStore;
         }
