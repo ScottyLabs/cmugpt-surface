@@ -1,6 +1,6 @@
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { ExternalLink, LockOpen } from "lucide-react";
+import { ExternalLink, LockOpen, RotateCw } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -722,40 +722,111 @@ function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
   return parsed.toString();
 }
 
+/**
+ * Mount the heavy CMU Maps iframe only once the browser is idle, so opening a
+ * chat renders its messages immediately instead of competing with the maps
+ * app boot. Once mounted it stays mounted (URL changes swap src via key).
+ */
+function useDeferredMount(enabled: boolean): boolean {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!enabled || ready) {
+      return;
+    }
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(() => setReady(true), {
+        timeout: 1200,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timeout = window.setTimeout(() => setReady(true), 200);
+    return () => window.clearTimeout(timeout);
+  }, [enabled, ready]);
+  return ready;
+}
+
 function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
+  // Bumping the nonce remounts the iframe (full reload).
+  // For after the user logs in to CMU Maps in another tab
+  // so the route can render.
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const showIframe = useDeferredMount(Boolean(mapUrl));
+
+  // Once the user interacts with the maps iframe, the browser moves focus into
+  // it. It then spends the user's next click on the parent page just moving
+  // focus back out, making the sidebar chat list appear to need a double-click.
+  useEffect(() => {
+    if (!showIframe) {
+      return;
+    }
+    function reclaimFocus() {
+      const active = document.activeElement;
+      if (active instanceof HTMLIFrameElement) {
+        active.blur();
+        window.focus();
+      }
+    }
+    document.addEventListener("pointerover", reclaimFocus);
+    return () => document.removeEventListener("pointerover", reclaimFocus);
+  }, [showIframe]);
+
   if (!cmuMaps || !mapUrl) {
     return null;
   }
+  const isDirections = cmuMaps.mode === "directions";
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-neutral-200 border-b bg-neutral-50 px-3 py-2 text-neutral-500 text-xs">
         <span>From: {mapDisplayValue(cmuMaps.srcLabel ?? cmuMaps.src)}</span>
         <span>To: {mapDisplayValue(cmuMaps.destLabel ?? cmuMaps.dest)}</span>
+        <button
+          type="button"
+          onClick={() => setReloadNonce((nonce) => nonce + 1)}
+          className="ml-auto inline-flex items-center gap-1 rounded border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-600 hover:bg-neutral-100"
+          title="Reload the embedded map"
+        >
+          <RotateCw className="h-3 w-3" aria-hidden={true} />
+          Reload map
+        </button>
+        {isDirections && (
+          <span className="w-full text-neutral-400">
+            Route not showing?{" "}
+            <a
+              href={CMU_MAPS_ORIGIN}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-neutral-500 underline underline-offset-2 hover:text-neutral-700"
+            >
+              Log in to CMU Maps
+            </a>{" "}
+            in a new tab, then reload the map.
+          </span>
+        )}
       </div>
-      <div className="h-[500px] overflow-hidden">
-        <iframe
-          // Stable key on the URL prevents React from remounting the iframe
-          // (and forcing a full reload of maps.scottylabs.org) when this
-          // component re-renders with the same map.
-          key={mapUrl}
-          title="CMU Maps"
-          src={mapUrl}
-          className="border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          // Grant Permissions Policy delegations the maps app uses.
-          // Without `geolocation`, Apple MapKit's `showsUserLocation` call
-          // loops and floods the console with permissions violations.
-          allow="geolocation 'self' https://maps.scottylabs.org; clipboard-write"
-          sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-          style={{
-            height: "556px",
-            transform: "scale(0.9)",
-            transformOrigin: "top left",
-            width: "111.111%",
-          }}
-        />
+      <div className="h-[500px] overflow-hidden bg-neutral-50">
+        {showIframe ? (
+          <iframe
+            key={`${mapUrl}#r${reloadNonce}`}
+            title="CMU Maps"
+            src={mapUrl}
+            className="border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            allow="geolocation 'self' https://maps.scottylabs.org; clipboard-write"
+            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+            style={{
+              height: "556px",
+              transform: "scale(0.9)",
+              transformOrigin: "top left",
+              width: "111.111%",
+            }}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-neutral-400 text-xs">
+            Loading map…
+          </div>
+        )}
       </div>
     </div>
   );
