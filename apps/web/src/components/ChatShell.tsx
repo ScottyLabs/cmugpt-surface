@@ -748,10 +748,18 @@ function useDeferredMount(enabled: boolean): boolean {
 function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const mapUrl = normalizedCmuMapsUrl(cmuMaps?.url);
   // Bumping the nonce remounts the iframe (full reload).
-  // For after the user logs in to CMU Maps in another tab
-  // so the route can render.
+  // Used by the manual "Reload map" button and the one-time auto-reload below.
   const [reloadNonce, setReloadNonce] = useState(0);
   const showIframe = useDeferredMount(Boolean(mapUrl));
+
+  const autoReloadedUrlRef = useRef<string | null>(null);
+  function handleIframeLoad() {
+    if (!mapUrl || autoReloadedUrlRef.current === mapUrl) {
+      return;
+    }
+    autoReloadedUrlRef.current = mapUrl;
+    setReloadNonce((nonce) => nonce + 1);
+  }
 
   // Once the user interacts with the maps iframe, the browser moves focus into
   // it. It then spends the user's next click on the parent page just moving
@@ -774,7 +782,6 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   if (!cmuMaps || !mapUrl) {
     return null;
   }
-  const isDirections = cmuMaps.mode === "directions";
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-neutral-200 border-b bg-neutral-50 px-3 py-2 text-neutral-500 text-xs">
@@ -789,20 +796,6 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
           <RotateCw className="h-3 w-3" aria-hidden={true} />
           Reload map
         </button>
-        {isDirections && (
-          <span className="w-full text-neutral-400">
-            Route not showing?{" "}
-            <a
-              href={CMU_MAPS_ORIGIN}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-neutral-500 underline underline-offset-2 hover:text-neutral-700"
-            >
-              Log in to CMU Maps
-            </a>{" "}
-            in a new tab, then reload the map.
-          </span>
-        )}
       </div>
       <div className="h-[500px] overflow-hidden bg-neutral-50">
         {showIframe ? (
@@ -810,6 +803,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
             key={`${mapUrl}#r${reloadNonce}`}
             title="CMU Maps"
             src={mapUrl}
+            onLoad={handleIframeLoad}
             className="border-0"
             loading="lazy"
             referrerPolicy="no-referrer"
