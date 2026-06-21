@@ -107,9 +107,11 @@
 
             export VITE_SERVER_URL="https://cmugpt-surface-server-main.scottylabs.net"
             export VITE_OIDC_ISSUER_URL="https://idp.scottylabs.org/realms/scottylabs"
-            export VITE_OIDC_CLIENT_ID="cmugpt-surface"
+            export VITE_OIDC_CLIENT_ID="sl-ai-prod"
             export VITE_OIDC_REDIRECT_URI="https://cmugpt-surface-web-main.scottylabs.net/auth/callback"
-            
+            export VITE_OIDC_POST_LOGOUT_REDIRECT_URI="https://cmugpt-surface-web-main.scottylabs.net/auth/callback"
+            # export VITE_DEV_API_ORIGIN="http://localhost:8081" - this needs a value, the default is also a local host
+
             bun run --cwd apps/web build
             runHook postBuild
           '';
@@ -126,7 +128,7 @@
       overlays.default = final: prev:
         let bunStore = mkBunStore final;
         in {
-          api = mkServer final bunStore;
+          server = mkServer final bunStore;
           web = mkWeb final bunStore;
         };
 
@@ -137,7 +139,7 @@
           bunStore = mkBunStore pkgs;
         in
         {
-          api = mkServer pkgs bunStore;
+          server = mkServer pkgs bunStore;
           web = mkWeb pkgs bunStore;
           default = mkServer pkgs bunStore;
         }
