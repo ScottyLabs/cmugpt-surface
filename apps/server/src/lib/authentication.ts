@@ -1,5 +1,5 @@
 // https://tsoa-community.github.io/docs/authentication.html#authentication
-// Keycloak OIDC authentication integration
+// Generic OIDC authentication integration
 
 import type * as express from "express";
 import jwt, { type JwtHeader, type JwtPayload } from "jsonwebtoken";
@@ -65,11 +65,8 @@ export function expressAuthentication(
   return verifyOidcAuth(request);
 }
 
-const issuer = "https://idp.scottylabs.org/realms/scottylabs";
-const jwksUri = "https://idp.scottylabs.org/realms/scottylabs/protocol/openid-connect/certs";
-
 const jwksClient = jwksRsa({
-  jwksUri,
+  jwksUri: `${env.OIDC_ISSUER_URL}/protocol/openid-connect/certs`,
   cache: true,
   cacheMaxEntries: 5,
   cacheMaxAge: 10 * 60 * 1000,
@@ -141,9 +138,8 @@ async function verifyOidcAuth(
         token,
         signingKey,
         {
-          issuer,
-          // Fall back to using the OIDC_CLIENT_ID from secretspec.toml if OIDC_AUDIENCE isn't set
-          audience: env.OIDC_AUDIENCE || env.OIDC_CLIENT_ID || undefined,
+          issuer: env.OIDC_ISSUER_URL,
+          audience: env.OIDC_CLIENT_ID,
         },
         (err, decoded) => {
           if (err || !decoded || typeof decoded === "string") {

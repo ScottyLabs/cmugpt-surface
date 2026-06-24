@@ -8,7 +8,6 @@ const envSchema = z.object({
   VITE_OIDC_ISSUER_URL: z.url(),
   VITE_OIDC_CLIENT_ID: z.string(),
   VITE_OIDC_REDIRECT_URI: z.string().optional(),
-  VITE_OIDC_POST_LOGOUT_REDIRECT_URI: z.string().optional(),
 });
 
 // Validate `process.env` against our schema

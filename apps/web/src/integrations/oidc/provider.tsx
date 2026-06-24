@@ -21,13 +21,6 @@ function buildRedirectUri(origin: string): string {
   return `${origin}/auth/callback`;
 }
 
-function buildPostLogoutRedirectUri(origin: string): string {
-  if (env.VITE_OIDC_POST_LOGOUT_REDIRECT_URI) {
-    return env.VITE_OIDC_POST_LOGOUT_REDIRECT_URI;
-  }
-  return origin;
-}
-
 function TokenGetterSetter({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
@@ -50,16 +43,10 @@ export function OidcProviderIntegration({
 }) {
   const origin = resolveOrigin();
   const redirectUri = buildRedirectUri(origin);
-  const postLogoutRedirectUri = buildPostLogoutRedirectUri(origin);
 
   if (!redirectUri) {
     throw new Error(
       "Missing VITE_OIDC_REDIRECT_URI (or window.location is unavailable)",
-    );
-  }
-  if (!postLogoutRedirectUri) {
-    throw new Error(
-      "Missing VITE_OIDC_POST_LOGOUT_REDIRECT_URI (or window.location is unavailable)",
     );
   }
 
@@ -70,7 +57,7 @@ export function OidcProviderIntegration({
       authority={authority}
       client_id={env.VITE_OIDC_CLIENT_ID}
       redirect_uri={redirectUri}
-      post_logout_redirect_uri={postLogoutRedirectUri}
+      post_logout_redirect_uri={origin}
       response_type="code"
       scope="openid profile email"
       onSigninCallback={() => {
