@@ -40,6 +40,14 @@
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0"
   },
+  "lint-staged": {
+    "apps/web/**/*.{ts,tsx}": [
+      "bun --cwd apps/web biome check --write --no-errors-on-unmatched"
+    ],
+    "apps/server/**/*.{ts,tsx}": [
+      "bun --cwd apps/server biome check --write --no-errors-on-unmatched"
+    ]
+  },
   "private": true,
   "scripts": {
     "build": "bun run generate:api && vite build && tsc",

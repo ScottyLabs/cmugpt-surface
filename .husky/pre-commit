@@ -4,7 +4,10 @@ set -e
 # Export NODE_OPTIONS so it persists in subshells created by bunx commands
 export NODE_OPTIONS="--max-old-space-size=4096"
 
-editorconfig-checker --exclude '^LICENSE'
+bunx @editorconfig-checker/editorconfig-checker --exclude '^LICENSE'
+
 bun run syncpack
-npx markdownlint-cli2 . && npx lint-staged || true
+
+npx lint-staged
+
 bun run check
