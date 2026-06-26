@@ -8,7 +8,7 @@ components:
   schemas:
     AgentModelOption:
       description: >-
-        List of LLM models the user can pick from. The `id` is the
+        Curated list of LLM models the user can pick from. The `id` is the
 
         OpenRouter model slug forwarded to the agent's `/agent/respond`
         endpoint.
@@ -196,8 +196,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description:
-        Better Auth session cookie and/or Keycloak access token as Bearer;
+      description: Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
   title: "@cmugpt-frontend/server"
@@ -220,7 +219,7 @@ paths:
                   - isOidcAdmin
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /me/models:
     get:
@@ -241,7 +240,7 @@ paths:
                 type: object
       description: Curated list of LLM models the user can pick from.
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /me/preferences:
     get:
@@ -255,7 +254,7 @@ paths:
                 $ref: "#/components/schemas/UserPreferencesDto"
       description: Read the user's preferences (preferred model, etc.).
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
     patch:
       operationId: UpdatePreferences
@@ -266,11 +265,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserPreferencesDto"
-      description:
-        Update the user's preferences. Only fields present in the body are
+      description: Update the user's preferences. Only fields present in the body are
         changed.
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
       requestBody:
         required: true
@@ -311,7 +309,7 @@ paths:
                   - message
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /hello/admin:
     get:
@@ -329,7 +327,7 @@ paths:
                   - message
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /chats:
     get:
@@ -344,7 +342,7 @@ paths:
                   $ref: "#/components/schemas/ChatListItemDto"
                 type: array
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: query
           name: q
@@ -361,7 +359,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatListItemDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /chats/{id}/messages:
     get:
@@ -376,7 +374,7 @@ paths:
                   $ref: "#/components/schemas/MessageDto"
                 type: array
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -393,7 +391,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PostMessageResultDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -417,7 +415,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatDetailDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -434,7 +432,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatListItemDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -453,7 +451,7 @@ paths:
         "204":
           description: ""
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id

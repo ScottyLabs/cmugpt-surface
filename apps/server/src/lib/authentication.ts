@@ -16,9 +16,12 @@ export const OIDC_AUTH = "oidc";
 type OidcJwtPayload = JwtPayload & {
   email?: string;
   name?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   preferred_username?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   given_name?: string;
   groups?: string[];
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   realm_access?: { roles?: string[] };
 };
 
@@ -106,9 +109,7 @@ function extractGroups(payload: OidcJwtPayload): string[] | undefined {
   return undefined;
 }
 
-async function verifyOidcAuth(
-  request: express.Request,
-): Promise<Express.User> {
+async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
   try {
     const authHeader = request.headers.authorization ?? "";
     const token = authHeader.startsWith("Bearer ")
@@ -123,9 +124,13 @@ async function verifyOidcAuth(
       throw err;
     }
 
-    const { header } = jwt.decode(token, { complete: true }) as {
-      header?: JwtHeader;
-    } | null;
+    const decodedTokenResult = jwt.decode(token, { complete: true });
+    if (!decodedTokenResult || !decodedTokenResult.header) {
+      const err = new AuthenticationError("Invalid token header");
+      request.authErrors?.push(err);
+      throw err;
+    }
+    const header = decodedTokenResult.header as JwtHeader;
     if (!header) {
       const err = new AuthenticationError("Invalid token header");
       request.authErrors?.push(err);

@@ -27,7 +27,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List of LLM models the user can pick from. */
+        /** @description Curated list of LLM models the user can pick from. */
         get: operations["ListModels"];
         put?: never;
         post?: never;
@@ -156,7 +156,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * @description List of LLM models the user can pick from. The `id` is the
+         * @description Curated list of LLM models the user can pick from. The `id` is the
          *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
          *     Surface UX assumes 4-6 options.
          */

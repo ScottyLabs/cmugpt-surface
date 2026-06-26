@@ -37,13 +37,5 @@ export function App() {
     return <div className="m-8 text-sm">Checking your session...</div>;
   }
 
-  return (
-    <>
-      {!auth.isAuthenticated ? (
-        <SignInPage />
-      ) : (
-        <ChatShell />
-      )}
-    </>
-  );
+  return <>{auth.isAuthenticated ? <ChatShell /> : <SignInPage />}</>;
 }

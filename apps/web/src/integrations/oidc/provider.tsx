@@ -1,6 +1,6 @@
-import { AuthProvider, useAuth } from "react-oidc-context";
 import type React from "react";
 import { useEffect } from "react";
+import { AuthProvider, useAuth } from "react-oidc-context";
 import { env } from "@/env.ts";
 import { setTokenGetter } from "@/lib/api/client.ts";
 
@@ -62,7 +62,11 @@ export function OidcProviderIntegration({
       scope="openid profile email"
       onSigninCallback={() => {
         if (typeof window !== "undefined") {
-          window.history.replaceState({}, document.title, window.location.pathname);
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
         }
       }}
     >

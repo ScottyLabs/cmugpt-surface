@@ -1,9 +1,9 @@
-import { useAuth } from "react-oidc-context";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ExternalLink, LockOpen } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "react-oidc-context";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -1116,7 +1116,8 @@ export function ChatShell() {
     profile?.email ??
     profile?.sub ??
     "User";
-  const avatarUrl = typeof profile?.picture === "string" ? profile.picture : null;
+  const avatarUrl =
+    typeof profile?.picture === "string" ? profile.picture : null;
 
   /*const starred = chats.filter((c) => c.starred);*/
   const unstarred = chats.filter((c) => !c.starred);
