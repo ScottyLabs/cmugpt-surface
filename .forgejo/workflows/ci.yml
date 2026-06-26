@@ -25,7 +25,8 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Check EditorConfig
-        run: bunx editorconfig-checker --exclude '^LICENSE'
+        # Using the node-native binary prevents hitting the GitHub API releases endpoint
+        run: bunx @editorconfig-checker/editorconfig-checker --exclude '^LICENSE'
 
       - name: Lint Markdown
         run: bunx markdownlint-cli2
