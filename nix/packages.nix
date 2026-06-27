@@ -11,33 +11,6 @@ let
       ]);
   };
 
-  # FOD for Bun deps cache, drops symlinks that break Nix store
-  bunStore = stdenv.mkDerivation {
-    pname = "cmugpt-surface-deps";
-    version = "0.0.0";
-    src = cleanSrc;
-    nativeBuildInputs = [ bun ];
-    buildPhase = ''
-      export HOME=$TMPDIR
-      bun install --frozen-lockfile --ignore-scripts
-    '';
-    installPhase = ''
-      mkdir -p $out
-      if [ -d ~/.bun/install/cache ]; then
-        cp -r ~/.bun/install/cache/* $out/
-      fi
-      # Remove symlinks and scrub store path references
-      find $out -type l -delete
-      # Remove any scripts or binaries that might contain store references
-      find $out -type f \( -name "*.sh" -o -name "*.bash" \) -delete
-      # Scrub any remaining store path references
-      find $out -type f -exec sed -i "s|$NIX_STORE/[a-z0-9]\{32\}-|/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-|g" {} + 2>/dev/null || true
-    '';
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-    outputHash = "sha256-7EeAKl8XB24jWsVyXCK3/otxTGhjbcrFRYcgCw9hcO4=";
-  };
-
   mkBunApp = { pname, buildPath, installPath ? "dist", binName, binScript }:
     stdenv.mkDerivation {
       inherit pname;
@@ -46,9 +19,7 @@ let
       nativeBuildInputs = [ bun makeWrapper ];
       buildPhase = ''
         export HOME=$TMPDIR
-        mkdir -p ~/.bun/install/cache
-        cp -r ${bunStore}/* ~/.bun/install/cache/
-        bun install --frozen-lockfile --offline --ignore-scripts
+        bun install --frozen-lockfile --ignore-scripts
         bun run --cwd ${buildPath} build
       '';
       installPhase = ''
@@ -77,9 +48,7 @@ in
     nativeBuildInputs = [ bun ];
     buildPhase = ''
       export HOME=$TMPDIR
-      mkdir -p ~/.bun/install/cache
-      cp -r ${bunStore}/* ~/.bun/install/cache/
-      bun install --frozen-lockfile --offline --ignore-scripts
+      bun install --frozen-lockfile --ignore-scripts
       export VITE_SERVER_URL="https://cmugpt-surface-api-main.scottylabs.net"
       export VITE_OIDC_ISSUER_URL="https://idp.scottylabs.org/realms/scottylabs"
       export VITE_OIDC_CLIENT_ID="sl-ai-prod"
