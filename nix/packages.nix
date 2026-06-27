@@ -19,7 +19,7 @@ let
     nativeBuildInputs = [ bun ];
     buildPhase = ''
       export HOME=$TMPDIR
-      bun install --frozen-lockfile
+      bun install --frozen-lockfile --ignore-scripts
     '';
     installPhase = ''
       mkdir -p $out
@@ -43,7 +43,7 @@ let
         export HOME=$TMPDIR
         mkdir -p ~/.bun/install/cache
         cp -r ${bunStore}/* ~/.bun/install/cache/
-        bun install --frozen-lockfile --offline
+        bun install --frozen-lockfile --offline --ignore-scripts
         bun run --cwd ${buildPath} build
       '';
       installPhase = ''
@@ -74,7 +74,7 @@ in
       export HOME=$TMPDIR
       mkdir -p ~/.bun/install/cache
       cp -r ${bunStore}/* ~/.bun/install/cache/
-      bun install --frozen-lockfile --offline
+      bun install --frozen-lockfile --offline --ignore-scripts
       export VITE_SERVER_URL="https://cmugpt-surface-api-main.scottylabs.net"
       export VITE_OIDC_ISSUER_URL="https://idp.scottylabs.org/realms/scottylabs"
       export VITE_OIDC_CLIENT_ID="sl-ai-prod"
