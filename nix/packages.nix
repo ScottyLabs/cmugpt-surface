@@ -26,7 +26,12 @@ let
       if [ -d ~/.bun/install/cache ]; then
         cp -r ~/.bun/install/cache/* $out/
       fi
+      # Remove symlinks and scrub store path references
       find $out -type l -delete
+      # Remove any scripts or binaries that might contain store references
+      find $out -type f \( -name "*.sh" -o -name "*.bash" \) -delete
+      # Scrub any remaining store path references
+      find $out -type f -exec sed -i "s|$NIX_STORE/[a-z0-9]\{32\}-|/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-|g" {} + 2>/dev/null || true
     '';
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
