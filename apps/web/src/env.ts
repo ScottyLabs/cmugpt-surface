@@ -5,6 +5,9 @@ import { z } from "zod";
 // variables and their types
 const envSchema = z.object({
   VITE_SERVER_URL: z.url(),
+  VITE_OIDC_ISSUER_URL: z.url(),
+  VITE_OIDC_CLIENT_ID: z.string(),
+  VITE_OIDC_REDIRECT_URI: z.string().optional(),
 });
 
 // Validate `process.env` against our schema

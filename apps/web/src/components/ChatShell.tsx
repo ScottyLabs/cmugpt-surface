@@ -1,9 +1,9 @@
-import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ExternalLink, LockOpen } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "react-oidc-context";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -791,9 +791,8 @@ function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
 }
 
 export function ChatShell() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  const { signOut } = useClerk();
+  const auth = useAuth();
+  const profile = auth.user?.profile;
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -1112,9 +1111,13 @@ export function ChatShell() {
   }, [isStreaming, messages.length, streamingText.length]);
 
   const displayName =
-    user?.fullName ??
-    user?.primaryEmailAddress?.emailAddress ??
-    (user?.id ? String(user.id) : "User");
+    profile?.name ??
+    profile?.preferred_username ??
+    profile?.email ??
+    profile?.sub ??
+    "User";
+  const avatarUrl =
+    typeof profile?.picture === "string" ? profile.picture : null;
 
   /*const starred = chats.filter((c) => c.starred);*/
   const unstarred = chats.filter((c) => !c.starred);
@@ -1485,7 +1488,7 @@ export function ChatShell() {
       const streamHeaders: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      const token = await getToken();
+      const token = auth.user?.access_token;
       if (token) {
         streamHeaders.Authorization = `Bearer ${token}`;
       }
@@ -1802,7 +1805,7 @@ export function ChatShell() {
               <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
               <button
                 type="button"
-                onClick={() => void signOut()}
+                onClick={() => void auth.signoutRedirect()}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
               >
                 <LogOutIcon />
@@ -1820,9 +1823,9 @@ export function ChatShell() {
             className={`flex w-full items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
-              {user?.imageUrl ? (
+              {avatarUrl ? (
                 <img
-                  src={user.imageUrl}
+                  src={avatarUrl}
                   alt=""
                   className="h-full w-full object-cover"
                 />
@@ -1834,7 +1837,7 @@ export function ChatShell() {
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate font-medium">{displayName}</p>
                 <p className="text-sm text-fg-neutral-tertiary hover:text-neutral-800">
-                  {user?.primaryEmailAddress?.emailAddress}
+                  {profile?.email}
                 </p>
               </div>
             )}

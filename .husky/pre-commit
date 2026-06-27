@@ -1,6 +1,13 @@
 #!/usr/bin/env zsh
 set -e
-editorconfig-checker --exclude '^LICENSE'
+
+# Export NODE_OPTIONS so it persists in subshells created by bunx commands
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+bunx @editorconfig-checker/editorconfig-checker --exclude '^LICENSE'
+
 bun run syncpack
-bunx markdownlint-cli2
+
+npx lint-staged
+
 bun run check

@@ -4,7 +4,7 @@
 node_modules/
 
 # Local env files
-.env*
+.env
 
 # Cache
 .turbo/
@@ -21,3 +21,20 @@ build/
 
 # Misc
 .DS_Store
+
+# Nix / devenv
+.devenv/
+.devenv.flake.nix
+.pre-commit-config.yaml
+result
+result-*
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# AI
+.mcp.json
+.claude

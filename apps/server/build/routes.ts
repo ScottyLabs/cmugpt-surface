@@ -146,7 +146,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/me/oidc-admin',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getOidcAdminStatus)),
 
@@ -176,7 +176,7 @@ export function RegisterRoutes(app: Router) {
         const argsMeController_listModels: Record<string, TsoaRoute.ParameterSchema> = {
         };
         app.get('/me/models',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.listModels)),
 
@@ -207,7 +207,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/me/preferences',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.getPreferences)),
 
@@ -239,7 +239,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PatchUserPreferencesBody"},
         };
         app.patch('/me/preferences',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MeController)),
             ...(fetchMiddlewares<RequestHandler>(MeController.prototype.updatePreferences)),
 
@@ -300,7 +300,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/authenticated',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAuthenticated)),
 
@@ -331,7 +331,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.get('/hello/admin',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(HelloController)),
             ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAdmin)),
 
@@ -363,7 +363,7 @@ export function RegisterRoutes(app: Router) {
                 q: {"in":"query","name":"q","dataType":"string"},
         };
         app.get('/chats',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.listChats)),
 
@@ -394,7 +394,7 @@ export function RegisterRoutes(app: Router) {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
         app.post('/chats',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createChat)),
 
@@ -426,7 +426,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id/messages',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessages)),
 
@@ -458,7 +458,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.get('/chats/:id',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getChat)),
 
@@ -491,7 +491,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PostChatMessageBody"},
         };
         app.post('/chats/:id/messages',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.postMessage)),
 
@@ -524,7 +524,7 @@ export function RegisterRoutes(app: Router) {
                 body: {"in":"body","name":"body","required":true,"ref":"PatchChatBody"},
         };
         app.patch('/chats/:id',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.patchChat)),
 
@@ -556,7 +556,7 @@ export function RegisterRoutes(app: Router) {
                 id: {"in":"path","name":"id","required":true,"dataType":"string"},
         };
         app.delete('/chats/:id',
-            authenticateMiddleware([{"clerk":[]}]),
+            authenticateMiddleware([{"oidc":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChatController)),
             ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat)),
 

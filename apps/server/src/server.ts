@@ -30,7 +30,7 @@ const app = express();
 /** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
 app.use(express.json({ limit: "12mb" }));
 
-// Parse cookies for Clerk session tokens
+// Parse cookies for auth flows that rely on cookies
 app.use(express.urlencoded({ extended: true }));
 
 const defaultAllowedOrigins = [
@@ -107,7 +107,9 @@ app.get("/", (_req, res) => {
 app.use(errorHandler as ErrorRequestHandler);
 app.use(notFoundHandler);
 
-const port = env.SERVER_PORT;
+const envPort = (process.env as { readonly PORT?: string }).PORT ?? undefined;
+const port = Number(envPort) ?? env.SERVER_PORT;
+
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

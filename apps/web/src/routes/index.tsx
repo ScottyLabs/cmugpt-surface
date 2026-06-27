@@ -1,6 +1,6 @@
-import { SignedIn, SignedOut, useClerk } from "@clerk/clerk-react";
 import { Button } from "@scottylabs/corgi";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "react-oidc-context";
 import { ChatShell } from "@/components/ChatShell.tsx";
 
 export const Route = createFileRoute("/")({
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
 });
 
 function SignInPage() {
-  const { redirectToSignIn } = useClerk();
+  const auth = useAuth();
 
   return (
     <div className="m-8 flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
@@ -22,7 +22,7 @@ function SignInPage() {
         size="md"
         theme="brand"
         className="inline"
-        onClick={() => redirectToSignIn()}
+        onClick={() => void auth.signinRedirect()}
       >
         Sign In
       </Button>
@@ -31,14 +31,11 @@ function SignInPage() {
 }
 
 export function App() {
-  return (
-    <>
-      <SignedOut>
-        <SignInPage />
-      </SignedOut>
-      <SignedIn>
-        <ChatShell />
-      </SignedIn>
-    </>
-  );
+  const auth = useAuth();
+
+  if (auth.isLoading) {
+    return <div className="m-8 text-sm">Checking your session...</div>;
+  }
+
+  return <>{auth.isAuthenticated ? <ChatShell /> : <SignInPage />}</>;
 }

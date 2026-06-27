@@ -1,9 +1,9 @@
 // https://tsoa-community.github.io/docs/authentication.html#authentication
-// Clerk authentication integration
+// Generic OIDC authentication integration
 
-import { verifyToken } from "@clerk/clerk-sdk-node";
 import type * as express from "express";
-import type jwt from "jsonwebtoken";
+import jwt, { type JwtHeader, type JwtPayload } from "jsonwebtoken";
+import jwksRsa from "jwks-rsa";
 import { env } from "../env.ts";
 import {
   AuthenticationError,
@@ -11,11 +11,18 @@ import {
   InternalServerError,
 } from "../middlewares/errorHandler.ts";
 
-export const CLERK_AUTH = "clerk";
+export const OIDC_AUTH = "oidc";
 
-type ClerkJwtPayload = jwt.JwtPayload & {
+type OidcJwtPayload = JwtPayload & {
   email?: string;
   name?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
+  preferred_username?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
+  given_name?: string;
+  groups?: string[];
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
+  realm_access?: { roles?: string[] };
 };
 
 declare module "express" {
@@ -52,23 +59,64 @@ export function expressAuthentication(
   // so we can return the most relevant error to the client in errorHandler
   request.authErrors = request.authErrors ?? [];
 
-  if (securityName !== CLERK_AUTH) {
+  if (securityName !== OIDC_AUTH) {
     const err = new InternalServerError("Invalid security name");
     request.authErrors?.push(err);
     throw err;
   }
 
-  return verifyClerkAuth(request);
+  return verifyOidcAuth(request);
 }
 
-async function verifyClerkAuth(
-  request: express.Request,
-): Promise<Express.User> {
-  try {
-    const token =
-      request.headers.authorization?.split(" ")[1] || request.cookies?.session;
+const jwksClient = jwksRsa({
+  jwksUri: `${env.OIDC_ISSUER_URL}/protocol/openid-connect/certs`,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 10 * 60 * 1000,
+  rateLimit: true,
+  jwksRequestsPerMinute: 10,
+});
 
-    console.log("[auth] Verifying Clerk token...");
+function getSigningKey(header: JwtHeader): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!header.kid) {
+      reject(new Error("Missing kid in token header"));
+      return;
+    }
+    jwksClient.getSigningKey(header.kid, (err, key) => {
+      if (err || !key) {
+        reject(err ?? new Error("Failed to load signing key"));
+        return;
+      }
+      const signingKey = key.getPublicKey();
+      if (!signingKey) {
+        reject(new Error("Signing key missing public key"));
+        return;
+      }
+      resolve(signingKey);
+    });
+  });
+}
+
+function extractGroups(payload: OidcJwtPayload): string[] | undefined {
+  if (Array.isArray(payload.groups)) {
+    return payload.groups.filter((group) => typeof group === "string");
+  }
+  const roles = payload.realm_access?.roles;
+  if (Array.isArray(roles)) {
+    return roles.filter((role) => typeof role === "string");
+  }
+  return undefined;
+}
+
+async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
+  try {
+    const authHeader = request.headers.authorization ?? "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length)
+      : "";
+
+    console.log("[auth] Verifying OIDC token...");
 
     if (!token) {
       const err = new AuthenticationError("No authentication token provided");
@@ -76,23 +124,37 @@ async function verifyClerkAuth(
       throw err;
     }
 
-    const secretKey = env.CLERK_SECRET_KEY;
-    if (!secretKey) {
-      const err = new InternalServerError("CLERK_SECRET_KEY not configured");
+    const decodedTokenResult = jwt.decode(token, { complete: true });
+    if (!decodedTokenResult || !decodedTokenResult.header) {
+      const err = new AuthenticationError("Invalid token header");
+      request.authErrors?.push(err);
+      throw err;
+    }
+    const header = decodedTokenResult.header as JwtHeader;
+    if (!header) {
+      const err = new AuthenticationError("Invalid token header");
       request.authErrors?.push(err);
       throw err;
     }
 
-    const payload = (await verifyToken(token, {
-      issuer: env.CLERK_ISSUER_URL,
-      secretKey,
-    })) as ClerkJwtPayload;
-
-    if (!payload || typeof payload === "string") {
-      const err = new AuthenticationError("Invalid token structure");
-      request.authErrors?.push(err);
-      throw err;
-    }
+    const signingKey = await getSigningKey(header);
+    const payload = await new Promise<OidcJwtPayload>((resolve, reject) => {
+      jwt.verify(
+        token,
+        signingKey,
+        {
+          issuer: env.OIDC_ISSUER_URL,
+          audience: env.OIDC_CLIENT_ID,
+        },
+        (err, decoded) => {
+          if (err || !decoded || typeof decoded === "string") {
+            reject(err ?? new Error("Invalid token"));
+            return;
+          }
+          resolve(decoded as OidcJwtPayload);
+        },
+      );
+    });
 
     if (!payload.sub) {
       const err = new AuthenticationError("Token missing subject claim (sub)");
@@ -100,17 +162,24 @@ async function verifyClerkAuth(
       throw err;
     }
 
-    const givenNameClaim = payload["given_name"];
     const givenName =
-      typeof givenNameClaim === "string" ? givenNameClaim : payload.name;
+      (typeof payload.given_name === "string" && payload.given_name) ||
+      (typeof payload.name === "string" && payload.name) ||
+      (typeof payload.preferred_username === "string" &&
+        payload.preferred_username) ||
+      payload.sub;
 
-    // Build Express user from Clerk token
+    // Build Express user from OIDC token
     const user: Express.User = {
       sub: payload.sub,
       givenName: givenName || "User",
     };
     if (payload.email !== undefined) {
       user.email = payload.email;
+    }
+    const groups = extractGroups(payload);
+    if (groups && groups.length > 0) {
+      user.groups = groups;
     }
 
     console.log("[auth] ✅ Token verified successfully for user:", user.sub);
@@ -119,10 +188,10 @@ async function verifyClerkAuth(
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error("[auth] Clerk verification failed:", error);
+    console.error("[auth] OIDC verification failed:", error);
     const message = error instanceof Error ? error.message : String(error);
     const err = new AuthenticationError(
-      `Clerk authentication failed: ${message}`,
+      `OIDC authentication failed: ${message}`,
     );
     request.authErrors?.push(err);
     throw err;
@@ -130,15 +199,15 @@ async function verifyClerkAuth(
 }
 
 /**
- * Middleware to protect routes with Clerk authentication
+ * Middleware to protect routes with OIDC authentication
  */
-export async function requireClerkAuth(
+export async function requireOidcAuth(
   request: express.Request,
   response: express.Response,
   next: express.NextFunction,
 ): Promise<void> {
   try {
-    request.user = await expressAuthentication(request, CLERK_AUTH, []);
+    request.user = await expressAuthentication(request, OIDC_AUTH, []);
     if (response.writableEnded) {
       return;
     }

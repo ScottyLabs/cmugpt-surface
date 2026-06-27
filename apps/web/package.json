@@ -2,7 +2,6 @@
   "name": "@cmugpt-frontend/web",
   "version": "0.0.0",
   "dependencies": {
-    "@clerk/clerk-react": "^4.0.0",
     "@cmugpt-frontend/server": "workspace:*",
     "@scottylabs/corgi": "^0.3.1",
     "@tailwindcss/vite": "^4.0.6",
@@ -18,6 +17,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
+    "react-oidc-context": "^3.3.1",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
@@ -39,6 +39,14 @@
     "vite": "^7.1.7",
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{ts,tsx}": [
+      "bun --cwd apps/web biome check --write --no-errors-on-unmatched"
+    ],
+    "apps/server/**/*.{ts,tsx}": [
+      "bun --cwd apps/server biome check --write --no-errors-on-unmatched"
+    ]
   },
   "private": true,
   "scripts": {
