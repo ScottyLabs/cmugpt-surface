@@ -4,7 +4,7 @@
   nixConfig = {
     extra-substituters = [ "https://scottylabs.cachix.org" ];
     extra-trusted-public-keys = [
-      "scottylabs.cachix.org-1:hajjEX5SLi/Y7yYloiXTt2IOr3towcTGhjbcrFRYcgCw9hcO4=";
+      "scottylabs.cachix.org-1:hajjEX5SLi/Y7yYloiXTt2IOr3towcTGRhMh1vu6Tjg="
     ];
   };
 
