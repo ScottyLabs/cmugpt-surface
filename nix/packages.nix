@@ -1,51 +1,49 @@
-{ lib, stdenv, bun, makeWrapper }:
+{ lib, scottylabs, pkgs }:
 
 let
-  # Clean source to exclude build artifacts
-  cleanSrc = lib.cleanSourceWith {
+  src = lib.cleanSourceWith {
     src = ../.;
     filter = path: type:
       let base = baseNameOf path;
       in !(builtins.elem base [
-        ".devenv" ".direnv" ".env" "node_modules" "dist" "build" "result" ".git"
+        ".devenv"
+        ".direnv"
+        ".env"
+        "node_modules"
+        "dist"
+        "build"
+        "result"
+        ".git"
       ]);
   };
-
-  mkBunApp = { pname, buildPath, installPath ? "dist", binName, binScript }:
-    stdenv.mkDerivation {
-      inherit pname;
-      version = "0.0.0";
-      src = cleanSrc;
-      nativeBuildInputs = [ bun makeWrapper ];
-      buildPhase = ''
-        export HOME=$TMPDIR
-        bun install --frozen-lockfile --ignore-scripts
-        bun run --cwd ${buildPath} build
-      '';
-      installPhase = ''
-        mkdir -p $out/share/cmugpt-surface/${pname}
-        cp -r ${buildPath}/${installPath} $out/share/cmugpt-surface/${pname}/
-        [ -d ${buildPath}/build ] && cp -r ${buildPath}/build $out/share/cmugpt-surface/${pname}/ || true
-        [ -d ${buildPath}/drizzle ] && cp -r ${buildPath}/drizzle $out/share/cmugpt-surface/${pname}/ || true
-        makeWrapper ${bun}/bin/bun $out/bin/${binName} \
-          --chdir $out/share/cmugpt-surface/${pname} \
-          --add-flags "${binScript}"
-      '';
-    };
 in
 {
-  api = mkBunApp {
+  api = pkgs.stdenv.mkDerivation {
     pname = "api";
-    buildPath = "apps/server";
-    binName = "cmugpt-surface-api";
-    binScript = "dist/server.js";
+    version = "0.0.0";
+    inherit src;
+    nativeBuildInputs = [ pkgs.bun pkgs.makeWrapper ];
+    buildPhase = ''
+      export HOME=$TMPDIR
+      bun install --frozen-lockfile --ignore-scripts
+      bun run --cwd apps/server build
+    '';
+    installPhase = ''
+      mkdir -p $out/share/cmugpt-surface/api
+      cp -r apps/server/dist $out/share/cmugpt-surface/api/
+      [ -d apps/server/build ] && cp -r apps/server/build $out/share/cmugpt-surface/api/ || true
+      [ -d apps/server/drizzle ] && cp -r apps/server/drizzle $out/share/cmugpt-surface/api/ || true
+      makeWrapper ${pkgs.bun}/bin/bun $out/bin/cmugpt-surface-api \
+        --chdir $out/share/cmugpt-surface/api \
+        --add-flags "dist/server.js"
+    '';
   };
 
-  web = stdenv.mkDerivation {
-    pname = "cmugpt-surface-web";
+  web = pkgs.stdenv.mkDerivation {
+    pname = "web";
     version = "0.0.0";
-    src = cleanSrc;
-    nativeBuildInputs = [ bun ];
+    inherit src;
+    nativeBuildInputs = [ pkgs.bun ];
     buildPhase = ''
       export HOME=$TMPDIR
       bun install --frozen-lockfile --ignore-scripts
