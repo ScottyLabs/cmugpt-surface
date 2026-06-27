@@ -1,4 +1,8 @@
 { pkgs, inputs, ... }:
+
+let
+  packages = pkgs.callPackage ./nix/packages.nix { };
+in
 {
   imports = [ inputs.scottylabs.devenvModules.default ];
 
@@ -11,7 +15,7 @@
     # Kennel deployment configuration
     kennel = {
       # Deploys your backend API
-      services.server = {
+      services.api = {
         # customDomain = "api.cmugpt.scottylabs.org"; # (Optional) Uncomment and change if needed
       };
 
@@ -20,6 +24,12 @@
         spa = true; # Set to true since React apps are typically Single Page Applications
       };
     };
+  };
+
+  packages = [ pkgs.bun ];
+
+  outputs = {
+    inherit (packages) api web;
   };
 
   processes = {
