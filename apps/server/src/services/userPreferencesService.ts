@@ -28,10 +28,7 @@ export const userPreferencesService = {
   },
 
   /** Upsert the user's preferences. Validates the model against the curated list. */
-  async update(
-    userSub: string,
-    body: { preferredModel?: string },
-  ): Promise<UserPreferencesDto> {
+  async update(userSub: string, body: { preferredModel?: string }): Promise<UserPreferencesDto> {
     if (body.preferredModel === undefined) {
       throw new BadRequestError("preferredModel is required");
     }

@@ -29,11 +29,7 @@ function AuthCallback() {
   }, [auth.isLoading, auth.isAuthenticated, auth.error, navigate]);
 
   if (auth.error) {
-    return (
-      <div className="m-8 text-sm text-red-600">
-        Sign in failed: {auth.error.message}
-      </div>
-    );
+    return <div className="m-8 text-sm text-red-600">Sign in failed: {auth.error.message}</div>;
   }
 
   return <div className="m-8 text-sm">Finishing sign in...</div>;

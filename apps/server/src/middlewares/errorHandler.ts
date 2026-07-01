@@ -48,12 +48,7 @@ export class BadRequestError extends HttpError {
 }
 
 // From https://tsoa-community.github.io/docs/error-handling.html
-export function errorHandler(
-  err: unknown,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
   // The authentication errors takes the highest priority
   const firstAuthError = req.authErrors?.[0];
   if (req.authErrors && firstAuthError) {
@@ -64,15 +59,12 @@ export function errorHandler(
     }, firstAuthError);
 
     const chosenReason =
-      errorToReturn instanceof AuthenticationError &&
-      errorToReturn.authDebugReason
+      errorToReturn instanceof AuthenticationError && errorToReturn.authDebugReason
         ? errorToReturn.authDebugReason
         : errorToReturn.message;
     const allReasons = req.authErrors
       .map((e) =>
-        e instanceof AuthenticationError && e.authDebugReason
-          ? e.authDebugReason
-          : e.message,
+        e instanceof AuthenticationError && e.authDebugReason ? e.authDebugReason : e.message,
       )
       .join(" | ");
     // Single-line log so Turbo’s dev TUI (and similar) is not corrupted by multiline objects.
@@ -108,9 +100,7 @@ export function errorHandler(
   // Drizzle wraps PG errors; log the driver message (e.g. missing column) in one line.
   if (err instanceof DrizzleQueryError) {
     const pgDetail = err.cause instanceof Error ? err.cause.message : "";
-    console.error(
-      `[db-query] ${req.method} ${req.path}${pgDetail ? ` — ${pgDetail}` : ""}`,
-    );
+    console.error(`[db-query] ${req.method} ${req.path}${pgDetail ? ` — ${pgDetail}` : ""}`);
     return res.status(500).json({
       message: "Internal Server Error",
       details: err.message,
@@ -120,9 +110,7 @@ export function errorHandler(
   // Then the unknown errors
   if (err instanceof Error) {
     console.error(`Error ${req.path}`, err);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", details: err.message });
+    return res.status(500).json({ message: "Internal Server Error", details: err.message });
   }
 
   return next();

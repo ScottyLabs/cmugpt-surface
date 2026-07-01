@@ -5,10 +5,7 @@ import { $api } from "@/lib/api/client.ts";
 /** Compact "currently using model X" dropdown for the chat input bar. */
 export function ModelSelector() {
   const { data: modelsData } = $api.useQuery("get", "/me/models");
-  const { data: prefs, refetch: refetchPrefs } = $api.useQuery(
-    "get",
-    "/me/preferences",
-  );
+  const { data: prefs, refetch: refetchPrefs } = $api.useQuery("get", "/me/preferences");
   const updatePreferences = $api.useMutation("patch", "/me/preferences", {
     onSuccess: () => {
       void refetchPrefs();
@@ -45,8 +42,7 @@ export function ModelSelector() {
 
   const models = modelsData?.models ?? [];
   const currentId = prefs?.preferredModel;
-  const currentLabel =
-    models.find((m) => m.id === currentId)?.label ?? "Loading…";
+  const currentLabel = models.find((m) => m.id === currentId)?.label ?? "Loading…";
 
   function selectModel(id: string) {
     setOpen(false);
@@ -84,16 +80,10 @@ export function ModelSelector() {
                     selected ? "bg-neutral-50" : ""
                   }`}
                 >
-                  <span
-                    className={`font-medium ${
-                      selected ? "text-red-800" : "text-neutral-900"
-                    }`}
-                  >
+                  <span className={`font-medium ${selected ? "text-red-800" : "text-neutral-900"}`}>
                     {m.label}
                   </span>
-                  <span className="text-neutral-500 text-xs">
-                    {m.description}
-                  </span>
+                  <span className="text-neutral-500 text-xs">{m.description}</span>
                 </button>
               </li>
             );

@@ -137,15 +137,10 @@ function normalizeCmuMaps(raw: unknown): CmuMapsPayload | null {
     dest: nullableString(body.dest),
     destLabel: nullableString(body.dest_label),
   };
-  return Object.values(payload).some((value) => value !== null)
-    ? payload
-    : null;
+  return Object.values(payload).some((value) => value !== null) ? payload : null;
 }
 
-export async function callAgent(
-  request: AgentRequest,
-  signal?: AbortSignal,
-): Promise<AgentResult> {
+export async function callAgent(request: AgentRequest, signal?: AbortSignal): Promise<AgentResult> {
   const url = `${env.AGENT_API_URL.replace(/\/$/, "")}/agent/respond`;
 
   const init: RequestInit = {
@@ -230,22 +225,14 @@ function normalizeAgentStreamEvent(parsed: {
     return { type: "delta", text: parsed.data.text };
   }
 
-  if (
-    parsed.event === "done" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null
-  ) {
+  if (parsed.event === "done" && typeof parsed.data === "object" && parsed.data !== null) {
     return {
       type: "done",
       result: agentBodyToResult(parsed.data as AgentResponseBody),
     };
   }
 
-  if (
-    parsed.event === "error" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null
-  ) {
+  if (parsed.event === "error" && typeof parsed.data === "object" && parsed.data !== null) {
     const data = parsed.data as { error?: unknown; detail?: unknown };
     const message =
       typeof data.error === "string"

@@ -199,9 +199,13 @@ components:
       description: Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
-  title: "@cmugpt-frontend/server"
-  version: 0.0.0
-  contact: {}
+  title: TSOA
+  version: 1.0.0
+  description: Build swagger-compliant REST APIs using TypeScript and Node
+  license:
+    name: MIT
+  contact:
+    name: unknown
 paths:
   /me/oidc-admin:
     get:

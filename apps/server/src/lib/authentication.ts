@@ -112,9 +112,7 @@ function extractGroups(payload: OidcJwtPayload): string[] | undefined {
 async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
   try {
     const authHeader = request.headers.authorization ?? "";
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice("Bearer ".length)
-      : "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
 
     console.log("[auth] Verifying OIDC token...");
 
@@ -165,8 +163,7 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
     const givenName =
       (typeof payload.given_name === "string" && payload.given_name) ||
       (typeof payload.name === "string" && payload.name) ||
-      (typeof payload.preferred_username === "string" &&
-        payload.preferred_username) ||
+      (typeof payload.preferred_username === "string" && payload.preferred_username) ||
       payload.sub;
 
     // Build Express user from OIDC token
@@ -190,9 +187,7 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
     }
     console.error("[auth] OIDC verification failed:", error);
     const message = error instanceof Error ? error.message : String(error);
-    const err = new AuthenticationError(
-      `OIDC authentication failed: ${message}`,
-    );
+    const err = new AuthenticationError(`OIDC authentication failed: ${message}`);
     request.authErrors?.push(err);
     throw err;
   }

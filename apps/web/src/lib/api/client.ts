@@ -10,19 +10,13 @@ export function setTokenGetter(getter: (() => Promise<string | null>) | null) {
   const msg = `🔑 Setting token getter: ${getter ? "set" : "cleared"}`;
   console.log(msg);
   if (typeof window !== "undefined") {
-    window.localStorage?.setItem(
-      "debug-token-getter",
-      `${msg} at ${new Date().toISOString()}`,
-    );
+    window.localStorage?.setItem("debug-token-getter", `${msg} at ${new Date().toISOString()}`);
   }
   tokenGetter = getter;
 }
 
 // Create a custom fetch that injects the token
-async function customFetch(
-  input: RequestInfo | URL,
-  init?: RequestInit,
-): Promise<Response> {
+async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const initWithHeaders: RequestInit = { ...init };
 
   if (tokenGetter) {
@@ -32,11 +26,7 @@ async function customFetch(
         const headers = new Headers(initWithHeaders.headers);
         headers.set("Authorization", `Bearer ${token}`);
         initWithHeaders.headers = headers;
-        console.log(
-          "✅ Authorization header injected (length:",
-          token.length,
-          ")",
-        );
+        console.log("✅ Authorization header injected (length:", token.length, ")");
       }
     } catch (error) {
       console.error("❌ Error getting token:", error);

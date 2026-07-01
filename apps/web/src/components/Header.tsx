@@ -3,11 +3,7 @@ import { useAuth } from "react-oidc-context";
 export function Header() {
   const auth = useAuth();
   const profile = auth.user?.profile;
-  const label =
-    profile?.email ??
-    profile?.preferred_username ??
-    profile?.name ??
-    profile?.sub;
+  const label = profile?.email ?? profile?.preferred_username ?? profile?.name ?? profile?.sub;
 
   return (
     <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">

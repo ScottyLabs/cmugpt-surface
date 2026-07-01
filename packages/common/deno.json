@@ -1,0 +1,8 @@
+{
+  "name": "@cmugpt-frontend/common",
+  "version": "0.0.0",
+  "exports": "./src/index.ts",
+  "tasks": {
+    "check": "deno check --sloppy-imports"
+  }
+}

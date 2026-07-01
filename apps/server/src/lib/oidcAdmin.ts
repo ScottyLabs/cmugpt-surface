@@ -16,8 +16,6 @@ export function userIsOidcAdmin(user: Express.User | undefined): boolean {
 
 export function assertOidcAdmin(user: Express.User | undefined): void {
   if (!userIsOidcAdmin(user)) {
-    throw new AuthorizationError(
-      "You do not have permission to manage custom LLM settings.",
-    );
+    throw new AuthorizationError("You do not have permission to manage custom LLM settings.");
   }
 }

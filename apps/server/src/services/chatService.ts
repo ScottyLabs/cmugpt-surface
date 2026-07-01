@@ -89,19 +89,11 @@ async function getOwnedChat(chatId: string, userSub: string) {
 
 type ChatRow = InferSelectModel<typeof chats>;
 
-async function getReadableChat(
-  chatId: string,
-  userSub: string,
-): Promise<ChatRow | undefined> {
+async function getReadableChat(chatId: string, userSub: string): Promise<ChatRow | undefined> {
   const [row] = await db
     .select()
     .from(chats)
-    .where(
-      and(
-        eq(chats.id, chatId),
-        or(eq(chats.userSub, userSub), eq(chats.isPublic, true)),
-      ),
-    )
+    .where(and(eq(chats.id, chatId), or(eq(chats.userSub, userSub), eq(chats.isPublic, true))))
     .limit(1);
   return row;
 }
@@ -150,10 +142,7 @@ async function prepareAssistantTurn(
       .set({ title: titleFromFirstMessage(trimmed), updatedAt: new Date() })
       .where(eq(chats.id, chatId));
   } else {
-    await db
-      .update(chats)
-      .set({ updatedAt: new Date() })
-      .where(eq(chats.id, chatId));
+    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
   }
 
   // Build message history from prior messages (excluding the one we just inserted).
@@ -178,14 +167,8 @@ async function prepareAssistantTurn(
 export const chatService = {
   async listChats(userSub: string, q?: string): Promise<ChatListItemDto[]> {
     const owner = eq(chats.userSub, userSub);
-    const whereClause = q?.trim()
-      ? and(owner, ilike(chats.title, `%${q.trim()}%`))
-      : owner;
-    const rows = await db
-      .select()
-      .from(chats)
-      .where(whereClause)
-      .orderBy(desc(chats.updatedAt));
+    const whereClause = q?.trim() ? and(owner, ilike(chats.title, `%${q.trim()}%`)) : owner;
+    const rows = await db.select().from(chats).where(whereClause).orderBy(desc(chats.updatedAt));
     return rows.map((r) => chatRowToListDto(r));
   },
 
@@ -229,14 +212,9 @@ export const chatService = {
     userSub: string,
     content: string,
   ): Promise<PostMessageResultDto> {
-    const { userRow, messageHistory } = await prepareAssistantTurn(
-      chatId,
-      userSub,
-      content,
-    );
+    const { userRow, messageHistory } = await prepareAssistantTurn(chatId, userSub, content);
 
-    const preferredModel =
-      await userPreferencesService.getPreferredModel(userSub);
+    const preferredModel = await userPreferencesService.getPreferredModel(userSub);
     const agentResult = await callAgent({
       query: content.trim(),
       ...(messageHistory.length > 0 && { messageHistory }),
@@ -254,10 +232,7 @@ export const chatService = {
       })
       .returning();
 
-    await db
-      .update(chats)
-      .set({ updatedAt: new Date() })
-      .where(eq(chats.id, chatId));
+    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
 
     if (!assistantRow) {
       throw new Error("Failed to persist messages");
@@ -279,16 +254,11 @@ export const chatService = {
     content: string,
     options: { signal?: AbortSignal } = {},
   ): AsyncGenerator<ChatStreamEvent, void, undefined> {
-    const { userRow, messageHistory } = await prepareAssistantTurn(
-      chatId,
-      userSub,
-      content,
-    );
+    const { userRow, messageHistory } = await prepareAssistantTurn(chatId, userSub, content);
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
-    const preferredModel =
-      await userPreferencesService.getPreferredModel(userSub);
+    const preferredModel = await userPreferencesService.getPreferredModel(userSub);
     let result: Awaited<ReturnType<typeof callAgent>> | undefined;
     let streamedText = "";
     let streamedCmuMaps: CmuMapsDto | null = null;
@@ -350,10 +320,7 @@ export const chatService = {
       })
       .returning();
 
-    await db
-      .update(chats)
-      .set({ updatedAt: new Date() })
-      .where(eq(chats.id, chatId));
+    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
 
     if (!assistantRow) {
       yield { type: "error", message: "Failed to persist assistant message" };
@@ -372,11 +339,7 @@ export const chatService = {
     userSub: string,
     body: { starred?: boolean; title?: string; isPublic?: boolean },
   ): Promise<ChatListItemDto> {
-    if (
-      body.starred === undefined &&
-      body.title === undefined &&
-      body.isPublic === undefined
-    ) {
+    if (body.starred === undefined && body.title === undefined && body.isPublic === undefined) {
       throw new BadRequestError("Provide starred, title, and/or isPublic");
     }
 
@@ -407,11 +370,7 @@ export const chatService = {
       patch.isPublic = body.isPublic;
     }
 
-    const [row] = await db
-      .update(chats)
-      .set(patch)
-      .where(eq(chats.id, chatId))
-      .returning();
+    const [row] = await db.update(chats).set(patch).where(eq(chats.id, chatId)).returning();
     if (!row) {
       throw new NotFoundError("Chat not found");
     }

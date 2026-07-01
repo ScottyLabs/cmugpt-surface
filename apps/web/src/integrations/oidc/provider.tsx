@@ -36,18 +36,12 @@ function TokenGetterSetter({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export function OidcProviderIntegration({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function OidcProviderIntegration({ children }: { children: React.ReactNode }) {
   const origin = resolveOrigin();
   const redirectUri = buildRedirectUri(origin);
 
   if (!redirectUri) {
-    throw new Error(
-      "Missing VITE_OIDC_REDIRECT_URI (or window.location is unavailable)",
-    );
+    throw new Error("Missing VITE_OIDC_REDIRECT_URI (or window.location is unavailable)");
   }
 
   const authority = env.VITE_OIDC_ISSUER_URL.replace(/\/$/, "");
@@ -62,11 +56,7 @@ export function OidcProviderIntegration({
       scope="openid profile email"
       onSigninCallback={() => {
         if (typeof window !== "undefined") {
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname,
-          );
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
       }}
     >

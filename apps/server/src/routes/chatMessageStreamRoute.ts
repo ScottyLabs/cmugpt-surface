@@ -1,9 +1,6 @@
 import type { NextFunction, Request, Response, Router } from "express";
 import { requireOidcAuth } from "../lib/authentication.ts";
-import {
-  AuthenticationError,
-  BadRequestError,
-} from "../middlewares/errorHandler.ts";
+import { AuthenticationError, BadRequestError } from "../middlewares/errorHandler.ts";
 import { chatService } from "../services/chatService.ts";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -37,10 +34,7 @@ export function registerChatMessageStreamRoute(router: Router): void {
       }
 
       const { body } = req;
-      const content =
-        isRecord(body) && typeof body["content"] === "string"
-          ? body["content"]
-          : "";
+      const content = isRecord(body) && typeof body["content"] === "string" ? body["content"] : "";
 
       if (!content.trim()) {
         next(new BadRequestError("Message content is required"));
@@ -56,18 +50,12 @@ export function registerChatMessageStreamRoute(router: Router): void {
 
       let wrote = false;
       try {
-        for await (const ev of chatService.postMessageStream(
-          chatId,
-          userSub,
-          content,
-          { signal: ac.signal },
-        )) {
+        for await (const ev of chatService.postMessageStream(chatId, userSub, content, {
+          signal: ac.signal,
+        })) {
           if (!wrote) {
             res.status(200);
-            res.setHeader(
-              "Content-Type",
-              "application/x-ndjson; charset=utf-8",
-            );
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8");
             res.setHeader("Cache-Control", "no-cache");
             res.setHeader("Connection", "keep-alive");
             res.flushHeaders();

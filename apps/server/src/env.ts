@@ -16,6 +16,9 @@ const envSchema = z.object({
 
   AGENT_API_URL: z.url(),
   AGENT_SHARED_SECRET: z.string().optional(),
+
+  // When set, the server serves the built frontend (SPA) from this directory.
+  STATIC_DIR: z.string().optional(),
 });
 
 // Validate `process.env` against our schema and return the result

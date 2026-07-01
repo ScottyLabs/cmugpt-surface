@@ -5,11 +5,10 @@ let TanStackDevtoolsLazy: LazyExoticComponent<() => ReactElement> | null = null;
 
 if (import.meta.env.DEV) {
   TanStackDevtoolsLazy = lazy(async () => {
-    const [{ TanStackDevtools }, { TanStackRouterDevtoolsPanel }] =
-      await Promise.all([
-        import("@tanstack/react-devtools"),
-        import("@tanstack/react-router-devtools"),
-      ]);
+    const [{ TanStackDevtools }, { TanStackRouterDevtoolsPanel }] = await Promise.all([
+      import("@tanstack/react-devtools"),
+      import("@tanstack/react-router-devtools"),
+    ]);
     return {
       default: () => (
         <TanStackDevtools

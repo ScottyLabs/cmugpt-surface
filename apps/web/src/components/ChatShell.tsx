@@ -252,17 +252,9 @@ function CmuMapsIcon({ className }: { className?: string }) {
         d="M5.85793 15.8458C4.87087 14.3179 3.80101 13.603 2.61253 12.4817C1.42406 11.3603 0.810947 10.6234 0.327039 9.11752C-0.113701 7.74599 -0.0386306 6.33647 0.144199 5.43938C0.327029 4.54229 1.09976 3.10488 2.24685 2.03037C3.27669 1.0657 4.02296 0.587783 5.40083 0.236157C6.69655 -0.0945016 7.52532 -0.0625308 8.82907 0.236157C10.3067 0.57467 11.1731 0.988754 12.2573 2.03037C13.3649 3.09445 13.9943 4.45257 14.1771 5.43938C14.36 6.42619 14.4196 7.7413 13.9943 9.11752C13.5358 10.6012 12.9429 11.45 11.8459 12.4817C10.7489 13.5133 9.47457 14.3043 8.41768 15.8458C7.78929 16.7624 7.31356 16.1479 7.08503 16.1479C6.8565 16.1479 6.45211 16.7656 5.85793 15.8458Z"
         fill="#2962C0"
       />
-      <g
-        clipPath="url(#paint0_angular_358_4186_clip_path)"
-        data-figma-skip-parse="true"
-      >
+      <g clipPath="url(#paint0_angular_358_4186_clip_path)" data-figma-skip-parse="true">
         <g transform="matrix(0 0.00817477 -0.00547624 0 9.02409 8.17477)">
-          <foreignObject
-            x="-1182.61"
-            y="-1182.61"
-            width="2365.21"
-            height="2365.21"
-          >
+          <foreignObject x="-1182.61" y="-1182.61" width="2365.21" height="2365.21">
             <div
               style={{
                 background:
@@ -277,15 +269,9 @@ function CmuMapsIcon({ className }: { className?: string }) {
       </g>
       <path
         d="M5.98933 14.0846C6.65106 12.396 5.07515 13.4117 3.88667 12.2904C2.6982 11.169 5.05627 10.2527 4.57236 8.7468C4.13162 7.37526 4.89228 7.26656 5.07511 6.36946C5.25794 5.47237 6.30495 5.56004 7.45205 4.48554C8.48188 3.52087 4.20714 0.587783 5.58502 0.236157C6.88073 -0.0945016 7.70951 -0.0625308 9.01326 0.236157C10.4908 0.57467 11.3573 0.988754 12.4415 2.03037C13.5491 3.09445 14.1785 4.45258 14.3613 5.43938C14.5442 6.42619 14.6038 7.7413 14.1785 9.11752C13.7199 10.6012 13.1271 11.45 12.0301 12.4817C10.9331 13.5133 9.65876 14.3043 8.60187 15.8458C7.97348 16.7624 7.26919 16.1928 7.08635 16.1479C6.90351 16.1031 5.58502 15.1163 5.98933 14.0846Z"
-        data-figma-gradient-fill="{&quot;type&quot;:&quot;GRADIENT_ANGULAR&quot;,&quot;stops&quot;:[{&quot;color&quot;:{&quot;r&quot;:0.14827786386013031,&quot;g&quot;:0.69388604164123535,&quot;b&quot;:0.92771810293197632,&quot;a&quot;:1.0},&quot;position&quot;:0.0},{&quot;color&quot;:{&quot;r&quot;:0.77327471971511841,&quot;g&quot;:0.73155266046524048,&quot;b&quot;:0.73155266046524048,&quot;a&quot;:1.0},&quot;position&quot;:0.31000000238418579},{&quot;color&quot;:{&quot;r&quot;:1.0,&quot;g&quot;:0.26948243379592896,&quot;b&quot;:0.26948243379592896,&quot;a&quot;:1.0},&quot;position&quot;:0.52499997615814209},{&quot;color&quot;:{&quot;r&quot;:0.75030344724655151,&quot;g&quot;:0.18219079077243805,&quot;b&quot;:0.76189780235290527,&quot;a&quot;:1.0},&quot;position&quot;:0.68000000715255737}],&quot;stopsVar&quot;:[{&quot;color&quot;:{&quot;r&quot;:0.14827786386013031,&quot;g&quot;:0.69388604164123535,&quot;b&quot;:0.92771810293197632,&quot;a&quot;:1.0},&quot;position&quot;:0.0},{&quot;color&quot;:{&quot;r&quot;:0.77327471971511841,&quot;g&quot;:0.73155266046524048,&quot;b&quot;:0.73155266046524048,&quot;a&quot;:1.0},&quot;position&quot;:0.31000000238418579},{&quot;color&quot;:{&quot;r&quot;:1.0,&quot;g&quot;:0.26948243379592896,&quot;b&quot;:0.26948243379592896,&quot;a&quot;:1.0},&quot;position&quot;:0.52499997615814209},{&quot;color&quot;:{&quot;r&quot;:0.75030344724655151,&quot;g&quot;:0.18219079077243805,&quot;b&quot;:0.76189780235290527,&quot;a&quot;:1.0},&quot;position&quot;:0.68000000715255737}],&quot;transform&quot;:{&quot;m00&quot;:6.7064643574115041e-16,&quot;m01&quot;:-10.952486991882324,&quot;m02&quot;:14.500338554382324,&quot;m10&quot;:16.349538803100586,&quot;m11&quot;:1.0011205223375928e-15,&quot;m12&quot;:4.8520739065580169e-23},&quot;opacity&quot;:1.0,&quot;blendMode&quot;:&quot;NORMAL&quot;,&quot;visible&quot;:true}"
+        data-figma-gradient-fill='{"type":"GRADIENT_ANGULAR","stops":[{"color":{"r":0.14827786386013031,"g":0.69388604164123535,"b":0.92771810293197632,"a":1.0},"position":0.0},{"color":{"r":0.77327471971511841,"g":0.73155266046524048,"b":0.73155266046524048,"a":1.0},"position":0.31000000238418579},{"color":{"r":1.0,"g":0.26948243379592896,"b":0.26948243379592896,"a":1.0},"position":0.52499997615814209},{"color":{"r":0.75030344724655151,"g":0.18219079077243805,"b":0.76189780235290527,"a":1.0},"position":0.68000000715255737}],"stopsVar":[{"color":{"r":0.14827786386013031,"g":0.69388604164123535,"b":0.92771810293197632,"a":1.0},"position":0.0},{"color":{"r":0.77327471971511841,"g":0.73155266046524048,"b":0.73155266046524048,"a":1.0},"position":0.31000000238418579},{"color":{"r":1.0,"g":0.26948243379592896,"b":0.26948243379592896,"a":1.0},"position":0.52499997615814209},{"color":{"r":0.75030344724655151,"g":0.18219079077243805,"b":0.76189780235290527,"a":1.0},"position":0.68000000715255737}],"transform":{"m00":6.7064643574115041e-16,"m01":-10.952486991882324,"m02":14.500338554382324,"m10":16.349538803100586,"m11":1.0011205223375928e-15,"m12":4.8520739065580169e-23},"opacity":1.0,"blendMode":"NORMAL","visible":true}'
       />
-      <ellipse
-        cx="7.31302"
-        cy="7.35623"
-        rx="4.84525"
-        ry="4.75467"
-        fill="#ED2024"
-      />
+      <ellipse cx="7.31302" cy="7.35623" rx="4.84525" ry="4.75467" fill="#ED2024" />
       <g filter="url(#filter0_d_358_4186)">
         <path
           d="M5.94305 18.8169C5.80115 18.1345 6.32206 17.4941 7.01899 17.4941H7.70639C8.43001 17.4941 8.95612 18.1814 8.76726 18.8799C8.63769 19.3592 8.20287 19.6921 7.70639 19.6921H7.01899C6.4983 19.6921 6.04907 19.3266 5.94305 18.8169Z"
@@ -319,15 +305,8 @@ function CmuMapsIcon({ className }: { className?: string }) {
           <feOffset />
           <feGaussianBlur stdDeviation="2" />
           <feComposite in2="hardAlpha" operator="out" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-          />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_358_4186"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_358_4186" />
           <feBlend
             mode="normal"
             in="SourceGraphic"
@@ -465,9 +444,7 @@ function codeFenceForBody(body: string, lang: string): string {
   const useTilde = body.includes("```");
   const open = useTilde ? "~~~" : "```";
   const close = useTilde ? "~~~" : "```";
-  return lang
-    ? `${open}${lang}\n${body}\n${close}`
-    : `${open}\n${body}\n${close}`;
+  return lang ? `${open}${lang}\n${body}\n${close}` : `${open}\n${body}\n${close}`;
 }
 
 function codeLangFromFilename(name: string): string {
@@ -513,10 +490,7 @@ function closeOpenBlockMathFence(streamingMarkdown: string): string {
 }
 
 /** Safe string input + LaTeX delimiters; optional streaming fence balance for partial SSE text. */
-function markdownForReactComponent(
-  raw: unknown,
-  options?: { streaming?: boolean },
-): string {
+function markdownForReactComponent(raw: unknown, options?: { streaming?: boolean }): string {
   const base = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
   let md = preprocessLlmLatexDelimiters(base);
   if (options?.streaming) {
@@ -525,10 +499,7 @@ function markdownForReactComponent(
   return md;
 }
 
-function assistantDisplayContent(
-  content: string,
-  cmuMaps?: CmuMapsPayload | null,
-): string {
+function assistantDisplayContent(content: string, cmuMaps?: CmuMapsPayload | null): string {
   const trimmed = content.trim();
   let text = content;
   if (trimmed.startsWith("{")) {
@@ -561,9 +532,7 @@ function stripInvalidHastChildren(node: unknown): void {
   if (!Array.isArray(n.children)) {
     return;
   }
-  n.children = n.children.filter(
-    (c): c is object => c != null && typeof c === "object",
-  );
+  n.children = n.children.filter((c): c is object => c != null && typeof c === "object");
   for (const child of n.children) {
     stripInvalidHastChildren(child);
   }
@@ -577,10 +546,7 @@ function rehypeKatexWithGuards(options?: Parameters<typeof rehypeKatex>[0]) {
     try {
       run(tree as Parameters<typeof run>[0], file as Parameters<typeof run>[1]);
     } catch (err) {
-      console.warn(
-        "[markdown] rehype-katex failed; math may render as plain text",
-        err,
-      );
+      console.warn("[markdown] rehype-katex failed; math may render as plain text", err);
     }
     stripInvalidHastChildren(tree);
   };
@@ -598,23 +564,17 @@ async function buildOutgoingContent(
   for (const { file } of pending) {
     if (file.type.startsWith("image/")) {
       if (file.size > MAX_IMAGE_BYTES) {
-        throw new Error(
-          `Image "${file.name}" is too large (max ${MAX_IMAGE_BYTES / 1024} KB).`,
-        );
+        throw new Error(`Image "${file.name}" is too large (max ${MAX_IMAGE_BYTES / 1024} KB).`);
       }
       const dataUrl = await readFileAsDataUrl(file);
       chunks.push(`![${file.name.replace(/]/g, "")}](${dataUrl})`);
     } else if (isTextLikeFile(file)) {
       if (file.size > MAX_TEXT_FILE_BYTES) {
-        throw new Error(
-          `File "${file.name}" is too large (max ${MAX_TEXT_FILE_BYTES / 1024} KB).`,
-        );
+        throw new Error(`File "${file.name}" is too large (max ${MAX_TEXT_FILE_BYTES / 1024} KB).`);
       }
       const body = await readFileAsText(file);
       const lang = codeLangFromFilename(file.name);
-      chunks.push(
-        `**Attached:** ${file.name}\n\n${codeFenceForBody(body, lang)}`,
-      );
+      chunks.push(`**Attached:** ${file.name}\n\n${codeFenceForBody(body, lang)}`);
     } else {
       throw new Error(
         `"${file.name}" is not a supported attachment. Use images or text-based files.`,
@@ -693,9 +653,7 @@ function cmuMapsSuccessText(cmuMaps: CmuMapsPayload): string {
       "4. Enter the destination building when you arrive.",
     ].join("\n");
   }
-  return `Here's **${mapDisplayValue(
-    cmuMaps.targetLabel ?? cmuMaps.target,
-  )}** on CMU Maps.`;
+  return `Here's **${mapDisplayValue(cmuMaps.targetLabel ?? cmuMaps.target)}** on CMU Maps.`;
 }
 
 function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
@@ -765,10 +723,7 @@ const CmuMapsEmbed = memo(CmuMapsEmbedImpl, (prev, next) => {
   // Only re-render when the rendered URL actually changes. Other field
   // changes (labels, etc.) are cosmetic and shouldn't trigger an iframe
   // reflow.
-  return (
-    normalizedCmuMapsUrl(prev.cmuMaps?.url) ===
-    normalizedCmuMapsUrl(next.cmuMaps?.url)
-  );
+  return normalizedCmuMapsUrl(prev.cmuMaps?.url) === normalizedCmuMapsUrl(next.cmuMaps?.url);
 });
 
 function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
@@ -804,21 +759,16 @@ export function ChatShell() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
-  const [streamingCmuMaps, setStreamingCmuMaps] =
-    useState<CmuMapsPayload | null>(null);
+  const [streamingCmuMaps, setStreamingCmuMaps] = useState<CmuMapsPayload | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [optimisticUserMessage, setOptimisticUserMessage] = useState<{
     chatId: string;
     content: string;
     messageCountBeforeSend: number;
   } | null>(null);
-  const [pendingAttachments, setPendingAttachments] = useState<
-    PendingAttachment[]
-  >([]);
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentHint, setAttachmentHint] = useState<string | null>(null);
-  const [shareFeedback, setShareFeedback] = useState<
-    null | "copied" | "shared"
-  >(null);
+  const [shareFeedback, setShareFeedback] = useState<null | "copied" | "shared">(null);
   const [sidebarMenu, setSidebarMenu] = useState<{
     x: number;
     y: number;
@@ -827,9 +777,7 @@ export function ChatShell() {
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<"settings" | "about" | null>(
-    null,
-  );
+  const [activeModal, setActiveModal] = useState<"settings" | "about" | null>(null);
   const [mapsIsDisabled, setMapsIsDisabled] = useState(false);
   const [eatsIsDisabled, setEatsIsDisabled] = useState(false);
   const [coursesIsDisabled, setCoursesIsDisabled] = useState(false);
@@ -847,9 +795,7 @@ export function ChatShell() {
   const streamFrameRef = useRef<number | null>(null);
   const streamFlushResolversRef = useRef<Array<() => void>>([]);
   const pendingAttachmentsRef = useRef(pendingAttachments);
-  const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const shareFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   pendingAttachmentsRef.current = pendingAttachments;
 
@@ -970,8 +916,7 @@ export function ChatShell() {
     }
     return null;
   }, [messages]);
-  const activeCmuMaps: CmuMapsPayload | null =
-    streamingCmuMaps ?? lastAssistantCmuMaps;
+  const activeCmuMaps: CmuMapsPayload | null = streamingCmuMaps ?? lastAssistantCmuMaps;
 
   const createChat = $api.useMutation("post", "/chats", {
     onSuccess: () => {
@@ -1013,16 +958,14 @@ export function ChatShell() {
 
   const currentChat = chats.find((c) => c.id === chatId);
   const optimisticMessageIsForVisibleChat =
-    optimisticUserMessage !== null &&
-    (!chatId || optimisticUserMessage.chatId === chatId);
+    optimisticUserMessage !== null && (!chatId || optimisticUserMessage.chatId === chatId);
   const optimisticMessagePersisted =
     optimisticUserMessage !== null &&
     chatId === optimisticUserMessage.chatId &&
     messages.length > optimisticUserMessage.messageCountBeforeSend;
   const shouldShowOptimisticUserMessage =
     optimisticMessageIsForVisibleChat && !optimisticMessagePersisted;
-  const shouldShowConversation =
-    Boolean(chatId) || shouldShowOptimisticUserMessage || isStreaming;
+  const shouldShowConversation = Boolean(chatId) || shouldShowOptimisticUserMessage || isStreaming;
   const showMessagesLoading =
     Boolean(chatId) && messagesLoading && !shouldShowOptimisticUserMessage;
 
@@ -1044,9 +987,7 @@ export function ChatShell() {
   }, [chatDetail, currentChat, chatId]);
 
   const canEditChat = Boolean(effectiveChatDetail?.isOwner);
-  const showMakePrivate = Boolean(
-    effectiveChatDetail?.isOwner && effectiveChatDetail?.isPublic,
-  );
+  const showMakePrivate = Boolean(effectiveChatDetail?.isOwner && effectiveChatDetail?.isPublic);
 
   useEffect(() => {
     if (isNewChatIntent) {
@@ -1079,14 +1020,7 @@ export function ChatShell() {
       hasAutoFocusedComposerRef.current = true;
     });
     return () => cancelAnimationFrame(id);
-  }, [
-    chatId,
-    chatsLoading,
-    chats.length,
-    isStreaming,
-    canEditChat,
-    isNewChatIntent,
-  ]);
+  }, [chatId, chatsLoading, chats.length, isStreaming, canEditChat, isNewChatIntent]);
 
   useEffect(() => {
     if (!isNewChatIntent) {
@@ -1111,13 +1045,8 @@ export function ChatShell() {
   }, [isStreaming, messages.length, streamingText.length]);
 
   const displayName =
-    profile?.name ??
-    profile?.preferred_username ??
-    profile?.email ??
-    profile?.sub ??
-    "User";
-  const avatarUrl =
-    typeof profile?.picture === "string" ? profile.picture : null;
+    profile?.name ?? profile?.preferred_username ?? profile?.email ?? profile?.sub ?? "User";
+  const avatarUrl = typeof profile?.picture === "string" ? profile.picture : null;
 
   /*const starred = chats.filter((c) => c.starred);*/
   const unstarred = chats.filter((c) => !c.starred);
@@ -1236,9 +1165,7 @@ export function ChatShell() {
         additions.push({
           id: crypto.randomUUID(),
           file,
-          previewUrl: file.type.startsWith("image/")
-            ? URL.createObjectURL(file)
-            : undefined,
+          previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined,
         });
       }
       return [...prev, ...additions];
@@ -1292,11 +1219,7 @@ export function ChatShell() {
     );
   }
 
-  function onRenameKeyDown(
-    e: KeyboardEvent<HTMLInputElement>,
-    id: string,
-    originalTitle: string,
-  ) {
+  function onRenameKeyDown(e: KeyboardEvent<HTMLInputElement>, id: string, originalTitle: string) {
     if (e.key === "Enter") {
       e.preventDefault();
       commitRename(id, originalTitle);
@@ -1372,11 +1295,7 @@ export function ChatShell() {
   const markdownComponents = useMemo(
     () =>
       ({
-        a: ({
-          href,
-          children,
-          ...props
-        }: ComponentProps<"a"> & { href?: string }) => (
+        a: ({ href, children, ...props }: ComponentProps<"a"> & { href?: string }) => (
           <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
             {children}
             <span className="text-xs" aria-hidden={true}>
@@ -1398,11 +1317,7 @@ export function ChatShell() {
             className="my-1 max-h-48 max-w-full rounded-lg object-contain"
           />
         ),
-        a: ({
-          href,
-          children,
-          ...props
-        }: ComponentProps<"a"> & { href?: string }) => (
+        a: ({ href, children, ...props }: ComponentProps<"a"> & { href?: string }) => (
           <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
             {children}
           </a>
@@ -1410,9 +1325,7 @@ export function ChatShell() {
         p: ({ className, ...props }: ComponentProps<"p">) => (
           <p
             {...props}
-            className={["my-1.5 first:mt-0 last:mb-0", className]
-              .filter(Boolean)
-              .join(" ")}
+            className={["my-1.5 first:mt-0 last:mb-0", className].filter(Boolean).join(" ")}
           />
         ),
       }) satisfies ComponentProps<typeof ReactMarkdown>["components"],
@@ -1449,9 +1362,7 @@ export function ChatShell() {
     try {
       content = await buildOutgoingContent(textPart, pendingAttachments);
     } catch (e) {
-      setAttachmentHint(
-        e instanceof Error ? e.message : "Could not read attachments.",
-      );
+      setAttachmentHint(e instanceof Error ? e.message : "Could not read attachments.");
       return;
     }
 
@@ -1492,15 +1403,12 @@ export function ChatShell() {
       if (token) {
         streamHeaders.Authorization = `Bearer ${token}`;
       }
-      const res = await fetch(
-        `${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: streamHeaders,
-          body: JSON.stringify({ content }),
-        },
-      );
+      const res = await fetch(`${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`, {
+        method: "POST",
+        credentials: "include",
+        headers: streamHeaders,
+        body: JSON.stringify({ content }),
+      });
 
       if (!res.ok) {
         let detail = res.statusText;
@@ -1608,10 +1516,7 @@ export function ChatShell() {
   const userBubbleMarkdownClass =
     "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
 
-  function renderSidebarChatRow(
-    c: (typeof chats)[number],
-    starFilled: boolean,
-  ) {
+  function renderSidebarChatRow(c: (typeof chats)[number], starFilled: boolean) {
     const rowClass = `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
       c.id === chatId ? "bg-neutral-200" : ""
     }`;
@@ -1666,9 +1571,7 @@ export function ChatShell() {
   }
 
   const sidebarMenuChat =
-    sidebarMenu != null
-      ? chats.find((x) => x.id === sidebarMenu.chatId)
-      : undefined;
+    sidebarMenu != null ? chats.find((x) => x.id === sidebarMenu.chatId) : undefined;
 
   return (
     <div className="relative flex h-dvh min-h-[480px] bg-white text-neutral-900">
@@ -1678,9 +1581,7 @@ export function ChatShell() {
         }`}
       >
         {/* Header */}
-        <div
-          className={`flex h-16 items-center px-4 ${sidebarOpen ? "gap-10" : "justify-center"}`}
-        >
+        <div className={`flex h-16 items-center px-4 ${sidebarOpen ? "gap-10" : "justify-center"}`}>
           <button
             type="button"
             onClick={() => setSidebarOpen((o) => !o)}
@@ -1705,9 +1606,7 @@ export function ChatShell() {
           )}
         </div>
 
-        {Boolean(sidebarOpen) && (
-          <div className="mx-6 border-b border-fg-disabled-brandneutral" />
-        )}
+        {Boolean(sidebarOpen) && <div className="mx-6 border-b border-fg-disabled-brandneutral" />}
 
         {/* Sidebar Navigation */}
         <nav className="flex flex-col gap-1 px-3 pt-2">
@@ -1751,9 +1650,7 @@ export function ChatShell() {
           {Boolean(sidebarOpen) && (
             <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 mt-6">
               <div>
-                <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">
-                  Recents
-                </p>
+                <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">Recents</p>
                 <ul className="space-y-0.5">
                   {unstarred.map((c) => renderSidebarChatRow(c, false))}
                 </ul>
@@ -1824,11 +1721,7 @@ export function ChatShell() {
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
               {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <span>{displayName.slice(0, 1).toUpperCase()}</span>
               )}
@@ -1875,10 +1768,7 @@ export function ChatShell() {
               className="flex w-full px-3 py-2 text-left hover:bg-neutral-100"
               onClick={() => {
                 closeSidebarMenu();
-                void shareChatById(
-                  sidebarMenuChat.id,
-                  sidebarMenuChat.isPublic,
-                );
+                void shareChatById(sidebarMenuChat.id, sidebarMenuChat.isPublic);
               }}
             >
               Share
@@ -1974,9 +1864,7 @@ export function ChatShell() {
             {Boolean(chatId) && currentChat != null && (
               <button
                 type="button"
-                onClick={() =>
-                  toggleStarChat(currentChat.id, !currentChat.starred)
-                }
+                onClick={() => toggleStarChat(currentChat.id, !currentChat.starred)}
                 className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100"
                 aria-label={currentChat.starred ? "Unstar" : "Star"}
               >
@@ -1992,84 +1880,76 @@ export function ChatShell() {
           onScroll={(e) => {
             const el = e.currentTarget;
             shouldStickToBottomRef.current =
-              el.scrollHeight - el.scrollTop - el.clientHeight <=
-              STICKY_SCROLL_THRESHOLD_PX;
+              el.scrollHeight - el.scrollTop - el.clientHeight <= STICKY_SCROLL_THRESHOLD_PX;
           }}
         >
-          {!shouldShowConversation &&
-            !chatsLoading &&
-            !chatId &&
-            !isNewChatIntent && (
-              <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
-                <div className="flex flex-col items-start gap-2">
-                  <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">
-                    Hi there!
-                  </h1>
-                  <p className="text-left text-2xl font-medium text-black">
-                    Welcome to CMUGPT...
-                  </p>
-                </div>
+          {!shouldShowConversation && !chatsLoading && !chatId && !isNewChatIntent && (
+            <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
+              <div className="flex flex-col items-start gap-2">
+                <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">
+                  Hi there!
+                </h1>
+                <p className="text-left text-2xl font-medium text-black">Welcome to CMUGPT...</p>
+              </div>
 
-                <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-                  <div className="flex items-end gap-2">
-                    <textarea
-                      ref={draftComposerRef}
-                      rows={1}
-                      placeholder="How can I help you today?"
-                      value={draft}
-                      disabled={
-                        isStreaming || (Boolean(chatId) && !canEditChat)
+              <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    ref={draftComposerRef}
+                    rows={1}
+                    placeholder="How can I help you today?"
+                    value={draft}
+                    disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
+                    onChange={(e) => {
+                      setDraft(e.target.value);
+                      setAttachmentHint(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void send();
                       }
-                      onChange={(e) => {
-                        setDraft(e.target.value);
-                        setAttachmentHint(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          void send();
-                        }
-                      }}
-                      className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => send()}
-                      disabled={
-                        isStreaming ||
-                        createChat.isPending ||
-                        (Boolean(chatId) && !canEditChat) ||
-                        (!draft.trim() && pendingAttachments.length === 0)
-                      }
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
-                      aria-label="Send"
-                    >
-                      <SendIcon />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-center items-center gap-3">
-                  {[
-                    "What time does Hunan close today?",
-                    "Plan my Fall 26 schedule",
-                    "Navigate me from Tepper to Rotunda Hall",
-                  ].map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => {
-                        setDraft(s);
-                        draftComposerRef.current?.focus();
-                      }}
-                      className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
-                    >
-                      {s}
-                    </button>
-                  ))}
+                    }}
+                    className="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => send()}
+                    disabled={
+                      isStreaming ||
+                      createChat.isPending ||
+                      (Boolean(chatId) && !canEditChat) ||
+                      (!draft.trim() && pendingAttachments.length === 0)
+                    }
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-200 disabled:opacity-35"
+                    aria-label="Send"
+                  >
+                    <SendIcon />
+                  </button>
                 </div>
               </div>
-            )}
+
+              <div className="flex justify-center items-center gap-3">
+                {[
+                  "What time does Hunan close today?",
+                  "Plan my Fall 26 schedule",
+                  "Navigate me from Tepper to Rotunda Hall",
+                ].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setDraft(s);
+                      draftComposerRef.current?.focus();
+                    }}
+                    className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {showMessagesLoading ? (
             <p className="text-neutral-500 text-sm">Loading messages…</p>
           ) : null}
@@ -2097,9 +1977,7 @@ export function ChatShell() {
                       rehypePlugins={rehypeMarkdownPlugins}
                       components={markdownComponents}
                     >
-                      {markdownForReactComponent(
-                        assistantDisplayContent(m.content, m.cmuMaps),
-                      )}
+                      {markdownForReactComponent(assistantDisplayContent(m.content, m.cmuMaps))}
                     </ReactMarkdown>
                     {typeof m.confidence === "number" && m.confidence < 0.5 && (
                       <p className="mt-2 text-xs text-amber-700">
@@ -2119,9 +1997,7 @@ export function ChatShell() {
                         rehypePlugins={rehypeMarkdownPlugins}
                         components={userMarkdownComponents}
                       >
-                        {markdownForReactComponent(
-                          optimisticUserMessage.content,
-                        )}
+                        {markdownForReactComponent(optimisticUserMessage.content)}
                       </ReactMarkdown>
                     </div>
                   </div>
@@ -2180,9 +2056,7 @@ export function ChatShell() {
                         {fileExtension(p.file.name).slice(0, 3) || "file"}
                       </span>
                     )}
-                    <span className="max-w-[140px] truncate sm:max-w-[200px]">
-                      {p.file.name}
-                    </span>
+                    <span className="max-w-[140px] truncate sm:max-w-[200px]">{p.file.name}</span>
                     <button
                       type="button"
                       onClick={() => removePendingAttachment(p.id)}
@@ -2196,9 +2070,7 @@ export function ChatShell() {
               </ul>
             )}
             {attachmentHint != null && attachmentHint !== "" && (
-              <p className="mb-2 text-center text-xs text-red-600">
-                {attachmentHint}
-              </p>
+              <p className="mb-2 text-center text-xs text-red-600">{attachmentHint}</p>
             )}
           </div>
           {shouldShowConversation ||
@@ -2233,9 +2105,7 @@ export function ChatShell() {
                       rows={1}
                       placeholder="How can I help you today?"
                       value={draft}
-                      disabled={
-                        isStreaming || (Boolean(chatId) && !canEditChat)
-                      }
+                      disabled={isStreaming || (Boolean(chatId) && !canEditChat)}
                       onChange={(e) => {
                         setDraft(e.target.value);
                         setAttachmentHint(null);
@@ -2265,8 +2135,7 @@ export function ChatShell() {
                   </div>
                 </div>
                 <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
-                  CMUGPT is AI and can make mistakes. Please double-check
-                  responses.
+                  CMUGPT is AI and can make mistakes. Please double-check responses.
                 </p>
                 {streamError != null && streamError !== "" && (
                   <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
@@ -2306,9 +2175,7 @@ export function ChatShell() {
                 <div className="flex flex-col gap-6 px-2 pt-2">
                   <div className="flex flex-col gap-4">
                     <div className="pl-4 flex items-center justify-between">
-                      <span className="text-sm font-medium text-black">
-                        Language
-                      </span>
+                      <span className="text-sm font-medium text-black">Language</span>
                       <div className="relative">
                         <button
                           type="button"
@@ -2361,9 +2228,7 @@ export function ChatShell() {
                   </div>
 
                   <div className="flex flex-col gap-4 pl-4">
-                    <p className="text-left text-sm font-medium text-black">
-                      Tools
-                    </p>
+                    <p className="text-left text-sm font-medium text-black">Tools</p>
                     <div className="flex gap-4 flex-wrap">
                       <button
                         type="button"
@@ -2384,8 +2249,7 @@ export function ChatShell() {
                           className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${coursesIsDisabled ? "opacity-55" : "opacity-100"}`}
                           style={{
                             aspectRatio: "18/17",
-                            backgroundImage:
-                              "url('../../public/cmucoursesicon.png')",
+                            backgroundImage: "url('../../public/cmucoursesicon.png')",
                           }}
                         ></span>
                         CMUCourses
@@ -2398,8 +2262,7 @@ export function ChatShell() {
                         <span
                           className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${eatsIsDisabled ? "opacity-55" : "opacity-100"}`}
                           style={{
-                            backgroundImage:
-                              "url('../../public/cmueatsicon.png')",
+                            backgroundImage: "url('../../public/cmueatsicon.png')",
                           }}
                         ></span>
                         CMUEats
@@ -2412,13 +2275,10 @@ export function ChatShell() {
               {activeModal === "about" && (
                 <>
                   <p className="text-left text-sm text-black pl-4 font-normal">
-                    CMUGPT is an AI tool for CMU community ..... made by
-                    Scottylabs...........
+                    CMUGPT is an AI tool for CMU community ..... made by Scottylabs...........
                   </p>
                   <div className="flex items-center justify-end gap-2 mt-[19rem] mr-4">
-                    <p className="text-base font-medium text-black">
-                      With love,
-                    </p>
+                    <p className="text-base font-medium text-black">With love,</p>
                     <button
                       type="button"
                       className="rounded-[6.25rem] px-3.5 py-1"
