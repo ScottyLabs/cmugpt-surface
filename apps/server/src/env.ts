@@ -3,7 +3,6 @@ import { z } from "zod";
 
 // Define the schema as an object with all of the env variables and their types
 const envSchema = z.object({
-  SERVER_URL: z.url(),
   SERVER_PORT: z.coerce.number().default(80),
 
   ALLOWED_ORIGINS_REGEX: z.string(),

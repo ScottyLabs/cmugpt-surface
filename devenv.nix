@@ -1,39 +1,49 @@
-{ pkgs, inputs, ... }:
+{ inputs, ... }:
 
-let
-  packages = pkgs.callPackage ./nix/packages.nix { };
-in
 {
-  imports = [ inputs.scottylabs.devenvModules.default ];
+  imports = [
+    inputs.scottylabs.devenvModules.default
+  ];
 
   scottylabs = {
     enable = true;
     project.name = "cmugpt-surface";
+
     secrets.enable = true;
     postgres.enable = true;
 
-    # Kennel deployment configuration
-    kennel = {
-      # Deploys your backend API
-      services.api = {
-        # customDomain = "api.cmugpt.scottylabs.org"; # (Optional) Uncomment and change if needed
-      };
+    deno = {
+      enable = true;
+      react.enable = true;
+    };
 
-      # Deploys your frontend React app
-      sites.web = {
-        spa = true; # Set to true since React apps are typically Single Page Applications
+    # The api binary serves the built frontend from STATIC_DIR (baked in the
+    # flake), so a single kennel service deploys both. See flake.nix.
+    kennel = {
+      services.api = {
+        customDomain = "cmugpt.scottylabs.org";
       };
     };
   };
 
-  packages = [ pkgs.bun ];
+  cachix.enable = false;
 
-  outputs = {
-    inherit (packages) api web;
+  # Backend on :3001; the server task loads ../../.env for SERVER_URL /
+  # ALLOWED_ORIGINS_REGEX, secretspec provides OIDC/AGENT, postgres sets
+  # DATABASE_URL.
+  processes.api = {
+    exec = "deno install && deno task dev";
+    cwd = "./apps/server";
+    env.PORT = "3001";
   };
 
-  processes = {
-    api.exec = "bun run --cwd apps/server dev";
-    web.exec = "bun run --cwd apps/web dev";
+  # Frontend (Vite) on :3000, proxying /api -> backend.
+  processes.web = {
+    exec = "deno install && deno task dev";
+    cwd = "./apps/web";
   };
+
+  enterShell = ''
+    [ -f .env ] || touch .env
+  '';
 }

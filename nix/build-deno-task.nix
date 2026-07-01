@@ -1,34 +1,25 @@
-# Local override of scottylabs.mkLib's buildDenoTask.
-#
-# Identical to the upstream helper (ScottyLabs/devenv lib/build-deno-task.nix)
-# except the npm tarball extraction adds `--delay-directory-restore`.
-#
-# Some npm tarballs declare their internal directories read-only (e.g. `cjs/`,
-# `esm/` with mode dr-xr-xr-x). Plain `tar -x` creates the directory with that
-# mode and then fails to write the files into it ("Cannot open: Permission
-# denied"). `--delay-directory-restore` makes tar keep directories writable
-# during extraction and apply the archived modes only at the end.
-#
-# TODO: drop this file once the fix lands upstream in ScottyLabs/devenv and the
-# `scottylabs` flake input is bumped past it.
-{
-  lib,
-  stdenv,
-  deno,
-  autoPatchelfHook,
-  fetchurl,
-  runCommand,
+# Builds a deno project with npm deps from deno.lock
+{ lib
+, stdenv
+, deno
+, autoPatchelfHook
+, fetchurl
+, runCommand
+, jq
+,
 }:
 
-{
-  src,
-  pname,
-  version ? "0.1.0",
-  task ? "build",
-  output ? "dist",
-  entrypoint ? null,
-  # provision denort so `deno compile` runs inside the offline sandbox
-  compile ? false,
+{ src
+, pname
+, version ? "0.1.0"
+, task ? "build"
+, output ? "dist"
+, entrypoint ? null
+, # provision denort so `deno compile` runs inside the offline sandbox
+  compile ? false
+, # use sloppy imports when installing if using generator libraries like tsoa that emit extensionless imports
+  sloppyImports ? false
+,
 }:
 
 let
@@ -45,31 +36,62 @@ let
       version = builtins.elemAt m 1;
     };
 
-  tarballs = lib.mapAttrs' (
-    key: info:
-    let
-      p = parse key;
-      unscoped = lib.last (lib.splitString "/" p.name);
-    in
-    lib.nameValuePair "${p.name}@${p.version}" {
-      inherit (p) name version;
-      tarball = fetchurl {
-        url = "https://registry.npmjs.org/${p.name}/-/${unscoped}-${p.version}.tgz";
-        hash = info.integrity;
-      };
-    }
-  ) (lock.npm or { });
+  tarballs = lib.mapAttrs'
+    (
+      key: info:
+        let
+          p = parse key;
+          unscoped = lib.last (lib.splitString "/" p.name);
+          url = "https://registry.npmjs.org/${p.name}/-/${unscoped}-${p.version}.tgz";
+        in
+        lib.nameValuePair "${p.name}@${p.version}" {
+          inherit (p) name version;
+          inherit url;
+          integrity = info.integrity;
+          tarball = fetchurl {
+            inherit url;
+            hash = info.integrity;
+          };
+        }
+    )
+    (lock.npm or { });
 
-  # the npm cache deno reads is just the extracted tarball per version
-  denoCache = runCommand "${pname}-deno-cache" { } ''
+  # the npm cache deno reads is the extracted tarball per version, plus a synthesized registry.json per package so deno can resolve dependency and peer-dependency metadata offline.
+  denoCache = runCommand "${pname}-deno-cache" { nativeBuildInputs = [ jq ]; } ''
+    set -euo pipefail
     mkdir -p "$out/npm/registry.npmjs.org"
+    missing=()
     ${lib.concatStringsSep "\n" (
       lib.mapAttrsToList (_: p: ''
         dest="$out/npm/registry.npmjs.org/${p.name}/${p.version}"
         mkdir -p "$dest"
         tar -xzf ${p.tarball} -C "$dest" --strip-components=1 --delay-directory-restore
+        if [ -f "$dest/package.json" ]; then
+          reg="$out/npm/registry.npmjs.org/${p.name}/registry.json"
+          [ -f "$reg" ] || jq -n --arg n "${p.name}" '{name:$n,"dist-tags":{},versions:{}}' > "$reg"
+          jq --arg v "${p.version}" --arg integ "${p.integrity}" --arg tb "${p.url}" \
+            'input as $pj
+             | .versions[$v] = ({version:$v, dist:{tarball:$tb, integrity:$integ},
+                 dependencies: ($pj.dependencies // {}),
+                 peerDependencies: ($pj.peerDependencies // {}),
+                 peerDependenciesMeta: ($pj.peerDependenciesMeta // {})}
+                 + (if ($pj.deprecated // null) != null then {deprecated:$pj.deprecated} else {} end))
+             | .["dist-tags"].latest = $v' \
+            "$reg" "$dest/package.json" > "$reg.new"
+          mv "$reg.new" "$reg"
+        else
+          missing+=("${p.name}@${p.version}")
+        fi
       '') tarballs
     )}
+    chmod -R u+rwX "$out"
+    want=${toString (builtins.length (builtins.attrNames tarballs))}
+    echo "deno-cache: $((want - ''${#missing[@]}))/$want packages extracted"
+    if [ "''${#missing[@]}" -gt 0 ]; then
+      echo "deno-cache: incomplete, missing package.json for:" >&2
+      printf '    %s\n' "''${missing[@]}" >&2
+      exit 1
+    fi
   '';
 
   # patchelf linux addons, dropping musl which it cannot fix
@@ -98,7 +120,7 @@ stdenv.mkDerivation {
     cp -r ${denoCache}/npm "$DENO_DIR/npm"
     chmod -R u+w "$DENO_DIR"
     ${lib.optionalString compile ''export DENORT_BIN="${deno.denort}/bin/denort"''}
-    deno install --cached-only --frozen${
+    deno install --cached-only --frozen${lib.optionalString sloppyImports " --sloppy-imports"}${
       lib.optionalString (entrypoint != null) " --entrypoint ${lib.escapeShellArg entrypoint}"
     }
     ${patchAddons}
