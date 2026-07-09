@@ -69,6 +69,26 @@ const allowedOrigins = [
   ...env.ALLOWED_ORIGINS_REGEX.split(",").map((s) => s.trim()),
 ].filter(Boolean);
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
+  try {
+    if (origin === new URL(allowedOrigin).origin) {
+      return true;
+    }
+  } catch {
+    // Not a URL; fall through to pattern matching.
+  }
+
+  try {
+    return new RegExp(allowedOrigin).test(origin);
+  } catch {
+    return origin === allowedOrigin || origin === `^${escapeRegExp(allowedOrigin)}$`;
+  }
+}
+
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or Postman)
@@ -76,14 +96,7 @@ const corsOptions: CorsOptions = {
 
     // Check if origin matches any allowed origin or regex
     const isAllowed = allowedOrigins.some((allowedOrigin) => {
-      try {
-        // Try as regex first
-        const regex = new RegExp(allowedOrigin);
-        return regex.test(origin);
-      } catch {
-        // If not valid regex, do exact match
-        return origin === allowedOrigin;
-      }
+      return matchesAllowedOrigin(origin, allowedOrigin);
     });
 
     if (isAllowed || process.env.NODE_ENV === "development") {

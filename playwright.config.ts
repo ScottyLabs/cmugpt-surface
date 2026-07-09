@@ -1,6 +1,6 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "./playwright-test.ts";
 
-const port = Number(process.env.PLAYWRIGHT_PORT ?? 3000);
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
 const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
@@ -15,17 +15,13 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "bun run --cwd apps/web dev",
+    command: "deno task --cwd apps/web dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
       ...process.env,
       VITE_SERVER_URL: baseURL,
-      VITE_OIDC_ISSUER_URL: `${baseURL}/oidc`,
-      VITE_OIDC_CLIENT_ID: "playwright-ci",
-      VITE_OIDC_REDIRECT_URI: `${baseURL}/auth/callback`,
-      VITE_DEV_API_ORIGIN: baseURL,
     },
   },
   projects: [

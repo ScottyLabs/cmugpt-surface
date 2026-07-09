@@ -2880,6 +2880,35 @@
       "npm:vitest@^3.0.5",
       "npm:web-vitals@^5.1.0",
       "npm:zod@^4.3.6"
-    ]
+    ],
+    "links": {
+      "jsr:@cmugpt-frontend/server@0.0.0": {
+        "dependencies": [
+          "npm:@tsoa/runtime@^7.0.0-alpha.0",
+          "npm:@types/cors@^2.8.19",
+          "npm:@types/express@^5.0.6",
+          "npm:@types/jsonwebtoken@^9.0.10",
+          "npm:@types/node@^22.15.3",
+          "npm:@types/pg@^8.20.0",
+          "npm:@types/swagger-ui-express@^4.1.8",
+          "npm:better-auth@^1.4.18",
+          "npm:concurrently@^9.2.1",
+          "npm:cors@^2.8.6",
+          "npm:drizzle-kit@~0.31.10",
+          "npm:drizzle-orm@~0.45.1",
+          "npm:express@^5.2.1",
+          "npm:jsonwebtoken@^9.0.3",
+          "npm:jwks-rsa@^3.2.2",
+          "npm:openapi-typescript@^7.10.1",
+          "npm:openid-client@^6.8.4",
+          "npm:pg@^8.20.0",
+          "npm:swagger-ui-dist@^5.31.0",
+          "npm:swagger-ui-express@^5.0.1",
+          "npm:tsoa@^7.0.0-alpha.0",
+          "npm:yaml@^2.9.0",
+          "npm:zod@^4.3.6"
+        ]
+      }
+    }
   }
 }
