@@ -22,6 +22,8 @@ type OidcJwtPayload = JwtPayload & {
   given_name?: string;
   groups?: string[];
   // biome-ignore lint/style/useNamingConvention: OIDC standard claim
+  azp?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   realm_access?: { roles?: string[] };
 };
 
@@ -114,8 +116,6 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
     const authHeader = request.headers.authorization ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
 
-    console.log("[auth] Verifying OIDC token...");
-
     if (!token) {
       const err = new AuthenticationError("No authentication token provided");
       request.authErrors?.push(err);
@@ -137,22 +137,29 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
 
     const signingKey = await getSigningKey(header);
     const payload = await new Promise<OidcJwtPayload>((resolve, reject) => {
-      jwt.verify(
-        token,
-        signingKey,
-        {
-          issuer: env.OIDC_ISSUER_URL,
-          audience: env.OIDC_CLIENT_ID,
-        },
-        (err, decoded) => {
-          if (err || !decoded || typeof decoded === "string") {
-            reject(err ?? new Error("Invalid token"));
-            return;
-          }
-          resolve(decoded as OidcJwtPayload);
-        },
-      );
+      // No `audience` here: Keycloak access tokens carry the resource server in
+      // `aud` (often "account"), not the client_id. Authorization for our client
+      // is asserted below via `azp` (or `aud` if it does contain the client).
+      jwt.verify(token, signingKey, { issuer: env.OIDC_ISSUER_URL }, (err, decoded) => {
+        if (err || !decoded || typeof decoded === "string") {
+          reject(err ?? new Error("Invalid token"));
+          return;
+        }
+        resolve(decoded as OidcJwtPayload);
+      });
     });
+
+    // Ensure the token was issued to our client (Keycloak sets `azp` to the
+    // authorized party). Also accept an explicit audience match if present.
+    const aud = payload.aud;
+    const audienceOk =
+      payload.azp === env.OIDC_CLIENT_ID ||
+      (Array.isArray(aud) ? aud.includes(env.OIDC_CLIENT_ID) : aud === env.OIDC_CLIENT_ID);
+    if (!audienceOk) {
+      const err = new AuthenticationError("Token not authorized for this client");
+      request.authErrors?.push(err);
+      throw err;
+    }
 
     if (!payload.sub) {
       const err = new AuthenticationError("Token missing subject claim (sub)");
@@ -179,7 +186,6 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
       user.groups = groups;
     }
 
-    console.log("[auth] ✅ Token verified successfully for user:", user.sub);
     return user;
   } catch (error) {
     if (error instanceof HttpError) {

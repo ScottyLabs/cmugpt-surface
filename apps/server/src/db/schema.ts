@@ -65,6 +65,36 @@ export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, { fields: [account.userId], references: [user.id] }),
 }));
 
+// Server-side auth (BFF). The browser holds only an opaque session-id cookie;
+// the Keycloak tokens live here so the frontend never sees them. `sub` stays
+// the Keycloak subject and the identity key used across the app.
+export const authSessions = pgTable("auth_sessions", {
+  id: text("id").primaryKey(),
+  sub: text("sub").notNull(),
+  email: text("email"),
+  givenName: text("given_name"),
+  groups: jsonb("groups").$type<string[]>(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Short-lived pending logins: the PKCE verifier + nonce held between the
+// authorize redirect and the callback, keyed by the OAuth `state`.
+export const oidcLoginStates = pgTable("oidc_login_states", {
+  state: text("state").primaryKey(),
+  codeVerifier: text("code_verifier").notNull(),
+  nonce: text("nonce").notNull(),
+  redirectUri: text("redirect_uri").notNull(),
+  returnTo: text("return_to").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
 export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system"]);
 
 export const chats = pgTable(

@@ -1,25 +1,25 @@
 # Builds a deno project with npm deps from deno.lock
-{ lib
-, stdenv
-, deno
-, autoPatchelfHook
-, fetchurl
-, runCommand
-, jq
-,
+{
+  lib,
+  stdenv,
+  deno,
+  autoPatchelfHook,
+  fetchurl,
+  runCommand,
+  jq,
 }:
 
-{ src
-, pname
-, version ? "0.1.0"
-, task ? "build"
-, output ? "dist"
-, entrypoint ? null
-, # provision denort so `deno compile` runs inside the offline sandbox
-  compile ? false
-, # use sloppy imports when installing if using generator libraries like tsoa that emit extensionless imports
-  sloppyImports ? false
-,
+{
+  src,
+  pname,
+  version ? "0.1.0",
+  task ? "build",
+  output ? "dist",
+  entrypoint ? null,
+  # provision denort so `deno compile` runs inside the offline sandbox
+  compile ? false,
+  # use sloppy imports when installing if using generator libraries like tsoa that emit extensionless imports
+  sloppyImports ? false,
 }:
 
 let
@@ -36,25 +36,23 @@ let
       version = builtins.elemAt m 1;
     };
 
-  tarballs = lib.mapAttrs'
-    (
-      key: info:
-        let
-          p = parse key;
-          unscoped = lib.last (lib.splitString "/" p.name);
-          url = "https://registry.npmjs.org/${p.name}/-/${unscoped}-${p.version}.tgz";
-        in
-        lib.nameValuePair "${p.name}@${p.version}" {
-          inherit (p) name version;
-          inherit url;
-          integrity = info.integrity;
-          tarball = fetchurl {
-            inherit url;
-            hash = info.integrity;
-          };
-        }
-    )
-    (lock.npm or { });
+  tarballs = lib.mapAttrs' (
+    key: info:
+    let
+      p = parse key;
+      unscoped = lib.last (lib.splitString "/" p.name);
+      url = "https://registry.npmjs.org/${p.name}/-/${unscoped}-${p.version}.tgz";
+    in
+    lib.nameValuePair "${p.name}@${p.version}" {
+      inherit (p) name version;
+      inherit url;
+      integrity = info.integrity;
+      tarball = fetchurl {
+        inherit url;
+        hash = info.integrity;
+      };
+    }
+  ) (lock.npm or { });
 
   # the npm cache deno reads is the extracted tarball per version, plus a synthesized registry.json per package so deno can resolve dependency and peer-dependency metadata offline.
   denoCache = runCommand "${pname}-deno-cache" { nativeBuildInputs = [ jq ]; } ''

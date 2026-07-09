@@ -11,6 +11,19 @@ const envSchema = z.object({
   OIDC_CLIENT_SECRET: z.string(),
   ADMIN_GROUP: z.string().default(""),
 
+  // Public base URL of the app (where the browser reaches it). Used to build the
+  // OIDC redirect_uri (`${APP_URL}/api/auth/callback`, or the ricochet
+  // `return_to`) and the post-logout redirect. In dev this is the Vite origin
+  // (which proxies /api to the server); provided by `scottylabs.ricochet.appUrl`
+  // in devenv and by the platform in prod.
+  APP_URL: z.url().default("http://localhost:3000"),
+
+  // Shared ricochet OAuth relay callback. When set, login uses it as the IdP
+  // redirect_uri and puts our real callback in the OAuth `state` (return_to),
+  // so preview hosts authenticate without registering a redirect URI. Unset ->
+  // direct redirect to `${APP_URL}/api/auth/callback`.
+  OAUTH_RELAY_URL: z.url().optional(),
+
   DATABASE_URL: z.url(),
 
   AGENT_API_URL: z.url(),

@@ -3,12 +3,11 @@ import { ExternalLink, LockOpen } from "lucide-react";
 import type { ChangeEvent, ComponentProps, KeyboardEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
-import { env } from "@/env.ts";
 import { $api } from "@/lib/api/client.ts";
 import { ModelSelector } from "./ModelSelector.tsx";
 
@@ -747,7 +746,7 @@ function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
 
 export function ChatShell() {
   const auth = useAuth();
-  const profile = auth.user?.profile;
+  const profile = auth.user;
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -1044,9 +1043,8 @@ export function ChatShell() {
     });
   }, [isStreaming, messages.length, streamingText.length]);
 
-  const displayName =
-    profile?.name ?? profile?.preferred_username ?? profile?.email ?? profile?.sub ?? "User";
-  const avatarUrl = typeof profile?.picture === "string" ? profile.picture : null;
+  const displayName = profile?.givenName ?? profile?.email ?? profile?.sub ?? "User";
+  const avatarUrl = null;
 
   /*const starred = chats.filter((c) => c.starred);*/
   const unstarred = chats.filter((c) => !c.starred);
@@ -1396,17 +1394,11 @@ export function ChatShell() {
     }
 
     try {
-      const streamHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      const token = auth.user?.access_token;
-      if (token) {
-        streamHeaders.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`${env.VITE_SERVER_URL}/chats/${activeChatId}/messages/stream`, {
+      // Same-origin + session cookie; the server bridges it to a Bearer.
+      const res = await fetch(`/chats/${activeChatId}/messages/stream`, {
         method: "POST",
         credentials: "include",
-        headers: streamHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
 
@@ -1702,7 +1694,7 @@ export function ChatShell() {
               <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
               <button
                 type="button"
-                onClick={() => void auth.signoutRedirect()}
+                onClick={() => auth.logout()}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
               >
                 <LogOutIcon />

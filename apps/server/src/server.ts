@@ -13,6 +13,7 @@ import { RegisterRoutes } from "../build/routes.ts";
 import { db, pool } from "./db/index.ts";
 import { env } from "./env.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
+import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 
@@ -25,6 +26,34 @@ await migrate(db, { migrationsFolder });
 await pool.query(
   `ALTER TABLE "chats" ADD COLUMN IF NOT EXISTS "is_public" boolean DEFAULT false NOT NULL`,
 );
+
+// Server-side auth tables (BFF). Created idempotently rather than via a
+// migration so the auth layer is self-contained.
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS "auth_sessions" (
+    "id" text PRIMARY KEY,
+    "sub" text NOT NULL,
+    "email" text,
+    "given_name" text,
+    "groups" jsonb,
+    "access_token" text NOT NULL,
+    "refresh_token" text,
+    "id_token" text,
+    "access_token_expires_at" timestamp,
+    "expires_at" timestamp NOT NULL,
+    "created_at" timestamp NOT NULL DEFAULT now(),
+    "updated_at" timestamp NOT NULL DEFAULT now()
+  );
+  CREATE TABLE IF NOT EXISTS "oidc_login_states" (
+    "state" text PRIMARY KEY,
+    "code_verifier" text NOT NULL,
+    "nonce" text NOT NULL,
+    "redirect_uri" text NOT NULL,
+    "return_to" text NOT NULL,
+    "created_at" timestamp NOT NULL DEFAULT now(),
+    "expires_at" timestamp NOT NULL
+  );
+`);
 
 const app = express();
 /** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
@@ -68,6 +97,12 @@ const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Debug-Middleware", "X-Debug-Token-Length"],
 };
 app.use(cors(corsOptions));
+
+// Server-side auth (BFF). authRouter serves /api/auth/login|callback|logout|me
+// (openid-client + ricochet); attachBearerFromSession relays the session's
+// access token downstream as a Bearer so the existing tsoa verifier is unchanged.
+app.use(authRouter);
+app.use(attachBearerFromSession);
 
 // Create HTTP server with Express app attached
 const server = http.createServer(app);

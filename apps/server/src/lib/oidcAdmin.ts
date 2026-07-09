@@ -7,7 +7,6 @@ export function userIsOidcAdmin(user: Express.User | undefined): boolean {
     return false;
   }
   const groups = user?.groups;
-  console.log("groups", groups);
   if (!groups || groups.length === 0) {
     return false;
   }

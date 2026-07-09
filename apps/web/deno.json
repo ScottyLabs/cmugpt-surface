@@ -23,7 +23,6 @@
     "react": "npm:react@^19.2.0",
     "react-dom": "npm:react-dom@^19.2.0",
     "react-markdown": "npm:react-markdown@^10.1.0",
-    "react-oidc-context": "npm:react-oidc-context@^3.3.1",
     "rehype-katex": "npm:rehype-katex@^7.0.1",
     "remark-gfm": "npm:remark-gfm@^4.0.1",
     "remark-math": "npm:remark-math@^6.0.0",
