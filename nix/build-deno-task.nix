@@ -80,12 +80,12 @@ let
           # @rsbuild/core). Local patch.
           jq --arg v "${p.version}" --arg integ "${p.integrity}" --arg tb "${p.url}" \
             'input as $pj
-             | ($pj.peerDependenciesMeta // {}) as $meta
-             | .versions[$v] = ($pj
-                 + {version:$v, dist:{tarball:$tb, integrity:$integ},
+            | ($pj.peerDependenciesMeta // {}) as $meta
+            | .versions[$v] = ($pj
+                + {version:$v, dist:{tarball:$tb, integrity:$integ},
                     peerDependencies: (($pj.peerDependencies // {})
                       | with_entries(select(($meta[.key].optional // false) | not)))})
-             | .["dist-tags"].latest = $v' \
+            | .["dist-tags"].latest = $v' \
             "$reg" "$dest/package.json" > "$reg.new"
           mv "$reg.new" "$reg"
         else

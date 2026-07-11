@@ -3,6 +3,7 @@
   "specifiers": {
     "npm:@playwright/test@*": "1.57.0",
     "npm:@playwright/test@1.57.0": "1.57.0",
+    "npm:editorconfig-checker@*": "6.1.1",
     "npm:typescript@^5.9.2": "5.9.3"
   },
   "npm": {
@@ -11,6 +12,10 @@
       "dependencies": [
         "playwright"
       ],
+      "bin": true
+    },
+    "editorconfig-checker@6.1.1": {
+      "integrity": "sha512-kiOb6qaWpMNt7Z/43ba0Pa1Inhr2/t9nKbvEKtCeXJ5AesztoM9AgLOOQVB4QUv/nGjgz3xkbx4pcogVRD2NWw==",
       "bin": true
     },
     "fsevents@2.3.2": {
