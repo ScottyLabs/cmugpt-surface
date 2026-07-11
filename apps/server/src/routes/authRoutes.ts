@@ -7,6 +7,7 @@
 // (base64url JSON). The relay bounces the code to us. This lets preview hosts
 // authenticate without registering their own redirect URI. Mirrors
 // ScottyLabs/link-shortener, server-side.
+import { Buffer } from "node:buffer";
 import { type NextFunction, type Request, type Response, Router } from "express";
 import { env } from "../env.ts";
 import {
