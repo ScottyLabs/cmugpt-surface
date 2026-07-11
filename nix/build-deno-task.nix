@@ -20,6 +20,10 @@
   compile ? false,
   # use sloppy imports when installing if using generator libraries like tsoa that emit extensionless imports
   sloppyImports ? false,
+  # verify the lockfile is exactly reproducible offline. Disable for builds whose lock
+  # references packages outside the build src (e.g. a sibling deno workspace member that
+  # is imported for types only) — those cannot be re-derived in an isolated sandbox.
+  frozen ? true,
 }:
 
 let
@@ -67,13 +71,20 @@ let
         if [ -f "$dest/package.json" ]; then
           reg="$out/npm/registry.npmjs.org/${p.name}/registry.json"
           [ -f "$reg" ] || jq -n --arg n "${p.name}" '{name:$n,"dist-tags":{},versions:{}}' > "$reg"
+          # Preserve the whole package.json in the synthesized registry, overriding only
+          # version/dist and filtering optional peer deps. The previous cherry-pick dropped
+          # os/cpu/bin/optionalDependencies, so deno's --frozen re-derivation of the lock
+          # diverged from the committed lock (os/cpu/bin mismatches). Filtering optional
+          # peers (peerDependenciesMeta[k].optional == true) also stops the offline resolver
+          # from fetching peers absent from deno.lock (e.g. @tanstack/router-plugin's optional
+          # @rsbuild/core). Local patch.
           jq --arg v "${p.version}" --arg integ "${p.integrity}" --arg tb "${p.url}" \
             'input as $pj
-             | .versions[$v] = ({version:$v, dist:{tarball:$tb, integrity:$integ},
-                 dependencies: ($pj.dependencies // {}),
-                 peerDependencies: ($pj.peerDependencies // {}),
-                 peerDependenciesMeta: ($pj.peerDependenciesMeta // {})}
-                 + (if ($pj.deprecated // null) != null then {deprecated:$pj.deprecated} else {} end))
+             | ($pj.peerDependenciesMeta // {}) as $meta
+             | .versions[$v] = ($pj
+                 + {version:$v, dist:{tarball:$tb, integrity:$integ},
+                    peerDependencies: (($pj.peerDependencies // {})
+                      | with_entries(select(($meta[.key].optional // false) | not)))})
              | .["dist-tags"].latest = $v' \
             "$reg" "$dest/package.json" > "$reg.new"
           mv "$reg.new" "$reg"
@@ -118,7 +129,7 @@ stdenv.mkDerivation {
     cp -r ${denoCache}/npm "$DENO_DIR/npm"
     chmod -R u+w "$DENO_DIR"
     ${lib.optionalString compile ''export DENORT_BIN="${deno.denort}/bin/denort"''}
-    deno install --cached-only --frozen${lib.optionalString sloppyImports " --sloppy-imports"}${
+    deno install --cached-only${lib.optionalString frozen " --frozen"}${lib.optionalString sloppyImports " --sloppy-imports"}${
       lib.optionalString (entrypoint != null) " --entrypoint ${lib.escapeShellArg entrypoint}"
     }
     ${patchAddons}
