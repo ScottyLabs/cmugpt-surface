@@ -1,6 +1,7 @@
 {
   "nodeModulesDir": "auto",
   "compilerOptions": {
+    "strict": true,
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -18,7 +19,7 @@
     "@tanstack/router-plugin": "npm:@tanstack/router-plugin@^1.132.0",
     "katex": "npm:katex@^0.16.42",
     "lucide-react": "npm:lucide-react@^1.5.0",
-    "openapi-fetch": "npm:openapi-fetch@^0.15.0",
+    "openapi-fetch": "npm:openapi-fetch@^0.17.0",
     "openapi-react-query": "npm:openapi-react-query@^0.5.1",
     "react": "npm:react@^19.2.0",
     "react-dom": "npm:react-dom@^19.2.0",

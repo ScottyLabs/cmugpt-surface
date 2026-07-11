@@ -34,8 +34,8 @@
     "npm:jwks-rsa@^3.2.2": "3.2.2",
     "npm:katex@~0.16.42": "0.16.47",
     "npm:lucide-react@^1.5.0": "1.21.0_react@19.2.7",
-    "npm:openapi-fetch@0.15": "0.15.2",
-    "npm:openapi-react-query@~0.5.1": "0.5.4_@tanstack+react-query@5.101.2__react@19.2.7_openapi-fetch@0.15.2_react@19.2.7",
+    "npm:openapi-fetch@0.17": "0.17.0",
+    "npm:openapi-react-query@~0.5.1": "0.5.4_@tanstack+react-query@5.101.2__react@19.2.7_openapi-fetch@0.17.0",
     "npm:openapi-typescript@^7.10.1": "7.13.0_typescript@5.9.3",
     "npm:openid-client@^6.8.4": "6.8.4",
     "npm:pg@^8.20.0": "8.22.0",
@@ -3861,22 +3861,19 @@
         "wrappy"
       ]
     },
-    "openapi-fetch@0.15.2": {
-      "integrity": "sha512-rdYTzUmSsJevmNqg7fwUVGuKc2Gfb9h6ph74EVPkPfIGJaZTfqdIbJahtbJ3qg1LKinln30hqZniLnKpH0RJBg==",
+    "openapi-fetch@0.17.0": {
+      "integrity": "sha512-PsbZR1wAPcG91eEthKhN+Zn92FMHxv+/faECIwjXdxfTODGSGegYv0sc1Olz+HYPvKOuoXfp+0pA2XVt2cI0Ig==",
       "dependencies": [
-        "openapi-typescript-helpers@0.0.15"
+        "openapi-typescript-helpers"
       ]
     },
-    "openapi-react-query@0.5.4_@tanstack+react-query@5.101.2__react@19.2.7_openapi-fetch@0.15.2_react@19.2.7": {
+    "openapi-react-query@0.5.4_@tanstack+react-query@5.101.2__react@19.2.7_openapi-fetch@0.17.0": {
       "integrity": "sha512-V9lRiozjHot19/BYSgXYoyznDxDJQhEBSdi26+SJ0UqjMANLQhkni4XG+Z7e3Ag7X46ZLMrL9VxYkghU3QvbWg==",
       "dependencies": [
         "@tanstack/react-query",
         "openapi-fetch",
-        "openapi-typescript-helpers@0.1.0"
+        "openapi-typescript-helpers"
       ]
-    },
-    "openapi-typescript-helpers@0.0.15": {
-      "integrity": "sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw=="
     },
     "openapi-typescript-helpers@0.1.0": {
       "integrity": "sha512-OKTGPthhivLw/fHz6c3OPtg72vi86qaMlqbJuVJ23qOvQ+53uw1n7HdmkJFibloF7QEjDrDkzJiOJuockM/ljw=="
@@ -4975,7 +4972,7 @@
       "npm:jsdom@27",
       "npm:katex@~0.16.42",
       "npm:lucide-react@^1.5.0",
-      "npm:openapi-fetch@0.15",
+      "npm:openapi-fetch@0.17",
       "npm:openapi-react-query@~0.5.1",
       "npm:react-dom@^19.2.0",
       "npm:react-markdown@^10.1.0",
