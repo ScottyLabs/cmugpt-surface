@@ -67,12 +67,18 @@ let
         if [ -f "$dest/package.json" ]; then
           reg="$out/npm/registry.npmjs.org/${p.name}/registry.json"
           [ -f "$reg" ] || jq -n --arg n "${p.name}" '{name:$n,"dist-tags":{},versions:{}}' > "$reg"
+          # Drop optional peer deps (peerDependenciesMeta[k].optional == true) from the
+          # synthesized peerDependencies so the offline `deno install --cached-only`
+          # resolver does not try to fetch peers that are absent from deno.lock
+          # (e.g. @tanstack/router-plugin's optional @rsbuild/core). Local patch.
           jq --arg v "${p.version}" --arg integ "${p.integrity}" --arg tb "${p.url}" \
             'input as $pj
+             | ($pj.peerDependenciesMeta // {}) as $meta
              | .versions[$v] = ({version:$v, dist:{tarball:$tb, integrity:$integ},
                  dependencies: ($pj.dependencies // {}),
-                 peerDependencies: ($pj.peerDependencies // {}),
-                 peerDependenciesMeta: ($pj.peerDependenciesMeta // {})}
+                 peerDependencies: (($pj.peerDependencies // {})
+                   | with_entries(select(($meta[.key].optional // false) | not))),
+                 peerDependenciesMeta: $meta}
                  + (if ($pj.deprecated // null) != null then {deprecated:$pj.deprecated} else {} end))
              | .["dist-tags"].latest = $v' \
             "$reg" "$dest/package.json" > "$reg.new"
@@ -118,7 +124,11 @@ stdenv.mkDerivation {
     cp -r ${denoCache}/npm "$DENO_DIR/npm"
     chmod -R u+w "$DENO_DIR"
     ${lib.optionalString compile ''export DENORT_BIN="${deno.denort}/bin/denort"''}
-    deno install --cached-only --frozen${lib.optionalString sloppyImports " --sloppy-imports"}${
+    # No --frozen: the synthesized registry.json above is lossy (omits bin/os/cpu),
+    # so deno's re-derived lock differs cosmetically from the committed one. --cached-only
+    # still forces fully-offline resolution against only the vendored (locked) packages,
+    # so versions stay pinned. Local patch.
+    deno install --cached-only${lib.optionalString sloppyImports " --sloppy-imports"}${
       lib.optionalString (entrypoint != null) " --entrypoint ${lib.escapeShellArg entrypoint}"
     }
     ${patchAddons}
