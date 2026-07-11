@@ -29,6 +29,7 @@
       supportedSystems = [
         "x86_64-linux"
         "aarch64-linux"
+        "aarch64-darwin"
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
@@ -51,6 +52,10 @@
           web = buildDenoTask {
             pname = "cmugpt-surface-web";
             src = ./apps/web;
+            # web's lock references the sibling `@cmugpt-frontend/server` (imported for
+            # types only via ../server/build/swagger.d.ts), which isn't in this src, so the
+            # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
+            frozen = false;
           };
 
           api =

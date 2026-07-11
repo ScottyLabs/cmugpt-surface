@@ -24,7 +24,7 @@ jobs:
       - name: Check EditorConfig
         env:
           GITHUB_TOKEN: ""
-        run: deno run -A npm:@editorconfig-checker/editorconfig-checker --exclude '^LICENSE'
+        run: deno run -A npm:editorconfig-checker --exclude '^LICENSE'
 
       - name: Generate API Artifacts
         run: deno task generate
