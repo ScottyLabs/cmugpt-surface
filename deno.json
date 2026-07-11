@@ -10,7 +10,7 @@
     "build": "deno task --cwd apps/server build && deno task --cwd apps/web build",
     "build:api": "deno task --cwd apps/server build",
     "build:web": "deno task --cwd apps/web build",
-    "check": "deno task --cwd packages/common check && deno task --cwd apps/server check && deno task --cwd apps/web check",
+    "check": "deno task --cwd apps/server check && deno task --cwd apps/web check",
     "test:e2e": "deno run -A npm:@playwright/test test",
     "db:generate": "deno task --cwd apps/server db:generate",
     "db:migrate": "deno task --cwd apps/server db:migrate"

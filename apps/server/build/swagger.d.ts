@@ -4,57 +4,6 @@
  */
 
 export interface paths {
-  "/me/oidc-admin": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations["GetOidcAdminStatus"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/me/models": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Curated list of LLM models the user can pick from. */
-    get: operations["ListModels"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/me/preferences": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Read the user's preferences (preferred model, etc.). */
-    get: operations["GetPreferences"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** @description Update the user's preferences. Only fields present in the body are changed. */
-    patch: operations["UpdatePreferences"];
-    trace?: never;
-  };
   "/hello": {
     parameters: {
       query?: never;
@@ -151,26 +100,61 @@ export interface paths {
     patch: operations["PatchChat"];
     trace?: never;
   };
+  "/me/oidc-admin": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["GetOidcAdminStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/models": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Curated list of LLM models the user can pick from. */
+    get: operations["ListModels"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/preferences": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Read the user's preferences (preferred model, etc.). */
+    get: operations["GetPreferences"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** @description Update the user's preferences. Only fields present in the body are changed. */
+    patch: operations["UpdatePreferences"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    /**
-     * @description Curated list of LLM models the user can pick from. The `id` is the
-     *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
-     *     Surface UX assumes 4-6 options.
-     */
-    AgentModelOption: {
-      id: string;
-      label: string;
-      description: string;
-    };
-    UserPreferencesDto: {
-      preferredModel: string;
-    };
-    PatchUserPreferencesBody: {
-      preferredModel?: string;
-    };
     ChatListItemDto: {
       id: string;
       title: string;
@@ -222,6 +206,22 @@ export interface components {
       title?: string;
       isPublic?: boolean;
     };
+    /**
+     * @description Curated list of LLM models the user can pick from. The `id` is the
+     *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
+     *     Surface UX assumes 4-6 options.
+     */
+    AgentModelOption: {
+      id: string;
+      label: string;
+      description: string;
+    };
+    UserPreferencesDto: {
+      preferredModel: string;
+    };
+    PatchUserPreferencesBody: {
+      preferredModel?: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -231,90 +231,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  GetOidcAdminStatus: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            isOidcAdmin: boolean;
-          };
-        };
-      };
-    };
-  };
-  ListModels: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            models: components["schemas"]["AgentModelOption"][];
-          };
-        };
-      };
-    };
-  };
-  GetPreferences: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["UserPreferencesDto"];
-        };
-      };
-    };
-  };
-  UpdatePreferences: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["PatchUserPreferencesBody"];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["UserPreferencesDto"];
-        };
-      };
-    };
-  };
   GetHello: {
     parameters: {
       query?: never;
@@ -525,6 +441,90 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ChatListItemDto"];
+        };
+      };
+    };
+  };
+  GetOidcAdminStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            isOidcAdmin: boolean;
+          };
+        };
+      };
+    };
+  };
+  ListModels: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            models: components["schemas"]["AgentModelOption"][];
+          };
+        };
+      };
+    };
+  };
+  GetPreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserPreferencesDto"];
+        };
+      };
+    };
+  };
+  UpdatePreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PatchUserPreferencesBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserPreferencesDto"];
         };
       };
     };
