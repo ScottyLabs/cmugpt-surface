@@ -2,46 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging, dev]
   pull_request:
-    branches: [main]
 
 jobs:
-  checks:
-    runs-on: docker
-    steps:
-      - name: Checkout
-        uses: https://code.forgejo.org/actions/checkout@v6
-
-      - name: Setup Deno
-        uses: https://github.com/denoland/setup-deno@v1
-        with:
-          deno-version: v2.4.2
-
-      # Install from the committed lockfiles so CI resolves the exact same versions
-      # as local (deno otherwise re-resolves floating ranges to the latest on a fresh
-      # runner — e.g. @tanstack/router-core drifting past the pinned patch).
-      - name: Install dependencies (frozen)
-        run: |
-          (cd apps/server && deno install --frozen)
-          (cd apps/web && deno install --frozen)
-
-      - name: Install Playwright
-        run: deno run -A npm:@playwright/test install --with-deps chromium
-
-      - name: Check EditorConfig
-        env:
-          GITHUB_TOKEN: ""
-        run: deno run -A npm:editorconfig-checker --exclude '^LICENSE'
-
-      - name: Generate API Artifacts
-        run: deno task generate
-
-      - name: Check Workspace
-        run: deno task check
-
-      - name: Build
-        run: deno task build
-
-      - name: Test Browser Surface
-        run: deno task test:e2e
+  check:
+    uses: ScottyLabs/devenv/.forgejo/workflows/ci.yml@main
+    secrets: inherit
