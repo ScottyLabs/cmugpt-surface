@@ -151,6 +151,11 @@ async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
 
     // Ensure the token was issued to our client (Keycloak sets `azp` to the
     // authorized party). Also accept an explicit audience match if present.
+    if (!env.OIDC_CLIENT_ID) {
+      const err = new AuthenticationError("OIDC client not configured");
+      request.authErrors?.push(err);
+      throw err;
+    }
     const aud = payload.aud;
     const audienceOk =
       payload.azp === env.OIDC_CLIENT_ID ||

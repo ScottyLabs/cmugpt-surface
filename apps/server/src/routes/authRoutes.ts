@@ -32,6 +32,10 @@ import {
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const cookieSecure = env.APP_URL.startsWith("https");
 
+function oidcIsConfigured(): boolean {
+  return Boolean(env.OIDC_ISSUER_URL && env.OIDC_CLIENT_ID && env.OIDC_CLIENT_SECRET);
+}
+
 function appCallbackUrl(): string {
   return `${env.APP_URL.replace(/\/$/, "")}/api/auth/callback`;
 }
@@ -54,6 +58,10 @@ function setSessionCookie(res: Response, sid: string): void {
 export const authRouter: Router = Router();
 
 authRouter.get("/api/auth/login", async (req: Request, res: Response) => {
+  if (!oidcIsConfigured()) {
+    res.redirect("/?login_error=oidc_unavailable");
+    return;
+  }
   const returnTo = safeReturnTo(req.query["returnTo"]);
   const callback = appCallbackUrl();
   const { verifier, challenge } = await createPkce();
@@ -71,6 +79,10 @@ authRouter.get("/api/auth/login", async (req: Request, res: Response) => {
 });
 
 authRouter.get("/api/auth/callback", async (req: Request, res: Response) => {
+  if (!oidcIsConfigured()) {
+    res.redirect("/?login_error=oidc_unavailable");
+    return;
+  }
   const { error, state } = req.query;
   if (typeof error === "string") {
     res.redirect(`/?login_error=${encodeURIComponent(error)}`);

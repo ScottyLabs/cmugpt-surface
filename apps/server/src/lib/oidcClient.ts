@@ -24,10 +24,19 @@ export const SCOPE = "openid profile email";
 
 let configPromise: Promise<client.Configuration> | null = null;
 
+function getConfiguredOidcParams(): { issuerUrl: string; clientId: string; clientSecret: string } {
+  const { OIDC_ISSUER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET } = env;
+  if (!OIDC_ISSUER_URL || !OIDC_CLIENT_ID || !OIDC_CLIENT_SECRET) {
+    throw new Error("OIDC is not configured");
+  }
+  return { issuerUrl: OIDC_ISSUER_URL, clientId: OIDC_CLIENT_ID, clientSecret: OIDC_CLIENT_SECRET };
+}
+
 function getConfig(): Promise<client.Configuration> {
   if (!configPromise) {
+    const { issuerUrl, clientId, clientSecret } = getConfiguredOidcParams();
     configPromise = client
-      .discovery(new URL(env.OIDC_ISSUER_URL), env.OIDC_CLIENT_ID, env.OIDC_CLIENT_SECRET)
+      .discovery(new URL(issuerUrl), clientId, clientSecret)
       .catch((err) => {
         configPromise = null; // don't cache a failed discovery
         throw err;
@@ -136,6 +145,9 @@ export async function buildLogoutUrl(params: {
   postLogoutRedirectUri: string;
 }): Promise<string | null> {
   const config = await getConfig();
+  if (!env.OIDC_CLIENT_ID) {
+    return null;
+  }
   try {
     return client.buildEndSessionUrl(config, {
       post_logout_redirect_uri: params.postLogoutRedirectUri,

@@ -6,9 +6,9 @@ const envSchema = z.object({
   SERVER_PORT: z.coerce.number().default(80),
 
   ALLOWED_ORIGINS_REGEX: z.string(),
-  OIDC_ISSUER_URL: z.url(),
-  OIDC_CLIENT_ID: z.string(),
-  OIDC_CLIENT_SECRET: z.string(),
+  OIDC_ISSUER_URL: z.url().optional(),
+  OIDC_CLIENT_ID: z.string().optional(),
+  OIDC_CLIENT_SECRET: z.string().optional(),
   ADMIN_GROUP: z.string().default(""),
 
   // Public base URL of the app (where the browser reaches it). Used to build the
