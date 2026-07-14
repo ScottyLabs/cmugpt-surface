@@ -1,5 +1,12 @@
 {
+  "workspace": [
+    "./apps/server",
+    "./apps/web"
+  ],
   "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "experimentalDecorators": true
+  },
   "imports": {
     "@playwright/test": "npm:@playwright/test@1.57.0",
     "typescript": "npm:typescript@^5.9.2"
