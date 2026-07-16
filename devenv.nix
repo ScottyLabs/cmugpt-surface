@@ -10,7 +10,10 @@ in
     enable = true;
     project.name = "cmugpt-surface";
     secrets.enable = true;
-    postgres.enable = true;
+    postgres = {
+      enable = true;
+      extensions = e: [ e.pg_uuidv7 e.pgvector ];
+    };
 
     # Kennel deployment configuration
     kennel = {
