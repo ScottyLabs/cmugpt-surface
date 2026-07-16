@@ -1,18 +1,23 @@
 import type { ComponentProps, RefObject } from "react";
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { CmuMapsEmbed, CmuMapsLink } from "@/components/CmuMapsEmbed.tsx";
 import { SendIcon } from "@/components/icons/ChatIcons.tsx";
-import type { CmuMapsPayload, PendingAttachment } from "@/lib/chatUtils.ts";
+import type {
+  CmuMapsPayload,
+  PendingAttachment,
+  SavedMemoryNotice,
+} from "@/lib/chatUtils.ts";
 import {
   assistantDisplayContent,
   markdownForReactComponent,
   rehypeKatexWithGuards,
   STICKY_SCROLL_THRESHOLD_PX,
 } from "@/lib/chatUtils.ts";
+import { MemorySavedNotice } from "./MemorySavedNotice.tsx";
 
 interface MessageItem {
   id: string;
@@ -54,6 +59,9 @@ interface ChatMessagesProps {
   isStreaming: boolean;
   streamingText: string;
   streamStatus: string | null;
+  streamStartAssistantId: string | null;
+  savedMemoryNotice: SavedMemoryNotice | null;
+  onSavedMemoryDeleted: (id: string) => void;
   activeCmuMaps: CmuMapsPayload | null;
   draftComposerRef: RefObject<HTMLTextAreaElement | null>;
   draft: string;
@@ -80,6 +88,9 @@ export function ChatMessages({
   isStreaming,
   streamingText,
   streamStatus,
+  streamStartAssistantId,
+  savedMemoryNotice,
+  onSavedMemoryDeleted,
   activeCmuMaps,
   draftComposerRef,
   draft,
@@ -173,6 +184,53 @@ export function ChatMessages({
   const userBubbleMarkdownClass =
     "max-w-none [&_.katex-display]:my-2 [&_.katex-display]:block [&_.katex-display]:overflow-x-auto [&_.katex]:text-[0.95em] [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-black/5 [&_pre]:p-2 [&_pre]:text-xs [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:font-semibold";
 
+  const latestAssistantMessage = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index]?.role === "assistant") return messages[index];
+    }
+    return undefined;
+  }, [messages]);
+
+  const persistedStreamingAssistant =
+    isStreaming &&
+    latestAssistantMessage &&
+    latestAssistantMessage.id !== streamStartAssistantId
+      ? latestAssistantMessage
+      : undefined;
+  const activeFinalAssistant =
+    !isStreaming && savedMemoryNotice ? latestAssistantMessage : undefined;
+  const activeAssistant = persistedStreamingAssistant ?? activeFinalAssistant;
+  const activeAssistantId = activeAssistant?.id;
+  const hasVisibleStreamingText = streamingText.trim().length > 0;
+  const shouldShowMemoryNotice = Boolean(
+    savedMemoryNotice && (!isStreaming || hasVisibleStreamingText),
+  );
+  const shouldShowActiveResponse =
+    (isStreaming && hasVisibleStreamingText) ||
+    Boolean(!isStreaming && savedMemoryNotice);
+
+  function renderAssistantContent(message: MessageItem) {
+    return (
+      <div className={markdownClass}>
+        <ReactMarkdown
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypePlugins}
+          components={markdownComponents}
+        >
+          {markdownForReactComponent(
+            assistantDisplayContent(message.content, message.cmuMaps),
+          )}
+        </ReactMarkdown>
+        {typeof message.confidence === "number" && message.confidence < 0.5 ? (
+          <p className="mt-2 text-xs text-amber-700">
+            Low confidence — verify with an official CMU source.
+          </p>
+        ) : null}
+        <CmuMapsLink cmuMaps={message.cmuMaps} />
+      </div>
+    );
+  }
+
   return (
     <div
       ref={scrollContainerRef}
@@ -263,41 +321,30 @@ export function ChatMessages({
       ) : null}
       {shouldShowConversation && !showMessagesLoading && (
         <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          {messages.map((m) =>
-            m.role === "user" ? (
-              <div key={m.id} className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl bg-blue-gray-50 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
-                  <div className={userBubbleMarkdownClass}>
-                    <ReactMarkdown
-                      remarkPlugins={remarkPlugins}
-                      rehypePlugins={rehypePlugins}
-                      components={userMarkdownComponents}
-                    >
-                      {markdownForReactComponent(m.content)}
-                    </ReactMarkdown>
+          {messages.map((m) => {
+            if (m.id === activeAssistantId) return null;
+            return (
+              <Fragment key={m.id}>
+                {m.role === "user" ? (
+                  <div className="flex justify-end">
+                    <div className="max-w-[85%] rounded-2xl bg-blue-gray-50 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+                      <div className={userBubbleMarkdownClass}>
+                        <ReactMarkdown
+                          remarkPlugins={remarkPlugins}
+                          rehypePlugins={rehypePlugins}
+                          components={userMarkdownComponents}
+                        >
+                          {markdownForReactComponent(m.content)}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div key={m.id} className={markdownClass}>
-                <ReactMarkdown
-                  remarkPlugins={remarkPlugins}
-                  rehypePlugins={rehypePlugins}
-                  components={markdownComponents}
-                >
-                  {markdownForReactComponent(
-                    assistantDisplayContent(m.content, m.cmuMaps),
-                  )}
-                </ReactMarkdown>
-                {typeof m.confidence === "number" && m.confidence < 0.5 && (
-                  <p className="mt-2 text-xs text-amber-700">
-                    Low confidence — verify with an official CMU source.
-                  </p>
+                ) : (
+                  renderAssistantContent(m)
                 )}
-                <CmuMapsLink cmuMaps={m.cmuMaps} />
-              </div>
-            ),
-          )}
+              </Fragment>
+            );
+          })}
           {shouldShowOptimisticUserMessage && optimisticUserMessage ? (
             <div key="optimistic-user-message" className="flex justify-end">
               <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
@@ -316,17 +363,35 @@ export function ChatMessages({
           {isStreaming && !streamingText && (
             <StreamingStatus text={streamStatus ?? "Thinking..."} />
           )}
-          {isStreaming && streamingText.length > 0 && (
-            <div className={markdownClass}>
-              <ReactMarkdown
-                remarkPlugins={remarkPlugins}
-                rehypePlugins={rehypePlugins}
-                components={markdownComponents}
-              >
-                {markdownForReactComponent(streamingText, { streaming: true })}
-              </ReactMarkdown>
+          {shouldShowActiveResponse ? (
+            <div
+              className="flex min-w-0 flex-col"
+              data-testid="active-assistant-response"
+            >
+              {shouldShowMemoryNotice && savedMemoryNotice ? (
+                <MemorySavedNotice
+                  key={savedMemoryNotice.id}
+                  memory={savedMemoryNotice}
+                  onDeleted={onSavedMemoryDeleted}
+                />
+              ) : null}
+              {isStreaming && hasVisibleStreamingText ? (
+                <div className={markdownClass}>
+                  <ReactMarkdown
+                    remarkPlugins={remarkPlugins}
+                    rehypePlugins={rehypePlugins}
+                    components={markdownComponents}
+                  >
+                    {markdownForReactComponent(streamingText, {
+                      streaming: true,
+                    })}
+                  </ReactMarkdown>
+                </div>
+              ) : activeFinalAssistant ? (
+                renderAssistantContent(activeFinalAssistant)
+              ) : null}
             </div>
-          )}
+          ) : null}
           {/* Single stable slot for the active CMU Maps iframe */}
           <CmuMapsEmbed cmuMaps={activeCmuMaps} />
           <div ref={bottomRef} />

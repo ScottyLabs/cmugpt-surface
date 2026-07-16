@@ -47,8 +47,39 @@ export interface AgentResult {
   cmuMaps?: CmuMapsPayload | null;
 }
 
+export type AgentMemoryType = "learned" | "remembered";
+
+export interface AgentMemoryItem {
+  id: string;
+  type: AgentMemoryType;
+  text: string;
+  createdAt: string;
+}
+
+export interface AgentMemoryPage {
+  items: AgentMemoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+interface AgentMemoryBody {
+  items?: unknown;
+  total?: unknown;
+  limit?: unknown;
+  offset?: unknown;
+}
+
 export type AgentStreamEvent =
   | { type: "status"; text: string }
+  | {
+      type: "memory";
+      op: "add" | "remove";
+      text: string;
+      id?: string;
+      kind?: AgentMemoryType;
+      fact?: string;
+    }
   | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; result: AgentResult }
@@ -167,6 +198,88 @@ export async function callAgent(
   return agentBodyToResult(body);
 }
 
+function normalizeMemoryItem(value: unknown): AgentMemoryItem | null {
+  if (typeof value !== "object" || value === null) return null;
+  const item = value as Record<string, unknown>;
+  if (
+    typeof item["id"] !== "string" ||
+    (item["type"] !== "learned" && item["type"] !== "remembered") ||
+    typeof item["text"] !== "string" ||
+    typeof item["created_at"] !== "string"
+  ) {
+    return null;
+  }
+  return {
+    id: item["id"],
+    type: item["type"],
+    text: item["text"],
+    createdAt: item["created_at"],
+  };
+}
+
+export async function listAgentMemories(
+  userId: string,
+  options: {
+    q?: string;
+    kind?: AgentMemoryType;
+    limit?: number;
+    offset?: number;
+  } = {},
+): Promise<AgentMemoryPage> {
+  const params = new URLSearchParams();
+  if (options.q) params.set("q", options.q);
+  if (options.kind) params.set("kind", options.kind);
+  params.set("limit", String(options.limit ?? 200));
+  params.set("offset", String(options.offset ?? 0));
+  const base = env.AGENT_API_URL.replace(/\/$/, "");
+  const res = await fetch(
+    `${base}/memory/${encodeURIComponent(userId)}?${params.toString()}`,
+    { headers: buildAgentHeaders() },
+  );
+  if (!res.ok) {
+    throw new InternalServerError(await readAgentError(res));
+  }
+  const body = (await res.json()) as AgentMemoryBody;
+  const rawItems = Array.isArray(body.items) ? body.items : [];
+  return {
+    items: rawItems
+      .map((item) => normalizeMemoryItem(item))
+      .filter((item): item is AgentMemoryItem => item !== null),
+    total: typeof body.total === "number" ? body.total : 0,
+    limit: typeof body.limit === "number" ? body.limit : (options.limit ?? 200),
+    offset:
+      typeof body.offset === "number" ? body.offset : (options.offset ?? 0),
+  };
+}
+
+export async function deleteAgentMemory(
+  userId: string,
+  kind: AgentMemoryType,
+  itemId: string,
+): Promise<void> {
+  const base = env.AGENT_API_URL.replace(/\/$/, "");
+  const res = await fetch(
+    `${base}/memory/${encodeURIComponent(userId)}/items/${kind}/${encodeURIComponent(itemId)}`,
+    { method: "DELETE", headers: buildAgentHeaders() },
+  );
+  if (!res.ok) {
+    throw new InternalServerError(await readAgentError(res));
+  }
+}
+
+export async function clearAgentMemory(userId: string): Promise<number> {
+  const base = env.AGENT_API_URL.replace(/\/$/, "");
+  const res = await fetch(`${base}/memory/${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+    headers: buildAgentHeaders(),
+  });
+  if (!res.ok) {
+    throw new InternalServerError(await readAgentError(res));
+  }
+  const body = (await res.json()) as { removed?: unknown };
+  return typeof body.removed === "number" ? body.removed : 0;
+}
+
 function parseSseBlock(block: string): { event: string; data: unknown } | null {
   let event = "message";
   const dataLines: string[] = [];
@@ -218,6 +331,30 @@ function normalizeAgentStreamEvent(parsed: {
       return { type: "map", cmuMaps };
     }
     return null;
+  }
+
+  if (
+    parsed.event === "memory" &&
+    typeof parsed.data === "object" &&
+    parsed.data !== null
+  ) {
+    const data = parsed.data as Record<string, unknown>;
+    const op = data["op"];
+    const text = data["text"];
+    if ((op !== "add" && op !== "remove") || typeof text !== "string") {
+      return null;
+    }
+    const event: Extract<AgentStreamEvent, { type: "memory" }> = {
+      type: "memory",
+      op,
+      text,
+    };
+    if (typeof data["id"] === "string") event.id = data["id"];
+    if (data["kind"] === "learned" || data["kind"] === "remembered") {
+      event.kind = data["kind"];
+    }
+    if (typeof data["fact"] === "string") event.fact = data["fact"];
+    return event;
   }
 
   if (

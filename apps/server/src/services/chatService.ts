@@ -3,6 +3,7 @@ import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
 import { callAgent, streamAgent } from "../lib/agentClient.ts";
+import { agentUserId } from "../lib/agentUserId.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import { userPreferencesService } from "./userPreferencesService.ts";
 
@@ -61,6 +62,14 @@ export interface PostMessageResultDto {
 export type ChatStreamEvent =
   | { type: "user"; message: MessageDto }
   | { type: "status"; text: string }
+  | {
+      type: "memory";
+      op: "add" | "remove";
+      text: string;
+      id?: string;
+      kind?: "learned" | "remembered";
+      fact?: string;
+    }
   | { type: "map"; cmuMaps: CmuMapsDto }
   | { type: "delta"; text: string }
   | { type: "done"; message: MessageDto }
@@ -240,7 +249,7 @@ export const chatService = {
     const agentResult = await callAgent({
       query: content.trim(),
       ...(messageHistory.length > 0 && { messageHistory }),
-      userId: userSub,
+      userId: agentUserId(userSub),
       model: preferredModel,
     });
 
@@ -297,13 +306,15 @@ export const chatService = {
         {
           query: content.trim(),
           ...(messageHistory.length > 0 && { messageHistory }),
-          userId: userSub,
+          userId: agentUserId(userSub),
           model: preferredModel,
         },
         options.signal,
       )) {
         if (ev.type === "status") {
           yield { type: "status", text: ev.text };
+        } else if (ev.type === "memory") {
+          yield ev;
         } else if (ev.type === "map") {
           streamedCmuMaps = ev.cmuMaps;
           yield { type: "map", cmuMaps: ev.cmuMaps };

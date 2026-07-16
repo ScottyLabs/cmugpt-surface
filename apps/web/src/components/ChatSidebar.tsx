@@ -1,4 +1,12 @@
-import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from "react";
+import { Brain } from "lucide-react";
+import type {
+  Dispatch,
+  KeyboardEvent,
+  ReactNode,
+  RefObject,
+  SetStateAction,
+} from "react";
+import { useRef } from "react";
 import {
   AboutIcon,
   LogOutIcon,
@@ -10,6 +18,20 @@ import {
   SidebarPanelIcon,
   UnpinIcon,
 } from "@/components/icons/ChatIcons.tsx";
+
+const USER_MENU_ITEM_CLASS =
+  "flex h-10 w-full items-center gap-3 rounded-lg px-4 text-[0.9375rem] font-normal leading-5 text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500";
+
+function UserMenuIcon({ children }: { children: ReactNode }) {
+  return (
+    <span
+      className="flex h-5 w-5 shrink-0 items-center justify-center"
+      aria-hidden="true"
+    >
+      {children}
+    </span>
+  );
+}
 
 interface ChatListItem {
   id: string;
@@ -45,6 +67,7 @@ interface ChatSidebarProps {
   >;
   userMenuOpen: boolean;
   setUserMenuOpen: Dispatch<SetStateAction<boolean>>;
+  userMenuTriggerRef: RefObject<HTMLButtonElement | null>;
   user:
     | {
         imageUrl?: string;
@@ -57,6 +80,7 @@ interface ChatSidebarProps {
   setActiveModal: (m: "settings" | "about" | null) => void;
   selectChat: (id: string) => void;
   beginRename: (c: { id: string; title: string }) => void;
+  onOpenMemories: () => void;
 }
 
 export function ChatSidebar({
@@ -80,13 +104,44 @@ export function ChatSidebar({
   setSidebarMenu,
   userMenuOpen,
   setUserMenuOpen,
+  userMenuTriggerRef,
   user,
   displayName,
   signOut,
   setActiveModal,
   selectChat,
   beginRename,
+  onOpenMemories,
 }: ChatSidebarProps) {
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  function handleUserMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+    );
+    if (items.length === 0) return;
+    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1) % items.length;
+    } else if (event.key === "ArrowUp") {
+      nextIndex = (currentIndex - 1 + items.length) % items.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = items.length - 1;
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setUserMenuOpen(false);
+      userMenuTriggerRef.current?.focus();
+      return;
+    }
+    if (nextIndex !== null) {
+      event.preventDefault();
+      items[nextIndex]?.focus();
+    }
+  }
+
   function renderChatRow(c: ChatListItem) {
     const rowClass = `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white ${
       c.id === chatId ? "bg-white" : ""
@@ -152,7 +207,7 @@ export function ChatSidebar({
   return (
     <aside
       className={`flex h-full shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled transition-[width] duration-200 ease-out ${
-        sidebarOpen ? "w-64" : "w-[4.375rem] overflow-hidden border-r-0"
+        sidebarOpen ? "w-64" : "w-[4.375rem] border-r-0"
       }`}
     >
       {/* Header */}
@@ -251,57 +306,107 @@ export function ChatSidebar({
 
         {/* User menu popup */}
         {Boolean(userMenuOpen) && (
-          <div className="absolute bottom-full mb-2 flex w-[14.5625rem] px-2 flex-col items-start rounded-xl bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] py-2 left-1/2 -translate-x-1/2">
+          <div
+            ref={userMenuRef}
+            id="user-profile-menu"
+            role="menu"
+            aria-label="User menu"
+            onKeyDown={handleUserMenuKeyDown}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setUserMenuOpen(false);
+              }
+            }}
+            className={`absolute bottom-full mb-2 flex w-[14.5625rem] flex-col items-start rounded-xl border border-blue-gray-50 bg-white px-2 py-2 shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] ${sidebarOpen ? "left-1/2 -translate-x-1/2" : "left-3"}`}
+          >
             <button
               type="button"
+              role="menuitem"
+              onClick={() => {
+                onOpenMemories();
+                setUserMenuOpen(false);
+              }}
+              className={USER_MENU_ITEM_CLASS}
+            >
+              <UserMenuIcon>
+                <Brain className="h-[1.125rem] w-[1.125rem]" />
+              </UserMenuIcon>
+              Memories
+            </button>
+            <button
+              type="button"
+              role="menuitem"
               onClick={() => {
                 setActiveModal("settings");
                 setUserMenuOpen(false);
               }}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+              className={USER_MENU_ITEM_CLASS}
             >
-              <SettingsIcon />
+              <UserMenuIcon>
+                <SettingsIcon />
+              </UserMenuIcon>
               Settings
             </button>
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 setActiveModal("about");
                 setUserMenuOpen(false);
               }}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+              className={USER_MENU_ITEM_CLASS}
             >
-              <AboutIcon />
+              <UserMenuIcon>
+                <AboutIcon />
+              </UserMenuIcon>
               About
             </button>
-            <a href="https://scottylabs.org/" target="_blank" rel="noopener">
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
-              >
+            <a
+              href="https://scottylabs.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              className={USER_MENU_ITEM_CLASS}
+            >
+              <UserMenuIcon>
                 <ScottyLabsIcon />
-                ScottyLabs
-              </button>
+              </UserMenuIcon>
+              ScottyLabs
             </a>
-            <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
+            <hr className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
             <button
               type="button"
+              role="menuitem"
               onClick={() => void signOut()}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
+              className={`${USER_MENU_ITEM_CLASS} text-neutral-700`}
             >
-              <LogOutIcon />
+              <UserMenuIcon>
+                <LogOutIcon />
+              </UserMenuIcon>
               Log out
             </button>
           </div>
         )}
 
         <button
+          ref={userMenuTriggerRef}
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            setUserMenuOpen((o) => !o);
+            const opening = !userMenuOpen;
+            setUserMenuOpen(opening);
+            if (opening) {
+              requestAnimationFrame(() => {
+                userMenuRef.current
+                  ?.querySelector<HTMLElement>('[role="menuitem"]')
+                  ?.focus();
+              });
+            }
           }}
-          className={`flex w-full items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
+          aria-haspopup="menu"
+          aria-expanded={userMenuOpen}
+          aria-controls="user-profile-menu"
+          className={`flex w-full items-center rounded-lg px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${sidebarOpen ? "gap-3" : "justify-center"}`}
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
             {user?.imageUrl ? (

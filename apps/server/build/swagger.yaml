@@ -8,7 +8,7 @@ components:
   schemas:
     AgentModelOption:
       description: >-
-        List of LLM models the user can pick from. The `id` is the
+        Curated list of LLM models the user can pick from. The `id` is the
 
         OpenRouter model slug forwarded to the agent's `/agent/respond`
         endpoint.
@@ -41,6 +41,54 @@ components:
           type: string
       type: object
       additionalProperties: false
+    AgentMemoryType:
+      type: string
+      enum:
+        - learned
+        - remembered
+    AgentMemoryItem:
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/AgentMemoryType"
+        text:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - text
+        - createdAt
+      type: object
+      additionalProperties: false
+    AgentMemoryPage:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/AgentMemoryItem"
+          type: array
+        total:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        offset:
+          type: number
+          format: double
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      type: object
+      additionalProperties: false
+    MemoryPageDto:
+      $ref: "#/components/schemas/AgentMemoryPage"
+    MemoryTypeDto:
+      $ref: "#/components/schemas/AgentMemoryType"
     ChatListItemDto:
       properties:
         id:
@@ -196,8 +244,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description:
-        Better Auth session cookie and/or Keycloak access token as Bearer;
+      description: Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
   title: "@cmugpt-frontend/server"
@@ -266,8 +313,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserPreferencesDto"
-      description:
-        Update the user's preferences. Only fields present in the body are
+      description: Update the user's preferences. Only fields present in the body are
         changed.
       security:
         - clerk: []
@@ -278,6 +324,101 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/PatchUserPreferencesBody"
+  /me/memories:
+    get:
+      operationId: ListMemories
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryPageDto"
+      description: Search the authenticated user's learned and explicitly remembered facts.
+      security:
+        - clerk: []
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: kind
+          required: false
+          schema:
+            $ref: "#/components/schemas/MemoryTypeDto"
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 200
+            format: double
+            type: number
+        - in: query
+          name: offset
+          required: false
+          schema:
+            default: 0
+            format: double
+            type: number
+    delete:
+      operationId: ClearMemories
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  removed:
+                    type: number
+                    format: double
+                  status:
+                    type: string
+                    enum:
+                      - cleared
+                    nullable: false
+                required:
+                  - removed
+                  - status
+                type: object
+      description: Delete every learned and explicitly remembered fact for the user.
+      security:
+        - clerk: []
+      parameters: []
+  /me/memories/{kind}/{id}:
+    delete:
+      operationId: DeleteMemory
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - deleted
+                    nullable: false
+                required:
+                  - status
+                type: object
+      description: Delete one learned or explicitly remembered fact.
+      security:
+        - clerk: []
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            $ref: "#/components/schemas/MemoryTypeDto"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
   /hello:
     get:
       operationId: GetHello

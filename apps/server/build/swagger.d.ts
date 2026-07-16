@@ -27,7 +27,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List of LLM models the user can pick from. */
+        /** @description Curated list of LLM models the user can pick from. */
         get: operations["ListModels"];
         put?: never;
         post?: never;
@@ -53,6 +53,41 @@ export interface paths {
         head?: never;
         /** @description Update the user's preferences. Only fields present in the body are changed. */
         patch: operations["UpdatePreferences"];
+        trace?: never;
+    };
+    "/me/memories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Search the authenticated user's learned and explicitly remembered facts. */
+        get: operations["ListMemories"];
+        put?: never;
+        post?: never;
+        /** @description Delete every learned and explicitly remembered fact for the user. */
+        delete: operations["ClearMemories"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/memories/{kind}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete one learned or explicitly remembered fact. */
+        delete: operations["DeleteMemory"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/hello": {
@@ -156,7 +191,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * @description List of LLM models the user can pick from. The `id` is the
+         * @description Curated list of LLM models the user can pick from. The `id` is the
          *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
          *     Surface UX assumes 4-6 options.
          */
@@ -171,6 +206,25 @@ export interface components {
         PatchUserPreferencesBody: {
             preferredModel?: string;
         };
+        /** @enum {string} */
+        AgentMemoryType: "learned" | "remembered";
+        AgentMemoryItem: {
+            id: string;
+            type: components["schemas"]["AgentMemoryType"];
+            text: string;
+            createdAt: string;
+        };
+        AgentMemoryPage: {
+            items: components["schemas"]["AgentMemoryItem"][];
+            /** Format: double */
+            total: number;
+            /** Format: double */
+            limit: number;
+            /** Format: double */
+            offset: number;
+        };
+        MemoryPageDto: components["schemas"]["AgentMemoryPage"];
+        MemoryTypeDto: components["schemas"]["AgentMemoryType"];
         ChatListItemDto: {
             id: string;
             title: string;
@@ -311,6 +365,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserPreferencesDto"];
+                };
+            };
+        };
+    };
+    ListMemories: {
+        parameters: {
+            query?: {
+                q?: string;
+                kind?: components["schemas"]["MemoryTypeDto"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryPageDto"];
+                };
+            };
+        };
+    };
+    ClearMemories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: double */
+                        removed: number;
+                        /** @enum {string} */
+                        status: "cleared";
+                    };
+                };
+            };
+        };
+    };
+    DeleteMemory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["MemoryTypeDto"];
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "deleted";
+                    };
                 };
             };
         };

@@ -43,10 +43,24 @@ export interface PendingAttachment {
 export type ChatStreamEvent =
   | { type: "user"; message: unknown }
   | { type: "status"; text: string }
+  | {
+      type: "memory";
+      op: "add" | "remove";
+      text: string;
+      id?: string;
+      kind?: "learned" | "remembered";
+      fact?: string;
+    }
   | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; message: unknown }
   | { type: "error"; message: string };
+
+export interface SavedMemoryNotice {
+  id: string;
+  kind: "learned" | "remembered";
+  fact: string;
+}
 
 export interface CmuMapsPayload {
   url: string | null;

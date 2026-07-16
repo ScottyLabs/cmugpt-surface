@@ -8,6 +8,7 @@ import type {
   ChatStreamEvent,
   CmuMapsPayload,
   PendingAttachment,
+  SavedMemoryNotice,
 } from "@/lib/chatUtils.ts";
 import {
   buildOutgoingContent,
@@ -20,6 +21,7 @@ import { ChatHeader } from "./ChatHeader.tsx";
 import { ChatMessages } from "./ChatMessages.tsx";
 import { ChatModal } from "./ChatModal.tsx";
 import { ChatSidebar } from "./ChatSidebar.tsx";
+import { MemoryManager } from "./MemoryManager.tsx";
 import { SearchPanel } from "./SearchPanel.tsx";
 import { SidebarContextMenu } from "./SidebarContextMenu.tsx";
 
@@ -43,6 +45,8 @@ export function ChatShell() {
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
   const [streamingCmuMaps, setStreamingCmuMaps] =
     useState<CmuMapsPayload | null>(null);
+  const [savedMemoryNotice, setSavedMemoryNotice] =
+    useState<SavedMemoryNotice | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [optimisticUserMessage, setOptimisticUserMessage] = useState<{
     chatId: string;
@@ -64,6 +68,7 @@ export function ChatShell() {
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [memoryManagerOpen, setMemoryManagerOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<"settings" | "about" | null>(
     null,
   );
@@ -76,11 +81,14 @@ export function ChatShell() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const draftComposerRef = useRef<HTMLTextAreaElement>(null);
   const hasAutoFocusedComposerRef = useRef(false);
+  const previousMemoryChatIdRef = useRef(chatId);
   const shouldStickToBottomRef = useRef(true);
+  const streamStartAssistantIdRef = useRef<string | null>(null);
   const streamBufferRef = useRef("");
   const streamFrameRef = useRef<number | null>(null);
   const streamFlushResolversRef = useRef<Array<() => void>>([]);
@@ -141,6 +149,10 @@ export function ChatShell() {
     setStreamingCmuMaps(null);
   }
 
+  const closeMemoryManager = useCallback(() => {
+    setMemoryManagerOpen(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       for (const p of pendingAttachmentsRef.current) {
@@ -199,13 +211,19 @@ export function ChatShell() {
 
   const lastAssistantCmuMaps = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i];
-      if (m?.role === "assistant" && m.cmuMaps?.url) {
-        return m.cmuMaps as CmuMapsPayload;
+      const message = messages[i];
+      if (message?.role === "assistant" && message.cmuMaps?.url) {
+        return message.cmuMaps as CmuMapsPayload;
       }
     }
     return null;
   }, [messages]);
+  useEffect(() => {
+    if (previousMemoryChatIdRef.current === chatId) return;
+    previousMemoryChatIdRef.current = chatId;
+    setSavedMemoryNotice(null);
+    streamStartAssistantIdRef.current = null;
+  }, [chatId]);
   const activeCmuMaps: CmuMapsPayload | null =
     streamingCmuMaps ?? lastAssistantCmuMaps;
 
@@ -562,6 +580,10 @@ export function ChatShell() {
         STICKY_SCROLL_THRESHOLD_PX;
     }
     resetStreamingBuffer();
+    setSavedMemoryNotice(null);
+    streamStartAssistantIdRef.current =
+      [...messages].reverse().find((message) => message.role === "assistant")
+        ?.id ?? null;
     setStreamStatus("Thinking...");
     setOptimisticUserMessage({
       chatId: activeChatId,
@@ -643,6 +665,20 @@ export function ChatShell() {
             void refetchChats();
           } else if (ev.type === "status") {
             setStreamStatus(ev.text);
+          } else if (ev.type === "memory") {
+            if (ev.op === "add" && ev.id) {
+              const fact =
+                ev.fact ?? ev.text.replace(/^Saved to memory:\s*/i, "").trim();
+              if (fact) {
+                setSavedMemoryNotice({
+                  id: ev.id,
+                  kind: ev.kind ?? "remembered",
+                  fact,
+                });
+              }
+            } else if (ev.op === "remove") {
+              setSavedMemoryNotice(null);
+            }
           } else if (ev.type === "map") {
             setStreamingCmuMaps(ev.cmuMaps);
           } else if (ev.type === "delta") {
@@ -702,12 +738,14 @@ export function ChatShell() {
         setSidebarMenu={setSidebarMenu}
         userMenuOpen={userMenuOpen}
         setUserMenuOpen={setUserMenuOpen}
+        userMenuTriggerRef={userMenuTriggerRef}
         user={user}
         displayName={displayName}
         signOut={() => void signOut()}
         setActiveModal={setActiveModal}
         selectChat={selectChat}
         beginRename={beginRename}
+        onOpenMemories={() => setMemoryManagerOpen(true)}
       />
 
       <SidebarContextMenu
@@ -775,6 +813,13 @@ export function ChatShell() {
               isStreaming={isStreaming}
               streamingText={streamingText}
               streamStatus={streamStatus}
+              streamStartAssistantId={streamStartAssistantIdRef.current}
+              savedMemoryNotice={savedMemoryNotice}
+              onSavedMemoryDeleted={(id) =>
+                setSavedMemoryNotice((current) =>
+                  current?.id === id ? null : current,
+                )
+              }
               activeCmuMaps={activeCmuMaps}
               draftComposerRef={draftComposerRef}
               draft={draft}
@@ -824,6 +869,12 @@ export function ChatShell() {
           </>
         )}
       </main>
+
+      <MemoryManager
+        open={memoryManagerOpen}
+        onClose={closeMemoryManager}
+        returnFocusRef={userMenuTriggerRef}
+      />
     </div>
   );
 }
