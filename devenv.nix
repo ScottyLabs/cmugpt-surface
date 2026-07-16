@@ -12,7 +12,7 @@ in
     secrets.enable = true;
     postgres = {
       enable = true;
-      extensions = e: [ e.pg_uuidv7 e.pgvector ];
+      extensions = e: [ e.pgvector ];
     };
 
     # Kennel deployment configuration
