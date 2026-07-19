@@ -1,4 +1,4 @@
-import type { paths } from "@cmugpt-frontend/server/build/swagger";
+import type { paths } from "@cmugpt-frontend/server/build/openapi";
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 

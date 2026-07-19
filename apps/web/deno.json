@@ -9,7 +9,7 @@
   },
   "imports": {
     "@/": "./src/",
-    "@cmugpt-frontend/server/build/swagger": "../server/build/swagger.d.ts",
+    "@cmugpt-frontend/server/build/openapi": "../server/build/openapi.d.ts",
     "@scottylabs/corgi": "npm:@scottylabs/corgi@^0.3.1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.0.6",
     "@tanstack/react-devtools": "npm:@tanstack/react-devtools@^0.7.0",

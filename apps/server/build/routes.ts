@@ -2,7 +2,7 @@
 /* eslint-disable */
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import type { TsoaRoute } from "@tsoa/runtime";
-import { ExpressTemplateService, fetchMiddlewares } from "@tsoa/runtime";
+import { fetchMiddlewares, ExpressTemplateService } from "@tsoa/runtime";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { HelloController } from "./../src/controllers/hellloController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -11,12 +11,7 @@ import { ChatController } from "./../src/controllers/chatController";
 import { MeController } from "./../src/controllers/meController";
 import { expressAuthentication } from "./../src/lib/authentication";
 // @ts-ignore - no great way to install types from subpackage
-import type {
-  Request as ExRequest,
-  RequestHandler,
-  Response as ExResponse,
-  Router,
-} from "express";
+import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from "express";
 
 const expressAuthenticationRecasted = expressAuthentication as (
   req: ExRequest,
@@ -28,185 +23,159 @@ const expressAuthenticationRecasted = expressAuthentication as (
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-  "ChatListItemDto": {
-    "dataType": "refObject",
-    "properties": {
-      "id": { "dataType": "string", "required": true },
-      "title": { "dataType": "string", "required": true },
-      "starred": { "dataType": "boolean", "required": true },
-      "isPublic": { "dataType": "boolean", "required": true },
-      "updatedAt": { "dataType": "string", "required": true },
+  ChatListItemDto: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      title: { dataType: "string", required: true },
+      starred: { dataType: "boolean", required: true },
+      isPublic: { dataType: "boolean", required: true },
+      updatedAt: { dataType: "string", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "CmuMapsDto": {
-    "dataType": "refObject",
-    "properties": {
-      "url": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+  CmuMapsDto: {
+    dataType: "refObject",
+    properties: {
+      url: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "mode": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      mode: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "target": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      target: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "targetLabel": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      targetLabel: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "src": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      src: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "srcLabel": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      srcLabel: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "dest": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      dest: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
-      "destLabel": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "string" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
-        "required": true,
+      destLabel: {
+        dataType: "union",
+        subSchemas: [{ dataType: "string" }, { dataType: "enum", enums: [null] }],
+        required: true,
       },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "MessageDto": {
-    "dataType": "refObject",
-    "properties": {
-      "id": { "dataType": "string", "required": true },
-      "role": {
-        "dataType": "union",
-        "subSchemas": [{ "dataType": "enum", "enums": ["user"] }, {
-          "dataType": "enum",
-          "enums": ["assistant"],
-        }, { "dataType": "enum", "enums": ["system"] }],
-        "required": true,
+  MessageDto: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      role: {
+        dataType: "union",
+        subSchemas: [
+          { dataType: "enum", enums: ["user"] },
+          { dataType: "enum", enums: ["assistant"] },
+          { dataType: "enum", enums: ["system"] },
+        ],
+        required: true,
       },
-      "content": { "dataType": "string", "required": true },
-      "createdAt": { "dataType": "string", "required": true },
-      "cmuMaps": {
-        "dataType": "union",
-        "subSchemas": [{ "ref": "CmuMapsDto" }, {
-          "dataType": "enum",
-          "enums": [null],
-        }],
+      content: { dataType: "string", required: true },
+      createdAt: { dataType: "string", required: true },
+      cmuMaps: {
+        dataType: "union",
+        subSchemas: [{ ref: "CmuMapsDto" }, { dataType: "enum", enums: [null] }],
       },
-      "confidence": { "dataType": "double" },
+      confidence: { dataType: "double" },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "ChatDetailDto": {
-    "dataType": "refObject",
-    "properties": {
-      "id": { "dataType": "string", "required": true },
-      "title": { "dataType": "string", "required": true },
-      "starred": { "dataType": "boolean", "required": true },
-      "isPublic": { "dataType": "boolean", "required": true },
-      "updatedAt": { "dataType": "string", "required": true },
-      "isOwner": { "dataType": "boolean", "required": true },
+  ChatDetailDto: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      title: { dataType: "string", required: true },
+      starred: { dataType: "boolean", required: true },
+      isPublic: { dataType: "boolean", required: true },
+      updatedAt: { dataType: "string", required: true },
+      isOwner: { dataType: "boolean", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "PostMessageResultDto": {
-    "dataType": "refObject",
-    "properties": {
-      "userMessage": { "ref": "MessageDto", "required": true },
-      "assistantMessage": { "ref": "MessageDto", "required": true },
+  PostMessageResultDto: {
+    dataType: "refObject",
+    properties: {
+      userMessage: { ref: "MessageDto", required: true },
+      assistantMessage: { ref: "MessageDto", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "PostChatMessageBody": {
-    "dataType": "refObject",
-    "properties": {
-      "content": { "dataType": "string", "required": true },
+  PostChatMessageBody: {
+    dataType: "refObject",
+    properties: {
+      content: { dataType: "string", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "PatchChatBody": {
-    "dataType": "refObject",
-    "properties": {
-      "starred": { "dataType": "boolean" },
-      "title": { "dataType": "string" },
-      "isPublic": { "dataType": "boolean" },
+  PatchChatBody: {
+    dataType: "refObject",
+    properties: {
+      starred: { dataType: "boolean" },
+      title: { dataType: "string" },
+      isPublic: { dataType: "boolean" },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "AgentModelOption": {
-    "dataType": "refObject",
-    "properties": {
-      "id": { "dataType": "string", "required": true },
-      "label": { "dataType": "string", "required": true },
-      "description": { "dataType": "string", "required": true },
+  AgentModelOption: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      label: { dataType: "string", required: true },
+      description: { dataType: "string", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "UserPreferencesDto": {
-    "dataType": "refObject",
-    "properties": {
-      "preferredModel": { "dataType": "string", "required": true },
+  UserPreferencesDto: {
+    dataType: "refObject",
+    properties: {
+      preferredModel: { dataType: "string", required: true },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  "PatchUserPreferencesBody": {
-    "dataType": "refObject",
-    "properties": {
-      "preferredModel": { "dataType": "string" },
+  PatchUserPreferencesBody: {
+    dataType: "refObject",
+    properties: {
+      preferredModel: { dataType: "string" },
     },
-    "additionalProperties": false,
+    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const templateService = new ExpressTemplateService(models, {
-  "noImplicitAdditionalProperties": "throw-on-extras",
-  "bodyCoercion": true,
+  noImplicitAdditionalProperties: "throw-on-extras",
+  bodyCoercion: true,
 });
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -217,26 +186,15 @@ export function RegisterRoutes(app: Router) {
   //      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
   // ###########################################################################################################
 
-  const argsHelloController_getHello: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    _req: {
-      "in": "request",
-      "name": "_req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsHelloController_getHello: Record<string, TsoaRoute.ParameterSchema> = {
+    _req: { in: "request", name: "_req", required: true, dataType: "object" },
   };
   app.get(
     "/hello",
-    ...(fetchMiddlewares<RequestHandler>(HelloController)),
-    ...(fetchMiddlewares<RequestHandler>(HelloController.prototype.getHello)),
-    async function HelloController_getHello(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    ...fetchMiddlewares<RequestHandler>(HelloController),
+    ...fetchMiddlewares<RequestHandler>(HelloController.prototype.getHello),
+
+    async function HelloController_getHello(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -263,24 +221,15 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsHelloController_getHelloAuthenticated: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsHelloController_getHelloAuthenticated: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
   };
   app.get(
     "/hello/authenticated",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(HelloController)),
-    ...(fetchMiddlewares<RequestHandler>(
-      HelloController.prototype.getHelloAuthenticated,
-    )),
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(HelloController),
+    ...fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAuthenticated),
+
     async function HelloController_getHelloAuthenticated(
       request: ExRequest,
       response: ExResponse,
@@ -312,24 +261,15 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsHelloController_getHelloAdmin: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsHelloController_getHelloAdmin: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
   };
   app.get(
     "/hello/admin",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(HelloController)),
-    ...(fetchMiddlewares<RequestHandler>(
-      HelloController.prototype.getHelloAdmin,
-    )),
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(HelloController),
+    ...fetchMiddlewares<RequestHandler>(HelloController.prototype.getHelloAdmin),
+
     async function HelloController_getHelloAdmin(
       request: ExRequest,
       response: ExResponse,
@@ -361,28 +301,17 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_listChats: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    q: { "in": "query", "name": "q", "dataType": "string" },
+  const argsChatController_listChats: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    q: { in: "query", name: "q", dataType: "string" },
   };
   app.get(
     "/chats",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.listChats)),
-    async function ChatController_listChats(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.listChats),
+
+    async function ChatController_listChats(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -409,27 +338,16 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_createChat: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsChatController_createChat: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
   };
   app.post(
     "/chats",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.createChat)),
-    async function ChatController_createChat(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.createChat),
+
+    async function ChatController_createChat(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -456,28 +374,17 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_getMessages: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    id: { "in": "path", "name": "id", "required": true, "dataType": "string" },
+  const argsChatController_getMessages: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    id: { in: "path", name: "id", required: true, dataType: "string" },
   };
   app.get(
     "/chats/:id/messages",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessages)),
-    async function ChatController_getMessages(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.getMessages),
+
+    async function ChatController_getMessages(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -504,31 +411,17 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_getChat: Record<string, TsoaRoute.ParameterSchema> =
-    {
-      req: {
-        "in": "request",
-        "name": "req",
-        "required": true,
-        "dataType": "object",
-      },
-      id: {
-        "in": "path",
-        "name": "id",
-        "required": true,
-        "dataType": "string",
-      },
-    };
+  const argsChatController_getChat: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    id: { in: "path", name: "id", required: true, dataType: "string" },
+  };
   app.get(
     "/chats/:id",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.getChat)),
-    async function ChatController_getChat(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.getChat),
+
+    async function ChatController_getChat(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -555,34 +448,18 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_postMessage: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    id: { "in": "path", "name": "id", "required": true, "dataType": "string" },
-    body: {
-      "in": "body",
-      "name": "body",
-      "required": true,
-      "ref": "PostChatMessageBody",
-    },
+  const argsChatController_postMessage: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    id: { in: "path", name: "id", required: true, dataType: "string" },
+    body: { in: "body", name: "body", required: true, ref: "PostChatMessageBody" },
   };
   app.post(
     "/chats/:id/messages",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.postMessage)),
-    async function ChatController_postMessage(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.postMessage),
+
+    async function ChatController_postMessage(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -609,34 +486,18 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_patchChat: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    id: { "in": "path", "name": "id", "required": true, "dataType": "string" },
-    body: {
-      "in": "body",
-      "name": "body",
-      "required": true,
-      "ref": "PatchChatBody",
-    },
+  const argsChatController_patchChat: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    id: { in: "path", name: "id", required: true, dataType: "string" },
+    body: { in: "body", name: "body", required: true, ref: "PatchChatBody" },
   };
   app.patch(
     "/chats/:id",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.patchChat)),
-    async function ChatController_patchChat(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.patchChat),
+
+    async function ChatController_patchChat(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -663,28 +524,17 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsChatController_deleteChat: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    id: { "in": "path", "name": "id", "required": true, "dataType": "string" },
+  const argsChatController_deleteChat: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    id: { in: "path", name: "id", required: true, dataType: "string" },
   };
   app.delete(
     "/chats/:id",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(ChatController)),
-    ...(fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat)),
-    async function ChatController_deleteChat(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(ChatController),
+    ...fetchMiddlewares<RequestHandler>(ChatController.prototype.deleteChat),
+
+    async function ChatController_deleteChat(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -711,24 +561,15 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsMeController_getOidcAdminStatus: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsMeController_getOidcAdminStatus: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
   };
   app.get(
     "/me/oidc-admin",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(MeController)),
-    ...(fetchMiddlewares<RequestHandler>(
-      MeController.prototype.getOidcAdminStatus,
-    )),
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(MeController),
+    ...fetchMiddlewares<RequestHandler>(MeController.prototype.getOidcAdminStatus),
+
     async function MeController_getOidcAdminStatus(
       request: ExRequest,
       response: ExResponse,
@@ -760,18 +601,14 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsMeController_listModels: Record<string, TsoaRoute.ParameterSchema> =
-    {};
+  const argsMeController_listModels: Record<string, TsoaRoute.ParameterSchema> = {};
   app.get(
     "/me/models",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(MeController)),
-    ...(fetchMiddlewares<RequestHandler>(MeController.prototype.listModels)),
-    async function MeController_listModels(
-      request: ExRequest,
-      response: ExResponse,
-      next: any,
-    ) {
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(MeController),
+    ...fetchMiddlewares<RequestHandler>(MeController.prototype.listModels),
+
+    async function MeController_listModels(request: ExRequest, response: ExResponse, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       let validatedArgs: any[] = [];
@@ -798,24 +635,15 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsMeController_getPreferences: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
+  const argsMeController_getPreferences: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
   };
   app.get(
     "/me/preferences",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(MeController)),
-    ...(fetchMiddlewares<RequestHandler>(
-      MeController.prototype.getPreferences,
-    )),
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(MeController),
+    ...fetchMiddlewares<RequestHandler>(MeController.prototype.getPreferences),
+
     async function MeController_getPreferences(
       request: ExRequest,
       response: ExResponse,
@@ -847,30 +675,16 @@ export function RegisterRoutes(app: Router) {
     },
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  const argsMeController_updatePreferences: Record<
-    string,
-    TsoaRoute.ParameterSchema
-  > = {
-    req: {
-      "in": "request",
-      "name": "req",
-      "required": true,
-      "dataType": "object",
-    },
-    body: {
-      "in": "body",
-      "name": "body",
-      "required": true,
-      "ref": "PatchUserPreferencesBody",
-    },
+  const argsMeController_updatePreferences: Record<string, TsoaRoute.ParameterSchema> = {
+    req: { in: "request", name: "req", required: true, dataType: "object" },
+    body: { in: "body", name: "body", required: true, ref: "PatchUserPreferencesBody" },
   };
   app.patch(
     "/me/preferences",
-    authenticateMiddleware([{ "oidc": [] }]),
-    ...(fetchMiddlewares<RequestHandler>(MeController)),
-    ...(fetchMiddlewares<RequestHandler>(
-      MeController.prototype.updatePreferences,
-    )),
+    authenticateMiddleware([{ oidc: [] }]),
+    ...fetchMiddlewares<RequestHandler>(MeController),
+    ...fetchMiddlewares<RequestHandler>(MeController.prototype.updatePreferences),
+
     async function MeController_updatePreferences(
       request: ExRequest,
       response: ExResponse,
@@ -908,11 +722,7 @@ export function RegisterRoutes(app: Router) {
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
   function authenticateMiddleware(security: TsoaRoute.Security[] = []) {
-    return async function runAuthenticationMiddleware(
-      request: any,
-      response: any,
-      next: any,
-    ) {
+    return async function runAuthenticationMiddleware(request: any, response: any, next: any) {
       // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
       // keep track of failed auth attempts so we can hand back the most
@@ -931,34 +741,25 @@ export function RegisterRoutes(app: Router) {
 
           for (const name in secMethod) {
             secMethodAndPromises.push(
-              expressAuthenticationRecasted(
-                request,
-                name,
-                secMethod[name],
-                response,
-              )
-                .catch(pushAndRethrow),
+              expressAuthenticationRecasted(request, name, secMethod[name], response).catch(
+                pushAndRethrow,
+              ),
             );
           }
 
           // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
           secMethodOrPromises.push(
-            Promise.all(secMethodAndPromises)
-              .then((users) => {
-                return users[0];
-              }),
+            Promise.all(secMethodAndPromises).then((users) => {
+              return users[0];
+            }),
           );
         } else {
           for (const name in secMethod) {
             secMethodOrPromises.push(
-              expressAuthenticationRecasted(
-                request,
-                name,
-                secMethod[name],
-                response,
-              )
-                .catch(pushAndRethrow),
+              expressAuthenticationRecasted(request, name, secMethod[name], response).catch(
+                pushAndRethrow,
+              ),
             );
           }
         }

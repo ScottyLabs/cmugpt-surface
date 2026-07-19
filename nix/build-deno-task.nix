@@ -22,7 +22,7 @@
   sloppyImports ? false,
   # verify the lockfile is exactly reproducible offline. Disable for builds whose lock
   # references packages outside the build src (e.g. a sibling deno workspace member that
-  # is imported for types only) — those cannot be re-derived in an isolated sandbox.
+  # is imported for types only) -- those cannot be re-derived in an isolated sandbox.
   frozen ? true,
 }:
 
@@ -50,7 +50,7 @@ let
     lib.nameValuePair "${p.name}@${p.version}" {
       inherit (p) name version;
       inherit url;
-      integrity = info.integrity;
+      inherit (info) integrity;
       tarball = fetchurl {
         inherit url;
         hash = info.integrity;

@@ -24,19 +24,10 @@ RUN groupadd --system --gid 1001 server && \
     useradd --system --uid 1001 --gid 1001 server
 USER server
 
-# Copy Swagger spec
+# Copy OpenAPI spec (served at /api/openapi.json and rendered by Scalar)
 COPY --from=builder --chown=server:server \
   /app/apps/server/build/swagger.yaml \
   /app/apps/server/build/swagger.yaml
-
-# Copy Swagger UI dist
-# (which can be either in apps/node_modules or apps/server/node_modules)
-# COPY --from=builder --chown=server:server \
-#   /app/apps/node_modules/swagger-ui-dist \
-#   /app/apps/node_modules/swagger-ui-dist
-COPY --from=builder --chown=server:server \
-  /app/apps/server/node_modules/swagger-ui-dist \
-  /app/apps/server/node_modules/swagger-ui-dist
 
 # Copy only what's needed to run the server
 COPY --from=builder --chown=server:server \

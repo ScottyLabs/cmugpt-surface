@@ -32,7 +32,7 @@
     };
   };
 
-  cachix.enable = false;
+  # cachix.enable = false;
 
   # Backend on :3001; the server task loads ../../.env for SERVER_URL /
   # ALLOWED_ORIGINS_REGEX, secretspec provides OIDC/AGENT, postgres sets
@@ -49,7 +49,4 @@
   #  cwd = "./apps/web";
   #};
 
-  enterShell = ''
-    [ -f .env ] || touch .env
-  '';
 }

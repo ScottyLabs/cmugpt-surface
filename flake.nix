@@ -10,7 +10,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    devenv.url = "github:cachix/devenv";
+    # devenv.url = "github:cachix/devenv";
     scottylabs = {
       url = "git+https://codeberg.org/ScottyLabs/devenv";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -19,10 +19,8 @@
 
   outputs =
     {
-      self,
+
       nixpkgs,
-      devenv,
-      scottylabs,
       ...
     }:
     let
@@ -38,7 +36,7 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          helpers = scottylabs.mkLib pkgs;
+          # helpers = scottylabs.mkLib pkgs;
 
           # Local override: upstream helpers.buildDenoTask extracts npm tarballs
           # with `tar -x` and chokes on packages shipping read-only directories.
@@ -75,8 +73,7 @@
         in
         {
           inherit web api;
-          default = api;
-          devenv = devenv.packages.${system}.devenv;
+          #  default = api;
         }
       );
     };

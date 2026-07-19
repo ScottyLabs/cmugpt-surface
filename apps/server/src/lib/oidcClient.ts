@@ -1,6 +1,6 @@
 // Server-side OIDC via openid-client (panva). Handles discovery, PKCE, the
 // authorization URL, code exchange (with id_token validation), refresh, and
-// logout — so we never hand-roll OIDC crypto. Ricochet support lives in
+// logout -- so we never hand-roll OIDC crypto. Ricochet support lives in
 // authRoutes.ts: we choose the redirect_uri and craft the `state`; this module
 // just runs the protocol.
 import * as client from "openid-client";
@@ -10,7 +10,8 @@ export interface OidcTokens {
   accessToken: string;
   refreshToken?: string;
   idToken?: string;
-  accessTokenExpiresAt?: number; // epoch ms
+  // epoch ms
+  accessTokenExpiresAt?: number;
 }
 
 export interface OidcClaims {
@@ -26,7 +27,14 @@ let configPromise: Promise<client.Configuration> | null = null;
 
 function getConfiguredOidcParams(): { issuerUrl: string; clientId: string; clientSecret: string } {
   const { OIDC_ISSUER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET } = env;
-  if (!OIDC_ISSUER_URL || !OIDC_CLIENT_ID || !OIDC_CLIENT_SECRET) {
+  if (
+    OIDC_ISSUER_URL === undefined ||
+    OIDC_ISSUER_URL === "" ||
+    OIDC_CLIENT_ID === undefined ||
+    OIDC_CLIENT_ID === "" ||
+    OIDC_CLIENT_SECRET === undefined ||
+    OIDC_CLIENT_SECRET === ""
+  ) {
     throw new Error("OIDC is not configured");
   }
   return { issuerUrl: OIDC_ISSUER_URL, clientId: OIDC_CLIENT_ID, clientSecret: OIDC_CLIENT_SECRET };
@@ -35,12 +43,11 @@ function getConfiguredOidcParams(): { issuerUrl: string; clientId: string; clien
 function getConfig(): Promise<client.Configuration> {
   if (!configPromise) {
     const { issuerUrl, clientId, clientSecret } = getConfiguredOidcParams();
-    configPromise = client
-      .discovery(new URL(issuerUrl), clientId, clientSecret)
-      .catch((err) => {
-        configPromise = null; // don't cache a failed discovery
-        throw err;
-      });
+    configPromise = client.discovery(new URL(issuerUrl), clientId, clientSecret).catch((err) => {
+      // don't cache a failed discovery
+      configPromise = null;
+      throw err;
+    });
   }
   return configPromise;
 }
@@ -66,23 +73,23 @@ export async function buildAuthorizeUrl(params: {
   codeChallenge: string;
 }): Promise<string> {
   const config = await getConfig();
-  return client
-    .buildAuthorizationUrl(config, {
-      redirect_uri: params.redirectUri,
-      scope: SCOPE,
-      response_type: "code",
-      state: params.state,
-      nonce: params.nonce,
-      code_challenge: params.codeChallenge,
-      code_challenge_method: "S256",
-    })
-    .href;
+  return client.buildAuthorizationUrl(config, {
+    redirect_uri: params.redirectUri,
+    scope: SCOPE,
+    response_type: "code",
+    state: params.state,
+    nonce: params.nonce,
+    code_challenge: params.codeChallenge,
+    code_challenge_method: "S256",
+  }).href;
 }
 
-function toTokens(res: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers): OidcTokens {
+function toTokens(
+  res: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
+): OidcTokens {
   const tokens: OidcTokens = { accessToken: res.access_token };
-  if (res.refresh_token) tokens.refreshToken = res.refresh_token;
-  if (res.id_token) tokens.idToken = res.id_token;
+  if (res.refresh_token !== undefined) tokens.refreshToken = res.refresh_token;
+  if (res.id_token !== undefined) tokens.idToken = res.id_token;
   const expiresIn = res.expiresIn();
   if (typeof expiresIn === "number") tokens.accessTokenExpiresAt = Date.now() + expiresIn * 1000;
   return tokens;
@@ -93,7 +100,11 @@ function claimStr(v: unknown): string | undefined {
 }
 
 export function extractClaims(idClaims: Record<string, unknown>): OidcClaims {
-  const roles = (idClaims.realm_access as { roles?: unknown } | undefined)?.roles;
+  const realmAccess: unknown = idClaims.realm_access;
+  const roles =
+    typeof realmAccess === "object" && realmAccess !== null && "roles" in realmAccess
+      ? realmAccess.roles
+      : undefined;
   const groups = Array.isArray(idClaims.groups)
     ? idClaims.groups.filter((g): g is string => typeof g === "string")
     : Array.isArray(roles)
@@ -131,8 +142,8 @@ export async function exchangeCode(params: {
     idTokenExpected: true,
   });
   const idClaims = res.claims();
-  if (!idClaims?.sub) throw new Error("id_token missing sub");
-  return { tokens: toTokens(res), claims: extractClaims(idClaims as Record<string, unknown>) };
+  if (idClaims === undefined || idClaims.sub === "") throw new Error("id_token missing sub");
+  return { tokens: toTokens(res), claims: extractClaims(idClaims) };
 }
 
 export async function refreshTokens(refreshToken: string): Promise<OidcTokens> {
@@ -145,14 +156,14 @@ export async function buildLogoutUrl(params: {
   postLogoutRedirectUri: string;
 }): Promise<string | null> {
   const config = await getConfig();
-  if (!env.OIDC_CLIENT_ID) {
+  if (env.OIDC_CLIENT_ID === undefined || env.OIDC_CLIENT_ID === "") {
     return null;
   }
   try {
     return client.buildEndSessionUrl(config, {
       post_logout_redirect_uri: params.postLogoutRedirectUri,
       client_id: env.OIDC_CLIENT_ID,
-      ...(params.idToken ? { id_token_hint: params.idToken } : {}),
+      ...(params.idToken === undefined ? {} : { id_token_hint: params.idToken }),
     }).href;
   } catch {
     // Provider may not advertise an end_session_endpoint.

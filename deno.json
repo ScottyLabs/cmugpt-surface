@@ -1,9 +1,8 @@
 {
-  "workspace": [
-    "./apps/server",
-    "./apps/web"
-  ],
+  "workspace": ["./apps/server", "./apps/web"],
   "nodeModulesDir": "auto",
+  "exclude": [".devenv", ".direnv"],
+  "unstable": ["sloppy-imports"],
   "compilerOptions": {
     "experimentalDecorators": true
   },

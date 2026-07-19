@@ -2,12 +2,11 @@ import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
 import cors, { type CorsOptions } from "cors";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import type { ErrorRequestHandler } from "express";
 import express from "express";
-import swaggerUi, { type JsonObject } from "swagger-ui-express";
+import { apiReference } from "@scalar/express-api-reference";
 import { parse as parseYaml } from "yaml";
 import { RegisterRoutes } from "../build/routes.ts";
 import { db, pool } from "./db/index.ts";
@@ -17,8 +16,9 @@ import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const migrationsFolder = path.join(__dirname, "../drizzle");
+const moduleDir = import.meta.dirname;
+if (moduleDir === undefined) throw new Error("import.meta.dirname is unavailable");
+const migrationsFolder = path.join(moduleDir, "../drizzle");
 
 await migrate(db, { migrationsFolder });
 
@@ -70,7 +70,7 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
@@ -83,7 +83,7 @@ function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
   }
 
   try {
-    return new RegExp(allowedOrigin).test(origin);
+    return new RegExp(allowedOrigin, "u").test(origin);
   } catch {
     return origin === allowedOrigin || origin === `^${escapeRegExp(allowedOrigin)}$`;
   }
@@ -92,7 +92,10 @@ function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin) return callback(null, true);
+    if (origin === undefined || origin === "") {
+      callback(null, true);
+      return;
+    }
 
     // Check if origin matches any allowed origin or regex
     const isAllowed = allowedOrigins.some((allowedOrigin) => {
@@ -118,28 +121,20 @@ app.use(authRouter);
 app.use(attachBearerFromSession);
 
 // Create HTTP server with Express app attached
-const server = http.createServer(app);
-
-// Swagger and OpenAPI JSON. Resolve relative to this module (not cwd) so the
-// path also works inside a `deno compile` binary with `--include build`.
-const swaggerYaml = fs.readFileSync(path.join(__dirname, "../build/swagger.yaml"), "utf8");
-const swaggerJson = parseYaml(swaggerYaml) as JsonObject;
-// Serve Swagger UI only when its static assets are present on disk. They live
-// in node_modules, which doesn't exist inside a `deno compile` binary, so this
-// is skipped in compiled/production builds rather than crashing.
-const swaggerUiDist = path.join(__dirname, "../node_modules/swagger-ui-dist");
-if (fs.existsSync(swaggerUiDist)) {
-  app.use(
-    "/api/swagger",
-    // https://github.com/scottie1984/swagger-ui-express/issues/114#issuecomment-566022730
-    express.static(swaggerUiDist, { index: false }),
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerJson),
-  );
-}
-app.get("/api/openapi.json", (_req, res) => {
-  res.status(200).send(swaggerJson);
+const server = http.createServer((req, res) => {
+  app(req, res);
 });
+
+// OpenAPI spec. Resolve relative to this module (not cwd) so the path also
+// works inside a `deno compile` binary with `--include build`.
+const openApiYaml = fs.readFileSync(path.join(moduleDir, "../build/swagger.yaml"), "utf8");
+const openApiSpec: unknown = parseYaml(openApiYaml);
+app.get("/api/openapi.json", (_req, res) => {
+  res.status(200).send(openApiSpec);
+});
+// Scalar API reference UI, rendered from the spec at /api/openapi.json. Needs
+// no on-disk assets, so it also works inside a `deno compile` binary.
+app.use("/api/scalar", apiReference({ url: "/api/openapi.json" }));
 
 // Routes
 RegisterRoutes(app);
@@ -147,14 +142,16 @@ registerChatMessageStreamRoute(app);
 app.get("/api", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
-
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 // Serve the built frontend (SPA) when STATIC_DIR is configured. API routes are
 // registered above, so they take precedence; anything unmatched falls back to
 // index.html for client-side routing.
-if (env.STATIC_DIR) {
+if (env.STATIC_DIR !== undefined && env.STATIC_DIR !== "") {
   const staticDir = path.resolve(env.STATIC_DIR);
   app.use(express.static(staticDir));
-  app.get(/.*/, (_req, res) => {
+  app.get(/.*/u, (_req, res) => {
     res.sendFile(path.join(staticDir, "index.html"));
   });
 }
@@ -163,8 +160,8 @@ if (env.STATIC_DIR) {
 app.use(errorHandler as ErrorRequestHandler);
 app.use(notFoundHandler);
 
-const envPort = (process.env as { readonly PORT?: string }).PORT ?? undefined;
-const port = Number(envPort) ?? env.SERVER_PORT;
+const envPort = (process.env as { readonly PORT?: string }).PORT;
+const port = envPort === undefined || envPort === "" ? env.SERVER_PORT : Number(envPort);
 
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);
