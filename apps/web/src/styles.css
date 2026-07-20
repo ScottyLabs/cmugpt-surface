@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@scottylabs/corgi/css";
 
 body {
   @apply m-0;

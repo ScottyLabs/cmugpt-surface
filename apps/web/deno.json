@@ -10,7 +10,6 @@
   "imports": {
     "@/": "./src/",
     "@cmugpt-frontend/server/build/openapi": "../server/build/openapi.d.ts",
-    "@scottylabs/corgi": "npm:@scottylabs/corgi@^0.3.1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.0.6",
     "@tanstack/react-devtools": "npm:@tanstack/react-devtools@^0.7.0",
     "@tanstack/react-query": "npm:@tanstack/react-query@^5.90.20",
@@ -28,7 +27,6 @@
     "remark-gfm": "npm:remark-gfm@^4.0.1",
     "remark-math": "npm:remark-math@^6.0.0",
     "tailwindcss": "npm:tailwindcss@^4.0.6",
-    "zod": "npm:zod@^4.3.6",
     "@tanstack/devtools-vite": "npm:@tanstack/devtools-vite@^0.3.11",
     "@tanstack/react-query-devtools": "npm:@tanstack/react-query-devtools@^5.91.3",
     "@testing-library/dom": "npm:@testing-library/dom@^10.4.0",

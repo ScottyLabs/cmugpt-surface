@@ -1,4 +1,3 @@
-import { Button } from "@scottylabs/corgi";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import { ChatShell } from "@/components/ChatShell.tsx";
@@ -17,9 +16,13 @@ function SignInPage() {
   return (
     <div className="m-8 flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
       <p className="text-neutral-600">Sign in to use cmuGPT.</p>
-      <Button size="md" theme="brand" className="inline" onClick={() => auth.login()}>
+      <button
+        type="button"
+        onClick={() => auth.login()}
+        className="inline rounded-full bg-brand-secondary-enabled px-6 py-2 font-medium text-fg-neutral-primary transition-colors hover:brightness-95"
+      >
         Sign In
-      </Button>
+      </button>
     </div>
   );
 }

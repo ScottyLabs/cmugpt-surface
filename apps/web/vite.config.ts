@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     allowedHosts: ["chat.scottylabs.org"],
     // Same-origin API in dev so auth cookies/headers are sent reliably
-    // (page is localhost:3000; calling the backend directly is cross-origin).
+    // (page is localhost:4173; calling the backend directly is cross-origin).
     proxy: {
       "/api": { target: devApiTarget, changeOrigin: true },
       "/chats": { target: devApiTarget, changeOrigin: true },

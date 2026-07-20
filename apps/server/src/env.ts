@@ -1,5 +1,19 @@
 /** biome-ignore-all lint/style/useNamingConvention: environment variables are in SCREAMING_CASE */
+import process from "node:process";
+import { SecretSpec } from "secretspec";
 import { z } from "zod";
+
+// Resolves the secrets declared in secretspec.toml for the active profile
+// (kennel/CI set SECRETSPEC_PROFILE per branch; devenv doesn't export it to
+// the shell, so default to the `dev` profile devenv.yaml configures locally -
+// otherwise the native resolver falls back to the developer's personal
+// ~/.config/secretspec/config.toml, which may not even name a profile that
+// exists in this project) and exports them into process.env by name.
+SecretSpec.builder()
+  .withProfile(process.env.SECRETSPEC_PROFILE ?? "dev")
+  .withReason("boot cmugpt-surface api")
+  .load()
+  .setAsEnv();
 
 // Define the schema as an object with all of the env variables and their types
 const envSchema = z.object({
@@ -16,7 +30,7 @@ const envSchema = z.object({
   // `return_to`) and the post-logout redirect. In dev this is the Vite origin
   // (which proxies /api to the server); provided by `scottylabs.ricochet.appUrl`
   // in devenv and by the platform in prod.
-  APP_URL: z.url().default("http://localhost:3000"),
+  APP_URL: z.url().default("http://localhost:4173"),
 
   // Shared ricochet OAuth relay callback. When set, login uses it as the IdP
   // redirect_uri and puts our real callback in the OAuth `state` (return_to),

@@ -10,7 +10,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # devenv.url = "github:cachix/devenv";
     scottylabs = {
       url = "git+https://codeberg.org/ScottyLabs/devenv";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,7 +26,6 @@
       supportedSystems = [
         "x86_64-linux"
         "aarch64-linux"
-        "aarch64-darwin"
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
@@ -36,7 +34,6 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          # helpers = scottylabs.mkLib pkgs;
 
           # Local override: upstream helpers.buildDenoTask extracts npm tarballs
           # with `tar -x` and chokes on packages shipping read-only directories.
@@ -51,7 +48,7 @@
             pname = "cmugpt-surface-web";
             src = ./apps/web;
             # web's lock references the sibling `@cmugpt-frontend/server` (imported for
-            # types only via ../server/build/swagger.d.ts), which isn't in this src, so the
+            # types only via ../server/build/openapi.d.ts), which isn't in this src, so the
             # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
             frozen = false;
           };
@@ -73,7 +70,6 @@
         in
         {
           inherit web api;
-          #  default = api;
         }
       );
     };

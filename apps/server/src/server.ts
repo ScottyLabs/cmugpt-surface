@@ -62,7 +62,7 @@ app.use(express.json({ limit: "12mb" }));
 // Parse cookies for auth flows that rely on cookies
 app.use(express.urlencoded({ extended: true }));
 
-const defaultAllowedOrigins = ["http://localhost:3000", "http://127.0.0.1:3000"];
+const defaultAllowedOrigins = ["http://localhost:4173", "http://127.0.0.1:4173"];
 // Define CORS options - accept from configured origins
 const allowedOrigins = [
   ...defaultAllowedOrigins,
