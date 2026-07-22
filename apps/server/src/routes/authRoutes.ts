@@ -53,7 +53,7 @@ function resolveWebOrigin(raw: unknown): string {
 function setSessionCookie(res: Response, sid: string): void {
   res.cookie(SESSION_COOKIE, sid, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: cookieSecure ? "none" : "lax",
     secure: cookieSecure,
     path: "/",
     maxAge: SESSION_MAX_AGE_MS,
