@@ -1,19 +1,12 @@
 /** biome-ignore-all lint/style/useNamingConvention: environment variables are in SCREAMING_CASE */
 import process from "node:process";
-import { SecretSpec } from "secretspec";
 import { z } from "zod";
 
-// Resolves the secrets declared in secretspec.toml for the active profile
-// (kennel/CI set SECRETSPEC_PROFILE per branch; devenv doesn't export it to
-// the shell, so default to the `dev` profile devenv.yaml configures locally -
-// otherwise the native resolver falls back to the developer's personal
-// ~/.config/secretspec/config.toml, which may not even name a profile that
-// exists in this project) and exports them into process.env by name.
-SecretSpec.builder()
-  .withProfile(process.env.SECRETSPEC_PROFILE ?? "dev")
-  .withReason("boot cmugpt-surface api")
-  .load()
-  .setAsEnv();
+// kennel resolves every secret declared in secretspec.toml itself (with its
+// own vault credentials) and injects the results as plain env vars into the
+// deployed process, so this schema only ever needs to read process.env - the
+// secretspec SDK's own runtime resolver must not run here, since the
+// deployed sandbox has no vault token of its own.
 
 // Define the schema as an object with all of the env variables and their types
 const envSchema = z.object({

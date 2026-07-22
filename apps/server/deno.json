@@ -21,7 +21,6 @@
     "openid-client": "npm:openid-client@^6.8.4",
     "jwks-rsa": "npm:jwks-rsa@^3.2.2",
     "pg": "npm:pg@^8.20.0",
-    "secretspec": "npm:secretspec@^0.16.0",
     "tsoa": "npm:tsoa@^7.0.0-alpha.0",
     "zod": "npm:zod@^4.3.6",
     "@types/cors": "npm:@types/cors@^2.8.19",
