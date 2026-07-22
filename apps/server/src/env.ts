@@ -20,10 +20,10 @@ const envSchema = z.object({
   SERVER_PORT: z.coerce.number().default(80),
 
   ALLOWED_ORIGINS_REGEX: z.string(),
-  OIDC_ISSUER_URL: z.url().optional(),
-  OIDC_CLIENT_ID: z.string().optional(),
-  OIDC_CLIENT_SECRET: z.string().optional(),
-  ADMIN_GROUP: z.string().default(""),
+  OIDC_ISSUER_URL: z.url(),
+  OIDC_CLIENT_ID: z.string(),
+  OIDC_CLIENT_SECRET: z.string(),
+  ADMIN_GROUP: z.string(),
 
   // Public base URL of the app (where the browser reaches it). Used to build the
   // OIDC redirect_uri (`${APP_URL}/api/auth/callback`, or the ricochet
@@ -32,11 +32,10 @@ const envSchema = z.object({
   // in devenv and by the platform in prod.
   APP_URL: z.url().default("http://localhost:4173"),
 
-  // Shared ricochet OAuth relay callback. When set, login uses it as the IdP
+  // Shared ricochet OAuth relay callback. Login uses it as the IdP
   // redirect_uri and puts our real callback in the OAuth `state` (return_to),
-  // so preview hosts authenticate without registering a redirect URI. Unset ->
-  // direct redirect to `${APP_URL}/api/auth/callback`.
-  OAUTH_RELAY_URL: z.url().optional(),
+  // so preview hosts authenticate without registering a redirect URI.
+  OAUTH_RELAY_URL: z.url(),
 
   DATABASE_URL: z.url(),
 
