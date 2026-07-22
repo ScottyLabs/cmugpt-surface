@@ -16,7 +16,11 @@ const envSchema = z.object({
   OIDC_ISSUER_URL: z.url(),
   OIDC_CLIENT_ID: z.string(),
   OIDC_CLIENT_SECRET: z.string(),
-  ADMIN_GROUP: z.string(),
+
+  // Not declared in secretspec.toml, since kennel's services support no other
+  // env-injection path today, this default is a stopgap until governance
+  // actually supplies a real value for the deployed service.
+  ADMIN_GROUP: z.string().default(""),
 
   // Public base URL of the app (where the browser reaches it). Used to build the
   // OIDC redirect_uri (`${APP_URL}/api/auth/callback`, or the ricochet
