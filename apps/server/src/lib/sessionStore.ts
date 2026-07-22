@@ -53,6 +53,7 @@ export async function createLoginState(params: {
   nonce: string;
   redirectUri: string;
   returnTo: string;
+  webOrigin: string;
 }): Promise<void> {
   await db.insert(oidcLoginStates).values({
     state: params.state,
@@ -60,6 +61,7 @@ export async function createLoginState(params: {
     nonce: params.nonce,
     redirectUri: params.redirectUri,
     returnTo: params.returnTo,
+    webOrigin: params.webOrigin,
     expiresAt: new Date(Date.now() + LOGIN_STATE_TTL_MS),
   });
 }
@@ -70,6 +72,7 @@ export async function consumeLoginState(state: string): Promise<{
   nonce: string;
   redirectUri: string;
   returnTo: string;
+  webOrigin: string;
 } | null> {
   const [row] = await db
     .delete(oidcLoginStates)
@@ -81,6 +84,7 @@ export async function consumeLoginState(state: string): Promise<{
     nonce: row.nonce,
     redirectUri: row.redirectUri,
     returnTo: row.returnTo,
+    webOrigin: row.webOrigin,
   };
 }
 

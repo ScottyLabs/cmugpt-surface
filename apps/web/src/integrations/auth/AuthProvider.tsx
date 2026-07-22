@@ -1,9 +1,10 @@
 import type React from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "@/lib/api/base.ts";
 
 // Auth is server-side (BFF). The browser holds only an httpOnly session cookie;
 // this provider just reflects "who am I" from /api/auth/me and triggers the
-// server's login/logout redirects. Same-origin so the cookie is sent.
+// server's login/logout redirects.
 
 export interface AuthUser {
   sub?: string;
@@ -36,7 +37,7 @@ export function AuthProviderIntegration({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let active = true;
-    fetch("/api/auth/me", { credentials: "include" })
+    fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" })
       .then((res) => (res.ok ? (res.json() as Promise<{ user?: AuthUser }>) : null))
       .then((data) => {
         if (active) {
@@ -65,12 +66,12 @@ export function AuthProviderIntegration({ children }: { children: React.ReactNod
       isLoading,
       login: () => {
         const returnTo = window.location.pathname + window.location.search;
-        window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+        const webOrigin = encodeURIComponent(window.location.origin);
+        window.location.href = `${API_BASE_URL}/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&webOrigin=${webOrigin}`;
       },
       logout: () => {
-        // GET redirect handled by express-openid-connect: clears the session,
-        // ends the Keycloak SSO session, then returns to postLogoutRedirect.
-        window.location.href = "/api/auth/logout";
+        const webOrigin = encodeURIComponent(window.location.origin);
+        window.location.href = `${API_BASE_URL}/api/auth/logout?webOrigin=${webOrigin}`;
       },
     }),
     [user, isLoading],

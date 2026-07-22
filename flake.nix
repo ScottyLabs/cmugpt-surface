@@ -41,9 +41,6 @@
           # TODO: remove once fixed upstream in ScottyLabs/devenv.
           buildDenoTask = pkgs.callPackage ./nix/build-deno-task.nix { };
 
-          # Auth is server-side (BFF) and the API serves this SPA same-origin, so
-          # the web build no longer bakes any OIDC/server-URL config; the SPA
-          # calls the API with relative URLs.
           web = buildDenoTask {
             pname = "cmugpt-surface-web";
             src = ./apps/web;
@@ -51,22 +48,16 @@
             # types only via ../server/build/openapi.d.ts), which isn't in this src, so the
             # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
             frozen = false;
+            env.VITE_API_URL = "https://api.cmugpt.com";
           };
 
-          api =
-            (buildDenoTask {
-              pname = "cmugpt-surface-api";
-              src = ./apps/server;
-              entrypoint = "src/server.ts";
-              compile = true;
-              sloppyImports = true;
-            }).overrideAttrs
-              (old: {
-                nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.makeWrapper ];
-                postInstall = ''
-                  wrapProgram $out/bin/cmugpt-surface-api --set STATIC_DIR ${web}
-                '';
-              });
+          api = buildDenoTask {
+            pname = "cmugpt-surface-api";
+            src = ./apps/server;
+            entrypoint = "src/server.ts";
+            compile = true;
+            sloppyImports = true;
+          };
         in
         {
           inherit web api;

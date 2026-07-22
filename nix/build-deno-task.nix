@@ -24,6 +24,7 @@
   # references packages outside the build src (e.g. a sibling deno workspace member that
   # is imported for types only) -- those cannot be re-derived in an isolated sandbox.
   frozen ? true,
+  env ? { },
 }:
 
 let
@@ -112,7 +113,12 @@ let
   '';
 in
 stdenv.mkDerivation {
-  inherit pname version src;
+  inherit
+    pname
+    version
+    src
+    env
+    ;
 
   nativeBuildInputs = [ deno ] ++ lib.optional stdenv.isLinux autoPatchelfHook;
   buildInputs = lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];

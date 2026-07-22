@@ -10,6 +10,7 @@
 import { Buffer } from "node:buffer";
 import { type NextFunction, type Request, type Response, Router } from "express";
 import { env } from "../env.ts";
+import { isAllowedOrigin } from "../lib/allowedOrigins.ts";
 import {
   buildAuthorizeUrl,
   createPkce,
@@ -45,6 +46,10 @@ function safeReturnTo(raw: unknown): string {
   return typeof raw === "string" && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
+function resolveWebOrigin(raw: unknown): string {
+  return typeof raw === "string" && isAllowedOrigin(raw) ? raw : new URL(env.APP_URL).origin;
+}
+
 function setSessionCookie(res: Response, sid: string): void {
   res.cookie(SESSION_COOKIE, sid, {
     httpOnly: true,
@@ -58,8 +63,9 @@ function setSessionCookie(res: Response, sid: string): void {
 export const authRouter: Router = Router();
 
 authRouter.get("/api/auth/login", async (req: Request, res: Response) => {
+  const webOrigin = resolveWebOrigin(req.query["webOrigin"]);
   if (!oidcIsConfigured()) {
-    res.redirect("/?login_error=oidc_unavailable");
+    res.redirect(`${webOrigin}/?login_error=oidc_unavailable`);
     return;
   }
   const returnTo = safeReturnTo(req.query["returnTo"]);
@@ -74,26 +80,36 @@ authRouter.get("/api/auth/login", async (req: Request, res: Response) => {
     : randomState();
   const redirectUri = relay ?? callback;
 
-  await createLoginState({ state, codeVerifier: verifier, nonce, redirectUri, returnTo });
+  await createLoginState({
+    state,
+    codeVerifier: verifier,
+    nonce,
+    redirectUri,
+    returnTo,
+    webOrigin,
+  });
   res.redirect(await buildAuthorizeUrl({ redirectUri, state, nonce, codeChallenge: challenge }));
 });
 
 authRouter.get("/api/auth/callback", async (req: Request, res: Response) => {
+  const apiOrigin = new URL(env.APP_URL).origin;
   if (!oidcIsConfigured()) {
-    res.redirect("/?login_error=oidc_unavailable");
+    res.redirect(`${apiOrigin}/?login_error=oidc_unavailable`);
     return;
   }
   const { error, state } = req.query;
+  const stateParam = typeof state === "string" ? state : null;
+  const tx = stateParam === null ? null : await consumeLoginState(stateParam);
+  const webOrigin = tx?.webOrigin ?? apiOrigin;
+
   if (typeof error === "string") {
-    res.redirect(`/?login_error=${encodeURIComponent(error)}`);
+    res.redirect(`${webOrigin}/?login_error=${encodeURIComponent(error)}`);
     return;
   }
-  if (typeof state !== "string") {
+  if (stateParam === null) {
     res.status(400).send("Missing state");
     return;
   }
-
-  const tx = await consumeLoginState(state);
   if (!tx) {
     res.status(400).send("Unknown or expired login state");
     return;
@@ -109,17 +125,17 @@ authRouter.get("/api/auth/callback", async (req: Request, res: Response) => {
 
     const { tokens, claims } = await exchangeCode({
       callbackUrl,
-      expectedState: state,
+      expectedState: stateParam,
       expectedNonce: tx.nonce,
       codeVerifier: tx.codeVerifier,
     });
 
     const sid = await createSession(claims, tokens);
     setSessionCookie(res, sid);
-    res.redirect(tx.returnTo);
+    res.redirect(`${tx.webOrigin}${tx.returnTo}`);
   } catch (err) {
     console.error("[auth] callback failed:", err);
-    res.redirect("/?login_error=callback");
+    res.redirect(`${tx.webOrigin}/?login_error=callback`);
   }
 });
 
@@ -134,7 +150,7 @@ authRouter.get("/api/auth/logout", async (req: Request, res: Response) => {
     await deleteSession(sid);
   }
   res.clearCookie(SESSION_COOKIE, { path: "/" });
-  res.redirect("/");
+  res.redirect(`${resolveWebOrigin(req.query["webOrigin"])}/`);
 });
 
 authRouter.get("/api/auth/me", async (req: Request, res: Response) => {

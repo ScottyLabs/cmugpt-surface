@@ -13,6 +13,7 @@ import { db, pool } from "./db/index.ts";
 import { env } from "./env.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
 import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
+import { isAllowedOrigin } from "./lib/allowedOrigins.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 
@@ -50,10 +51,14 @@ await pool.query(`
     "nonce" text NOT NULL,
     "redirect_uri" text NOT NULL,
     "return_to" text NOT NULL,
+    "web_origin" text NOT NULL DEFAULT '',
     "created_at" timestamp NOT NULL DEFAULT now(),
     "expires_at" timestamp NOT NULL
   );
 `);
+await pool.query(
+  `ALTER TABLE "oidc_login_states" ADD COLUMN IF NOT EXISTS "web_origin" text NOT NULL DEFAULT ''`,
+);
 
 const app = express();
 /** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
@@ -61,33 +66,6 @@ app.use(express.json({ limit: "12mb" }));
 
 // Parse cookies for auth flows that rely on cookies
 app.use(express.urlencoded({ extended: true }));
-
-const defaultAllowedOrigins = ["http://localhost:4173", "http://127.0.0.1:4173"];
-// Define CORS options - accept from configured origins
-const allowedOrigins = [
-  ...defaultAllowedOrigins,
-  ...env.ALLOWED_ORIGINS_REGEX.split(",").map((s) => s.trim()),
-].filter(Boolean);
-
-function escapeRegExp(value: string): string {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}
-
-function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
-  try {
-    if (origin === new URL(allowedOrigin).origin) {
-      return true;
-    }
-  } catch {
-    // Not a URL; fall through to pattern matching.
-  }
-
-  try {
-    return new RegExp(allowedOrigin, "u").test(origin);
-  } catch {
-    return origin === allowedOrigin || origin === `^${escapeRegExp(allowedOrigin)}$`;
-  }
-}
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
@@ -97,12 +75,7 @@ const corsOptions: CorsOptions = {
       return;
     }
 
-    // Check if origin matches any allowed origin or regex
-    const isAllowed = allowedOrigins.some((allowedOrigin) => {
-      return matchesAllowedOrigin(origin, allowedOrigin);
-    });
-
-    if (isAllowed || process.env.NODE_ENV === "development") {
+    if (isAllowedOrigin(origin) || process.env.NODE_ENV === "development") {
       callback(null, true);
     } else {
       callback(new Error(`CORS policy: origin ${origin} not allowed`));
@@ -145,17 +118,6 @@ app.get("/api", (_req, res) => {
 app.get("/api/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
-// Serve the built frontend (SPA) when STATIC_DIR is configured. API routes are
-// registered above, so they take precedence; anything unmatched falls back to
-// index.html for client-side routing.
-if (env.STATIC_DIR !== undefined && env.STATIC_DIR !== "") {
-  const staticDir = path.resolve(env.STATIC_DIR);
-  app.use(express.static(staticDir));
-  app.get(/.*/u, (_req, res) => {
-    res.sendFile(path.join(staticDir, "index.html"));
-  });
-}
-
 // Error Handling and Not Found Handlers
 app.use(errorHandler as ErrorRequestHandler);
 app.use(notFoundHandler);

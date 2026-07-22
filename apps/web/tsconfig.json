@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@cmugpt-frontend/server/build/openapi": ["../server/build/openapi.d.ts"]
     }
   }
 }

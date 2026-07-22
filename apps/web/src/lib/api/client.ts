@@ -1,12 +1,10 @@
 import type { paths } from "@cmugpt-frontend/server/build/openapi";
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
+import { API_BASE_URL } from "./base.ts";
 
-// Same-origin requests carry the httpOnly session cookie; the server bridges it
-// to a Bearer for the API. No token handling in the browser. Relative baseUrl
-// works in dev (Vite proxy) and prod (the API serves the SPA).
 const fetchClient = createFetchClient<paths>({
-  baseUrl: "/",
+  baseUrl: API_BASE_URL || "/",
   credentials: "include",
 });
 

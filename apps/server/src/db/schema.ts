@@ -91,6 +91,7 @@ export const oidcLoginStates = pgTable("oidc_login_states", {
   nonce: text("nonce").notNull(),
   redirectUri: text("redirect_uri").notNull(),
   returnTo: text("return_to").notNull(),
+  webOrigin: text("web_origin").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   expiresAt: timestamp("expires_at").notNull(),
 });
