@@ -25,11 +25,7 @@
 
     # The api binary serves the built frontend from STATIC_DIR (baked in the
     # flake), so a single kennel service deploys both. See flake.nix.
-    kennel = {
-      services.api = {
-        customDomain = "cmugpt.com";
-      };
-    };
+    kennel.services.api.customDomain = "cmugpt.com";
   };
 
   # Backend on :3001; the server task loads ../../.env for SERVER_URL /

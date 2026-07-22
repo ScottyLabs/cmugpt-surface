@@ -42,7 +42,7 @@ export function ModelSelector() {
 
   const models = modelsData?.models ?? [];
   const currentId = prefs?.preferredModel;
-  const currentLabel = models.find((m) => m.id === currentId)?.label ?? "Loading…";
+  const currentLabel = models.find((m) => m.id === currentId)?.label ?? "Loading...";
 
   function selectModel(id: string) {
     setOpen(false);

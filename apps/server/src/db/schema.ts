@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-/** better-auth core tables — property names must match adapter field names (camelCase). */
+/** better-auth core tables. Property names must match the adapter's field names (camelCase). */
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

@@ -67,9 +67,9 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
         e instanceof AuthenticationError && e.authDebugReason ? e.authDebugReason : e.message,
       )
       .join(" | ");
-    // Single-line log so Turbo’s dev TUI (and similar) is not corrupted by multiline objects.
+    // Single-line log so Turbo's dev TUI (and similar) is not corrupted by multiline objects.
     console.warn(
-      `[auth-failure] ${req.method} ${req.path} → ${errorToReturn.status} (${chosenReason}) [tried: ${allReasons}]; cookie=${Boolean(req.headers.cookie)} authorization=${Boolean(req.headers.authorization)}`,
+      `[auth-failure] ${req.method} ${req.path} -> ${errorToReturn.status} (${chosenReason}) [tried: ${allReasons}]; cookie=${Boolean(req.headers.cookie)} authorization=${Boolean(req.headers.authorization)}`,
     );
 
     return res.status(errorToReturn.status).json({
@@ -100,7 +100,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
   // Drizzle wraps PG errors; log the driver message (e.g. missing column) in one line.
   if (err instanceof DrizzleQueryError) {
     const pgDetail = err.cause instanceof Error ? err.cause.message : "";
-    console.error(`[db-query] ${req.method} ${req.path}${pgDetail ? ` — ${pgDetail}` : ""}`);
+    console.error(`[db-query] ${req.method} ${req.path}${pgDetail ? ` - ${pgDetail}` : ""}`);
     return res.status(500).json({
       message: "Internal Server Error",
       details: err.message,

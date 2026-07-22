@@ -481,7 +481,7 @@ function preprocessLlmLatexDelimiters(markdown: string): string {
     .replace(/\\\(([\s\S]*?)\\\)/g, (_, body: string) => `$${body}$`);
 }
 
-/** Odd `$$` count means block math is still open — upsets mdast→hast (`children in undefined`). */
+/** Odd `$$` count means block math is still open, which breaks the mdast-to-hast conversion (`children in undefined`). */
 function closeOpenBlockMathFence(streamingMarkdown: string): string {
   const fences = streamingMarkdown.match(/\$\$/g);
   const n = fences?.length ?? 0;
@@ -518,7 +518,7 @@ function assistantDisplayContent(content: string, cmuMaps?: CmuMapsPayload | nul
 
 /**
  * `unist-util-visit-parents` (used by rehype-katex) does `"children" in node` for
- * each child — null/undefined entries in `children[]` throw. Strip them recursively.
+ * each child, and null/undefined entries in `children[]` throw. Strip them recursively.
  */
 function stripInvalidHastChildren(node: unknown): void {
   if (!node || typeof node !== "object") {
@@ -608,7 +608,7 @@ const NO_CHAT = "00000000-0000-0000-0000-000000000000";
 const STICKY_SCROLL_THRESHOLD_PX = 96;
 const CMU_MAPS_ORIGIN = "https://maps.scottylabs.org";
 const MAP_FAILURE_CLAIM_RE =
-  /\b(wasn['’]?t able|was not able|couldn['’]?t|could not|unable|failed|didn['’]?t find|did not find)\b.{0,240}\b(location|building|map|directions?|path|route|tool|tools|retrieve)\b/is;
+  /\b(wasn'?t able|was not able|couldn'?t|could not|unable|failed|didn'?t find|did not find)\b.{0,240}\b(location|building|map|directions?|path|route|tool|tools|retrieve)\b/is;
 
 function StreamingStatus({ text }: { text: string }) {
   const label = text.replace(/\.+$/, "");
@@ -1470,7 +1470,7 @@ export function ChatShell() {
       if (shouldRefreshAfterStream) {
         // Refetch BEFORE clearing streaming state so the iframe's source
         // (activeCmuMaps) hands off cleanly from streamingCmuMaps to the
-        // persisted message — no intermediate frame with no map.
+        // persisted message, avoiding an intermediate frame with no map.
         await refetchMessages();
         await refetchChats();
         setIsStreaming(false);
@@ -1943,7 +1943,7 @@ export function ChatShell() {
             </div>
           )}
           {showMessagesLoading ? (
-            <p className="text-neutral-500 text-sm">Loading messages…</p>
+            <p className="text-neutral-500 text-sm">Loading messages...</p>
           ) : null}
           {shouldShowConversation && !showMessagesLoading && (
             <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -1973,7 +1973,7 @@ export function ChatShell() {
                     </ReactMarkdown>
                     {typeof m.confidence === "number" && m.confidence < 0.5 && (
                       <p className="mt-2 text-xs text-amber-700">
-                        Low confidence — verify with an official CMU source.
+                        Low confidence: verify with an official CMU source.
                       </p>
                     )}
                     <CmuMapsLink cmuMaps={m.cmuMaps} />
@@ -2011,8 +2011,8 @@ export function ChatShell() {
                   </ReactMarkdown>
                 </div>
               )}
-              {/* Single stable slot for the active CMU Maps iframe — same
-                  DOM position across streaming/done transitions so the
+              {/* Single stable slot for the active CMU Maps iframe: keeps the
+                  same DOM position across streaming/done transitions so the
                   iframe doesn't remount and reload. */}
               <CmuMapsEmbed cmuMaps={activeCmuMaps} />
               <div ref={bottomRef} />
