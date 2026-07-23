@@ -22,6 +22,8 @@ type OidcJwtPayload = JwtPayload & {
   given_name?: string;
   groups?: string[];
   // biome-ignore lint/style/useNamingConvention: OIDC standard claim
+  azp?: string;
+  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   realm_access?: { roles?: string[] };
 };
 
@@ -79,7 +81,7 @@ const jwksClient = jwksRsa({
 
 function getSigningKey(header: JwtHeader): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!header.kid) {
+    if (header.kid === undefined || header.kid === "") {
       reject(new Error("Missing kid in token header"));
       return;
     }
@@ -109,90 +111,97 @@ function extractGroups(payload: OidcJwtPayload): string[] | undefined {
   return undefined;
 }
 
+function raiseAuthError(request: express.Request, message: string): never {
+  const err = new AuthenticationError(message);
+  request.authErrors?.push(err);
+  throw err;
+}
+
+function extractBearerToken(request: express.Request): string {
+  const authHeader = request.headers.authorization ?? "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
+  if (!token) {
+    raiseAuthError(request, "No authentication token provided");
+  }
+  return token;
+}
+
+function decodeTokenHeader(request: express.Request, token: string): JwtHeader {
+  const decodedTokenResult = jwt.decode(token, { complete: true });
+  if (!decodedTokenResult) {
+    raiseAuthError(request, "Invalid token header");
+  }
+  return decodedTokenResult.header;
+}
+
+function verifyTokenClaims(token: string, signingKey: string): Promise<OidcJwtPayload> {
+  return new Promise((resolve, reject) => {
+    // No `audience` here: Keycloak access tokens carry the resource server in
+    // `aud` (often "account"), not the client_id. Authorization for our client
+    // is asserted below via `azp` (or `aud` if it does contain the client).
+    jwt.verify(token, signingKey, { issuer: env.OIDC_ISSUER_URL }, (err, decoded) => {
+      if (err || decoded === undefined || typeof decoded === "string") {
+        reject(err ?? new Error("Invalid token"));
+        return;
+      }
+      resolve(decoded);
+    });
+  });
+}
+
+// Ensure the token was issued to our client (Keycloak sets `azp` to the
+// authorized party). Also accept an explicit audience match if present.
+function buildAuthenticatedUser(request: express.Request, payload: OidcJwtPayload): Express.User {
+  if (!env.OIDC_CLIENT_ID) {
+    raiseAuthError(request, "OIDC client not configured");
+  }
+  const aud = payload.aud;
+  const audienceOk =
+    payload.azp === env.OIDC_CLIENT_ID ||
+    (Array.isArray(aud) ? aud.includes(env.OIDC_CLIENT_ID) : aud === env.OIDC_CLIENT_ID);
+  if (!audienceOk) {
+    raiseAuthError(request, "Token not authorized for this client");
+  }
+
+  if (payload.sub === undefined || payload.sub === "") {
+    raiseAuthError(request, "Token missing subject claim (sub)");
+  }
+
+  const givenName =
+    (typeof payload.given_name === "string" && payload.given_name) ||
+    (typeof payload.name === "string" && payload.name) ||
+    (typeof payload.preferred_username === "string" && payload.preferred_username) ||
+    payload.sub;
+
+  const user: Express.User = {
+    sub: payload.sub,
+    givenName: givenName || "User",
+  };
+  if (payload.email !== undefined) {
+    user.email = payload.email;
+  }
+  const groups = extractGroups(payload);
+  if (groups && groups.length > 0) {
+    user.groups = groups;
+  }
+
+  return user;
+}
+
 async function verifyOidcAuth(request: express.Request): Promise<Express.User> {
   try {
-    const authHeader = request.headers.authorization ?? "";
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice("Bearer ".length)
-      : "";
-
-    console.log("[auth] Verifying OIDC token...");
-
-    if (!token) {
-      const err = new AuthenticationError("No authentication token provided");
-      request.authErrors?.push(err);
-      throw err;
-    }
-
-    const decodedTokenResult = jwt.decode(token, { complete: true });
-    if (!decodedTokenResult || !decodedTokenResult.header) {
-      const err = new AuthenticationError("Invalid token header");
-      request.authErrors?.push(err);
-      throw err;
-    }
-    const header = decodedTokenResult.header as JwtHeader;
-    if (!header) {
-      const err = new AuthenticationError("Invalid token header");
-      request.authErrors?.push(err);
-      throw err;
-    }
-
+    const token = extractBearerToken(request);
+    const header = decodeTokenHeader(request, token);
     const signingKey = await getSigningKey(header);
-    const payload = await new Promise<OidcJwtPayload>((resolve, reject) => {
-      jwt.verify(
-        token,
-        signingKey,
-        {
-          issuer: env.OIDC_ISSUER_URL,
-          audience: env.OIDC_CLIENT_ID,
-        },
-        (err, decoded) => {
-          if (err || !decoded || typeof decoded === "string") {
-            reject(err ?? new Error("Invalid token"));
-            return;
-          }
-          resolve(decoded as OidcJwtPayload);
-        },
-      );
-    });
-
-    if (!payload.sub) {
-      const err = new AuthenticationError("Token missing subject claim (sub)");
-      request.authErrors?.push(err);
-      throw err;
-    }
-
-    const givenName =
-      (typeof payload.given_name === "string" && payload.given_name) ||
-      (typeof payload.name === "string" && payload.name) ||
-      (typeof payload.preferred_username === "string" &&
-        payload.preferred_username) ||
-      payload.sub;
-
-    // Build Express user from OIDC token
-    const user: Express.User = {
-      sub: payload.sub,
-      givenName: givenName || "User",
-    };
-    if (payload.email !== undefined) {
-      user.email = payload.email;
-    }
-    const groups = extractGroups(payload);
-    if (groups && groups.length > 0) {
-      user.groups = groups;
-    }
-
-    console.log("[auth] ✅ Token verified successfully for user:", user.sub);
-    return user;
+    const payload = await verifyTokenClaims(token, signingKey);
+    return buildAuthenticatedUser(request, payload);
   } catch (error) {
     if (error instanceof HttpError) {
       throw error;
     }
     console.error("[auth] OIDC verification failed:", error);
     const message = error instanceof Error ? error.message : String(error);
-    const err = new AuthenticationError(
-      `OIDC authentication failed: ${message}`,
-    );
+    const err = new AuthenticationError(`OIDC authentication failed: ${message}`);
     request.authErrors?.push(err);
     throw err;
   }

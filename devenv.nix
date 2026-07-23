@@ -1,39 +1,43 @@
-{ pkgs, inputs, ... }:
+{ inputs, ... }:
 
-let
-  packages = pkgs.callPackage ./nix/packages.nix { };
-in
 {
-  imports = [ inputs.scottylabs.devenvModules.default ];
+  imports = [
+    inputs.scottylabs.devenvModules.default
+  ];
 
   scottylabs = {
     enable = true;
     project.name = "cmugpt-surface";
+
     secrets.enable = true;
     postgres.enable = true;
+    ricochet = {
+      enable = true;
+      appUrl = "http://localhost:4173";
+    };
 
-    # Kennel deployment configuration
+    deno = {
+      enable = true;
+      react.enable = true;
+    };
+
     kennel = {
-      # Deploys your backend API
-      services.api = {
-        # customDomain = "api.cmugpt.scottylabs.org"; # (Optional) Uncomment and change if needed
-      };
-
-      # Deploys your frontend React app
       sites.web = {
-        spa = true; # Set to true since React apps are typically Single Page Applications
+        spa = true;
+        customDomain = "cmugpt.com";
       };
+      services.api.customDomain = "api.cmugpt.com";
     };
   };
 
-  packages = [ pkgs.bun ];
-
-  outputs = {
-    inherit (packages) api web;
+  processes.api = {
+    exec = "deno install && deno task dev";
+    cwd = "./apps/server";
+    env.PORT = "3001";
   };
 
-  processes = {
-    api.exec = "bun run --cwd apps/server dev";
-    web.exec = "bun run --cwd apps/web dev";
+  processes.web = {
+    exec = "deno install && deno task dev";
+    cwd = "./apps/web";
   };
 }

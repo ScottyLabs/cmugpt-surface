@@ -44,6 +44,6 @@ export const AGENT_MODELS: readonly AgentModelOption[] = [
 
 export const DEFAULT_MODEL_ID = AGENT_MODELS[0]?.id ?? "openai/gpt-4o";
 
-export function isValidModelId(value: unknown): value is string {
-  return typeof value === "string" && AGENT_MODELS.some((m) => m.id === value);
+export function isValidModelId(value: string): boolean {
+  return AGENT_MODELS.some((m) => m.id === value);
 }

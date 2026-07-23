@@ -1,40 +1,13 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# Dependencies
-node_modules/
-
-# Local env files
-.env
-
-# Cache
-.turbo/
-
-# Build
-dist/
-build/
-
-# OpenAPI / tsoa outputs consumed by @cmugpt-frontend/web (must be present in CI)
-!apps/server/build/
-!apps/server/build/swagger.yaml
-!apps/server/build/swagger.d.ts
-!apps/server/build/routes.ts
-
-# Misc
-.DS_Store
-
 # Nix / devenv
 .devenv/
-.devenv.flake.nix
 .pre-commit-config.yaml
-result
-result-*
-.devenv*
-devenv.local.nix
-devenv.local.yaml
-
-# direnv
-.direnv
 
 # AI
 .mcp.json
 .claude
+
+# Deno
+node_modules/
+
+# OS
+.DS_Store
