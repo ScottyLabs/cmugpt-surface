@@ -23,10 +23,10 @@ test("signed-out users see the login surface", async ({ page }: { page: Page }) 
 
   await page.getByRole("button", { name: "Sign In" }).click();
 
-  await expect(page).toHaveURL(/\/api\/auth\/login\?returnTo=%2F%3FnewChat%3Dfalse$/);
+  await expect(page).toHaveURL(/\/api\/auth\/login\?returnTo=%2F%3FnewChat%3Dfalse&webOrigin=/u);
 });
 
-test("authenticated users reach the chat shell", async ({ page }: { page: Page }) => {
+async function mockMeRoutes(page: Page) {
   await page.route("**/api/auth/me", async (route: Route) => {
     await route.fulfill({
       status: 200,
@@ -75,6 +75,10 @@ test("authenticated users reach the chat shell", async ({ page }: { page: Page }
       body: JSON.stringify({ preferredModel: "gpt-4o-mini" }),
     });
   });
+}
+
+async function mockAuthenticatedSession(page: Page) {
+  await mockMeRoutes(page);
 
   await page.route("**/chats", async (route: Route) => {
     if (route.request().method() === "GET") {
@@ -88,6 +92,10 @@ test("authenticated users reach the chat shell", async ({ page }: { page: Page }
 
     await route.continue();
   });
+}
+
+test("authenticated users reach the chat shell", async ({ page }: { page: Page }) => {
+  await mockAuthenticatedSession(page);
 
   await page.goto("/");
 

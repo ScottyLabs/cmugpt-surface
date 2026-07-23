@@ -34,7 +34,7 @@ export interface PatchChatBody {
 
 function authenticatedSub(req: ExpressRequest): string {
   const sub = req.user?.sub;
-  if (!sub) {
+  if (sub === undefined || sub === "") {
     throw new AuthenticationError("req.user.sub missing after security middleware (unexpected)");
   }
   return sub;

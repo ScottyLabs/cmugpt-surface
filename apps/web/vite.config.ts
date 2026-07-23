@@ -8,7 +8,7 @@ import { defineConfig } from "vite";
 const devApiTarget = process.env.VITE_DEV_API_ORIGIN ?? "http://localhost:3001";
 
 // biome-ignore lint/style/noDefaultExport: https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode: _mode }) => ({
   server: {
     allowedHosts: ["chat.scottylabs.org"],
     // Same-origin API in dev so auth cookies/headers are sent reliably

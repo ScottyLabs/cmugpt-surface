@@ -18,7 +18,9 @@ function SignInPage() {
       <p className="text-neutral-600">Sign in to use cmuGPT.</p>
       <button
         type="button"
-        onClick={() => auth.login()}
+        onClick={() => {
+          auth.login();
+        }}
         className="inline rounded-full bg-brand-secondary-enabled px-6 py-2 font-medium text-fg-neutral-primary transition-colors hover:brightness-95"
       >
         Sign In
@@ -34,5 +36,5 @@ export function App() {
     return <div className="m-8 text-sm">Checking your session...</div>;
   }
 
-  return <>{auth.isAuthenticated ? <ChatShell /> : <SignInPage />}</>;
+  return auth.isAuthenticated ? <ChatShell /> : <SignInPage />;
 }

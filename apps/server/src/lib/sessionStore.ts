@@ -10,8 +10,10 @@ import type { OidcClaims, OidcTokens } from "./oidcClient.ts";
 
 export const SESSION_COOKIE = "sid";
 
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-const LOGIN_STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+// 30 days
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+// 10 minutes
+const LOGIN_STATE_TTL_MS = 10 * 60 * 1000;
 
 export interface AuthSession {
   id: string;
@@ -34,12 +36,12 @@ function randomId(): string {
 
 export function readCookie(req: Request, name: string): string | undefined {
   const header = req.headers.cookie;
-  if (!header) return undefined;
+  if (header === undefined) return undefined;
   for (const part of header.split(";")) {
-    const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    if (part.slice(0, eq).trim() === name) {
-      return decodeURIComponent(part.slice(eq + 1).trim());
+    const separatorIndex = part.indexOf("=");
+    if (separatorIndex === -1) continue;
+    if (part.slice(0, separatorIndex).trim() === name) {
+      return decodeURIComponent(part.slice(separatorIndex + 1).trim());
     }
   }
   return undefined;
@@ -78,7 +80,7 @@ export async function consumeLoginState(state: string): Promise<{
     .delete(oidcLoginStates)
     .where(eq(oidcLoginStates.state, state))
     .returning();
-  if (!row || row.expiresAt.getTime() < Date.now()) return null;
+  if (row === undefined || row.expiresAt.getTime() < Date.now()) return null;
   return {
     codeVerifier: row.codeVerifier,
     nonce: row.nonce,
@@ -101,9 +103,8 @@ export async function createSession(claims: OidcClaims, tokens: OidcTokens): Pro
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken ?? null,
     idToken: tokens.idToken ?? null,
-    accessTokenExpiresAt: tokens.accessTokenExpiresAt
-      ? new Date(tokens.accessTokenExpiresAt)
-      : null,
+    accessTokenExpiresAt:
+      tokens.accessTokenExpiresAt === undefined ? null : new Date(tokens.accessTokenExpiresAt),
     expiresAt: new Date(Date.now() + SESSION_TTL_MS),
   });
   return id;
@@ -111,7 +112,7 @@ export async function createSession(claims: OidcClaims, tokens: OidcTokens): Pro
 
 export async function getSession(id: string): Promise<AuthSession | null> {
   const [row] = await db.select().from(authSessions).where(eq(authSessions.id, id));
-  if (!row) return null;
+  if (row === undefined) return null;
   if (row.expiresAt.getTime() < Date.now()) {
     await deleteSession(id);
     return null;
@@ -127,9 +128,8 @@ export async function updateSessionTokens(id: string, tokens: OidcTokens): Promi
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken ?? null,
       idToken: tokens.idToken ?? null,
-      accessTokenExpiresAt: tokens.accessTokenExpiresAt
-        ? new Date(tokens.accessTokenExpiresAt)
-        : null,
+      accessTokenExpiresAt:
+        tokens.accessTokenExpiresAt === undefined ? null : new Date(tokens.accessTokenExpiresAt),
       updatedAt: new Date(),
     })
     .where(eq(authSessions.id, id));

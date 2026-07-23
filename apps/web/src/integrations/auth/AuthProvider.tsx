@@ -23,6 +23,10 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function isAuthMeResponse(value: unknown): value is { user?: AuthUser } {
+  return typeof value === "object" && value !== null;
+}
+
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) {
@@ -38,10 +42,10 @@ export function AuthProviderIntegration({ children }: { children: React.ReactNod
   useEffect(() => {
     let active = true;
     fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" })
-      .then((res) => (res.ok ? (res.json() as Promise<{ user?: AuthUser }>) : null))
-      .then((data) => {
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: unknown) => {
         if (active) {
-          setUser(data?.user ?? null);
+          setUser(isAuthMeResponse(data) ? (data.user ?? null) : null);
         }
       })
       .catch(() => {

@@ -14,7 +14,7 @@ export interface PatchUserPreferencesBody {
 
 function authenticatedSub(req: ExpressRequest): string {
   const sub = req.user?.sub;
-  if (!sub) {
+  if (sub === undefined || sub === "") {
     throw new AuthenticationError("req.user.sub missing after security middleware (unexpected)");
   }
   return sub;
@@ -38,7 +38,7 @@ export class MeController {
   public listModels(): {
     models: AgentModelOption[];
   } {
-    return { models: AGENT_MODELS.map((m) => ({ ...m })) };
+    return { models: [...AGENT_MODELS] };
   }
 
   /** Read the user's preferences (preferred model, etc.). */

@@ -14,7 +14,9 @@ export function Header() {
             <span className="text-sm">{label ?? "Signed in"}</span>
             <button
               type="button"
-              onClick={() => auth.logout()}
+              onClick={() => {
+                auth.logout();
+              }}
               className="rounded bg-white/10 px-3 py-1 text-xs font-medium hover:bg-white/20"
             >
               Sign out

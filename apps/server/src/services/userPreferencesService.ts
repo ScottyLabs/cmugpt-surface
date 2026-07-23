@@ -29,29 +29,30 @@ export const userPreferencesService = {
 
   /** Upsert the user's preferences. Validates the model against the curated list. */
   async update(userSub: string, body: { preferredModel?: string }): Promise<UserPreferencesDto> {
-    if (body.preferredModel === undefined) {
+    const { preferredModel } = body;
+    if (preferredModel === undefined) {
       throw new BadRequestError("preferredModel is required");
     }
-    if (!isValidModelId(body.preferredModel)) {
+    if (!isValidModelId(preferredModel)) {
       throw new BadRequestError(
-        `Unknown model id: ${body.preferredModel}. Use one of the values from GET /me/models.`,
+        `Unknown model id: ${preferredModel}. Use one of the values from GET /me/models.`,
       );
     }
     const [row] = await db
       .insert(userPreferences)
       .values({
         userSub,
-        preferredModel: body.preferredModel,
+        preferredModel,
       })
       .onConflictDoUpdate({
         target: userPreferences.userSub,
         set: {
-          preferredModel: body.preferredModel,
+          preferredModel,
           updatedAt: sql`now()`,
         },
       })
       .returning();
-    if (!row) {
+    if (row === undefined) {
       throw new Error("Failed to upsert user preferences");
     }
     return { preferredModel: row.preferredModel };
