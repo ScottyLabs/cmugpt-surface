@@ -21,6 +21,10 @@ function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
   }
 
   try {
+    // allowedOrigin comes from the ALLOWED_ORIGINS_REGEX env var (deployer-controlled config,
+    // same trust level as OIDC_ISSUER_URL/DATABASE_URL/etc.), never from request input, so this
+    // is not attacker-controlled ReDoS surface.
+    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
     return new RegExp(allowedOrigin, "u").test(origin);
   } catch {
     return origin === allowedOrigin || origin === `^${escapeRegExp(allowedOrigin)}$`;

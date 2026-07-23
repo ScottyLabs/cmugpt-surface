@@ -50,7 +50,7 @@ function handleValidationError(err: unknown, req: Request, res: Response) {
   if (!(err instanceof ValidateError)) {
     return false;
   }
-  console.warn(`Caught Validation Error for ${req.path}:`, err.fields);
+  console.warn("Caught Validation Error for %s:", req.path, err.fields);
   res.status(422).json({
     message: "Validation Failed",
     details: err?.fields,
@@ -88,7 +88,7 @@ function handleUnknownError(err: unknown, req: Request, res: Response) {
   if (!(err instanceof Error)) {
     return false;
   }
-  console.error(`Error ${req.path}`, err);
+  console.error("Error %s", req.path, err);
   res.status(500).json({ message: "Internal Server Error", details: err.message });
   return true;
 }
