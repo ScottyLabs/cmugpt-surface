@@ -1,0 +1,31 @@
+{
+  "workspace": ["./apps/server", "./apps/web"],
+  "nodeModulesDir": "auto",
+  "exclude": [".devenv", ".direnv"],
+  "unstable": ["sloppy-imports"],
+  "compilerOptions": {
+    "experimentalDecorators": true
+  },
+  "imports": {
+    "@playwright/test": "npm:@playwright/test@1.57.0",
+    "typescript": "npm:typescript@^5.9.2"
+  },
+  "tasks": {
+    "generate": "deno task --cwd apps/server generate",
+    "dev": "deno run -A npm:concurrently -k -n server,web -c blue,green \"deno task --cwd apps/server dev\" \"deno task --cwd apps/web dev\"",
+    "build": "deno task --cwd apps/server build && deno task --cwd apps/web build",
+    "build:api": "deno task --cwd apps/server build",
+    "build:web": "deno task --cwd apps/web build",
+    "check": "deno task --cwd apps/server check && deno task --cwd apps/web check",
+    "test:e2e": "deno run -A npm:@playwright/test test",
+    "db:generate": "deno task --cwd apps/server db:generate",
+    "db:migrate": "deno task --cwd apps/server db:migrate"
+  },
+  "allowScripts": [
+    "npm:@scarf/scarf@1.4.0",
+    "npm:@scottylabs/corgi@0.3.1",
+    "npm:esbuild@0.18.20",
+    "npm:esbuild@0.25.12",
+    "npm:esbuild@0.28.1"
+  ]
+}
