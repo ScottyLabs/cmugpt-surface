@@ -52,6 +52,7 @@
     "npm:tsoa@*": "7.0.0-alpha.0",
     "npm:tsoa@^7.0.0-alpha.0": "7.0.0-alpha.0",
     "npm:typescript@^5.9.2": "5.9.3",
+    "npm:vite@*": "7.3.6_@types+node@22.20.1_yaml@2.9.0",
     "npm:vite@^7.1.7": "7.3.6_@types+node@22.20.1_yaml@2.9.0",
     "npm:vitest@^3.0.5": "3.2.7_@types+node@22.20.1_jsdom@27.4.0_yaml@2.9.0",
     "npm:web-vitals@^5.1.0": "5.3.0",

@@ -1,4 +1,5 @@
 import type { RefObject } from "react";
+import { API_BASE_URL } from "@/lib/api/base.ts";
 import { buildOutgoingContent, type PendingAttachment } from "./attachments.ts";
 import { STICKY_SCROLL_THRESHOLD_PX } from "./constants.ts";
 import type { Attachments } from "./useAttachments.ts";
@@ -74,8 +75,9 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
 }
 
 function postChatMessageStream(chatId: string, content: string): Promise<Response> {
-  // Same-origin + session cookie; the server bridges it to a Bearer.
-  return fetch(`/chats/${chatId}/messages/stream`, {
+  // Cross-origin in production (web on cmugpt.com, API on api.cmugpt.com);
+  // credentials carry the session cookie, and the server bridges it to a Bearer.
+  return fetch(`${API_BASE_URL}/chats/${chatId}/messages/stream`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
