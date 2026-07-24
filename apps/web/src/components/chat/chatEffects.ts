@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ChatSession } from "./useChatSession.ts";
 
 interface AutoFocusDeps {
@@ -11,12 +11,19 @@ interface AutoFocusDeps {
   isNewChatIntent: boolean;
 }
 
-export function useComposerAutoFocus(
+function useInitialComposerAutoFocus(
   deps: AutoFocusDeps,
   draftComposerRef: RefObject<HTMLTextAreaElement | null>,
   hasAutoFocusedComposerRef: RefObject<boolean>,
 ) {
-  const { chatId, chatsLoading, chatsLength, isStreaming, canEditChat, isNewChatIntent } = deps;
+  const {
+    chatId,
+    chatsLoading,
+    chatsLength,
+    isStreaming,
+    canEditChat,
+    isNewChatIntent,
+  } = deps;
 
   useEffect(() => {
     if (
@@ -45,7 +52,12 @@ export function useComposerAutoFocus(
     draftComposerRef,
     hasAutoFocusedComposerRef,
   ]);
+}
 
+function useNewChatComposerAutoFocus(
+  isNewChatIntent: boolean,
+  draftComposerRef: RefObject<HTMLTextAreaElement | null>,
+) {
   useEffect(() => {
     if (!isNewChatIntent) {
       return () => {};
@@ -59,6 +71,15 @@ export function useComposerAutoFocus(
   }, [isNewChatIntent, draftComposerRef]);
 }
 
+export function useComposerAutoFocus(
+  deps: AutoFocusDeps,
+  draftComposerRef: RefObject<HTMLTextAreaElement | null>,
+  hasAutoFocusedComposerRef: RefObject<boolean>,
+) {
+  useInitialComposerAutoFocus(deps, draftComposerRef, hasAutoFocusedComposerRef);
+  useNewChatComposerAutoFocus(deps.isNewChatIntent, draftComposerRef);
+}
+
 interface AutoSelectDeps {
   isNewChatIntent: boolean;
   chatsLoading: boolean;
@@ -69,11 +90,13 @@ interface AutoSelectDeps {
 
 export function useAutoSelectFirstChat(deps: AutoSelectDeps) {
   const { isNewChatIntent, chatsLoading, chats, chatId, navigate } = deps;
+  const hasAutoSelectedRef = useRef(false);
   useEffect(() => {
-    if (isNewChatIntent) {
+    if (isNewChatIntent || hasAutoSelectedRef.current) {
       return;
     }
     if (!chatsLoading && chats.length > 0 && chatId === undefined) {
+      hasAutoSelectedRef.current = true;
       void navigate({
         to: "/",
         search: { chat: chats[0].id, newChat: false },
@@ -101,7 +124,10 @@ export function useRenameFocus(
   }, [renamingChatId, renameInputRef]);
 }
 
-export function useSidebarMenuEscape(open: boolean, closeSidebarMenu: () => void) {
+export function useSidebarMenuEscape(
+  open: boolean,
+  closeSidebarMenu: () => void,
+) {
   useEffect(() => {
     if (!open) {
       return () => {};
@@ -111,14 +137,17 @@ export function useSidebarMenuEscape(open: boolean, closeSidebarMenu: () => void
         closeSidebarMenu();
       }
     };
-    window.addEventListener("keydown", onKeyDown);
+    globalThis.addEventListener("keydown", onKeyDown);
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      globalThis.removeEventListener("keydown", onKeyDown);
     };
   }, [open, closeSidebarMenu]);
 }
 
-export function useUserMenuOutsideClick(open: boolean, setOpen: (v: boolean) => void) {
+export function useUserMenuOutsideClick(
+  open: boolean,
+  setOpen: (v: boolean) => void,
+) {
   useEffect(() => {
     if (!open) {
       return () => {};
@@ -126,9 +155,38 @@ export function useUserMenuOutsideClick(open: boolean, setOpen: (v: boolean) => 
     const handleClick = () => {
       setOpen(false);
     };
-    window.addEventListener("click", handleClick);
+    globalThis.addEventListener("click", handleClick);
     return () => {
-      window.removeEventListener("click", handleClick);
+      globalThis.removeEventListener("click", handleClick);
     };
   }, [open, setOpen]);
+}
+
+/**
+ * Closes the sidebar row context menu on any outside click/right-click.
+ * Deliberately a passive `window` listener rather than a full-screen overlay:
+ * an overlay intercepts the click's target, so the click that dismisses the
+ * menu never reaches whatever the user actually meant to click (a chat row),
+ * forcing a second click. This lets the same click both dismiss the menu and
+ * still reach its target, since window listeners fire after the target's own
+ * handlers during the bubble phase.
+ */
+export function useSidebarMenuOutsideInteraction(
+  open: boolean,
+  closeSidebarMenu: () => void,
+) {
+  useEffect(() => {
+    if (!open) {
+      return () => {};
+    }
+    const handleDismiss = () => {
+      closeSidebarMenu();
+    };
+    globalThis.addEventListener("click", handleDismiss);
+    globalThis.addEventListener("contextmenu", handleDismiss);
+    return () => {
+      globalThis.removeEventListener("click", handleDismiss);
+      globalThis.removeEventListener("contextmenu", handleDismiss);
+    };
+  }, [open, closeSidebarMenu]);
 }

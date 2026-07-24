@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import { CheckIcon, DownArrowIcon } from "@/components/icons/index.tsx";
 import { CmuMapsIcon } from "@/components/icons/CmuMapsIcon.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
@@ -51,51 +51,74 @@ function LanguageSelect({ c }: { c: ChatShellController }) {
   );
 }
 
+function ToolToggleButton(
+  { label, disabled, onToggle, children }: {
+    label: string;
+    disabled: boolean;
+    onToggle: () => void;
+    children: ReactNode;
+  },
+) {
+  return (
+    <button
+      type="button"
+      className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${
+        disabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"
+      }`}
+      onClick={onToggle}
+    >
+      {children}
+      {label}
+    </button>
+  );
+}
+
 function ToolToggles({ c }: { c: ChatShellController }) {
   const { modal } = c;
   return (
     <div className="flex gap-4 flex-wrap">
-      <button
-        type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.mapsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
-        onClick={() => {
+      <ToolToggleButton
+        label="CMUMaps"
+        disabled={modal.mapsIsDisabled}
+        onToggle={() => {
           modal.setMapsIsDisabled((o) => !o);
         }}
       >
         <CmuMapsIcon
           className={`shrink-0 w-auto ${modal.mapsIsDisabled ? "opacity-55" : "opacity-100"}`}
         />
-        CMUMaps
-      </button>
-      <button
-        type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.coursesIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
-        onClick={() => {
+      </ToolToggleButton>
+      <ToolToggleButton
+        label="CMUCourses"
+        disabled={modal.coursesIsDisabled}
+        onToggle={() => {
           modal.setCoursesIsDisabled((o) => !o);
         }}
       >
         <span
-          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${modal.coursesIsDisabled ? "opacity-55" : "opacity-100"}`}
+          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${
+            modal.coursesIsDisabled ? "opacity-55" : "opacity-100"
+          }`}
           style={{
             aspectRatio: "18/17",
             backgroundImage: "url('../../public/cmucoursesicon.png')",
           }}
         />
-        CMUCourses
-      </button>
-      <button
-        type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.eatsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
-        onClick={() => {
+      </ToolToggleButton>
+      <ToolToggleButton
+        label="CMUEats"
+        disabled={modal.eatsIsDisabled}
+        onToggle={() => {
           modal.setEatsIsDisabled((o) => !o);
         }}
       >
         <span
-          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${modal.eatsIsDisabled ? "opacity-55" : "opacity-100"}`}
+          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${
+            modal.eatsIsDisabled ? "opacity-55" : "opacity-100"
+          }`}
           style={{ backgroundImage: "url('../../public/cmueatsicon.png')" }}
         />
-        CMUEats
-      </button>
+      </ToolToggleButton>
     </div>
   );
 }

@@ -1,6 +1,11 @@
 import type { KeyboardEvent } from "react";
 import { useCallback, useRef, useState } from "react";
-import { useRenameFocus, useSidebarMenuEscape, useUserMenuOutsideClick } from "./chatEffects.ts";
+import {
+  useRenameFocus,
+  useSidebarMenuEscape,
+  useSidebarMenuOutsideInteraction,
+  useUserMenuOutsideClick,
+} from "./chatEffects.ts";
 import {
   beginRename,
   commitRename,
@@ -36,7 +41,11 @@ function bindSidebarActions(ctx: SidebarCtx) {
     commitRename: (id: string, title: string) => {
       commitRename(ctx, id, title);
     },
-    onRenameKeyDown: (e: KeyboardEvent<HTMLInputElement>, id: string, title: string) => {
+    onRenameKeyDown: (
+      e: KeyboardEvent<HTMLInputElement>,
+      id: string,
+      title: string,
+    ) => {
       onRenameKeyDown(ctx, e, id, title);
     },
     confirmDeleteChatRow: (id: string) => {
@@ -70,6 +79,7 @@ export function useSidebarInteractions(options: UseSidebarOptions) {
 
   useRenameFocus(renamingChatId, renameInputRef);
   useSidebarMenuEscape(sidebarMenu !== null, closeSidebarMenu);
+  useSidebarMenuOutsideInteraction(sidebarMenu !== null, closeSidebarMenu);
   useUserMenuOutsideClick(userMenuOpen, setUserMenuOpen);
 
   return {

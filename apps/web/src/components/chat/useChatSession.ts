@@ -1,22 +1,16 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import { $api } from "@/lib/api/client.ts";
 import { NO_CHAT } from "./constants.ts";
 
 const routeApi = getRouteApi("/");
 
 function useChatQueries(chatId: string | undefined) {
-  const [searchQ] = useState("");
-  const chatsQueryInit = useMemo(() => {
-    const q = searchQ.trim();
-    return q === "" ? undefined : ({ params: { query: { q } } } as const);
-  }, [searchQ]);
-
   const {
     data: chats = [],
     refetch: refetchChats,
     isLoading: chatsLoading,
-  } = $api.useQuery("get", "/chats", chatsQueryInit);
+  } = $api.useQuery("get", "/chats");
   const {
     data: messages = [],
     refetch: refetchMessages,

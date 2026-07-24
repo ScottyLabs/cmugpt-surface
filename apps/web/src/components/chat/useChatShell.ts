@@ -8,6 +8,7 @@ import { type ChatSession, useChatSession } from "./useChatSession.ts";
 import { type Composer, useComposer } from "./useComposer.ts";
 import { useConversationScroll } from "./useConversationScroll.ts";
 import { useModalState } from "./useModalState.ts";
+import { useChatSearch } from "./useChatSearch.ts";
 import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
@@ -50,7 +51,12 @@ function useChatShellCore() {
     chatId: session.chatId,
     messagesLength: session.messages.length,
   });
-  const derived = useChatDerived({ session, stream, optimistic, profile: auth.user });
+  const derived = useChatDerived({
+    session,
+    stream,
+    optimistic,
+    profile: auth.user,
+  });
   return { auth, session, mutations, stream, attachments, optimistic, derived };
 }
 
@@ -62,7 +68,11 @@ export function useChatShell() {
     chatId: session.chatId,
     effectiveChatDetail: derived.effectiveChatDetail,
   });
-  const sidebar = useSidebarInteractions({ mutations, navigate: session.navigate });
+  const sidebar = useSidebarInteractions({
+    mutations,
+    navigate: session.navigate,
+  });
+  const search = useChatSearch();
   const modal = useModalState();
   const scroll = useConversationScroll({
     isStreaming: stream.isStreaming,
@@ -93,6 +103,7 @@ export function useChatShell() {
     derived,
     share,
     sidebar,
+    search,
     modal,
     scroll,
     composer,

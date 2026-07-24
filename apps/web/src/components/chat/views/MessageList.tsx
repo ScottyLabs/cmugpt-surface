@@ -77,7 +77,9 @@ export function MessageList({ c }: { c: ChatShellController }) {
             rehypePlugins={rehypeMarkdownPlugins}
             components={markdownComponents}
           >
-            {markdownForReactComponent(stream.streamingText, { streaming: true })}
+            {markdownForReactComponent(stream.streamingText, {
+              streaming: true,
+            })}
           </ReactMarkdown>
         </div>
       )}

@@ -28,7 +28,10 @@ export function useChatMutations(session: ChatSession) {
       const list = nextChats ?? [];
       void navigate({
         to: "/",
-        search: { chat: list.length > 0 ? list[0].id : undefined, newChat: false },
+        search: {
+          chat: list.length > 0 ? list[0].id : undefined,
+          newChat: false,
+        },
       });
     },
   });

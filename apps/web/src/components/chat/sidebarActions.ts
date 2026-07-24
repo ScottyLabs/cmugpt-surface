@@ -64,7 +64,7 @@ export function onRenameKeyDown(
 
 export function confirmDeleteChatRow(ctx: SidebarCtx, id: string): void {
   ctx.closeSidebarMenu();
-  if (!window.confirm("Delete this chat? This cannot be undone.")) {
+  if (!globalThis.confirm("Delete this chat? This cannot be undone.")) {
     return;
   }
   ctx.deleteChat.mutate({ params: { path: { id } } });

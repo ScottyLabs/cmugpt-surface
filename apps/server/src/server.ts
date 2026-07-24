@@ -18,7 +18,9 @@ import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 
 const moduleDir = import.meta.dirname;
-if (moduleDir === undefined) throw new Error("import.meta.dirname is unavailable");
+if (moduleDir === undefined) {
+  throw new Error("import.meta.dirname is unavailable");
+}
 const migrationsFolder = path.join(moduleDir, "../drizzle");
 
 await migrate(db, { migrationsFolder });

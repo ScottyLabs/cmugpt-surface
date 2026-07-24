@@ -7,7 +7,7 @@ export function SidebarPanelIcon({ className }: { className?: string }) {
       height={20}
       viewBox="0 0 20 20"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Sidebar panel</title>
       <path
@@ -27,7 +27,7 @@ export function PlusIcon({ className }: { className?: string }) {
       height={20}
       viewBox="0 0 20 20"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Plus</title>
       <path
@@ -47,7 +47,7 @@ export function SearchIcon({ className }: { className?: string }) {
       height={20}
       viewBox="0 0 20 20"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Search</title>
       <path
@@ -67,7 +67,7 @@ export function PinIcon({ className }: { className?: string }) {
       height={20}
       viewBox="0 0 20 20"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Pin</title>
       <path
@@ -87,7 +87,7 @@ export function SendIcon({ className }: { className?: string }) {
       viewBox="0 0 16 16"
       fill="none"
       className={className}
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Send</title>
       <g clipPath="url(#clip0_394_3547)">
@@ -114,7 +114,7 @@ export function SettingsIcon({ className }: { className?: string }) {
       height={15}
       viewBox="0 0 14 15"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Settings</title>
       <path
@@ -134,7 +134,7 @@ export function AboutIcon({ className }: { className?: string }) {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>About</title>
       <g clip-path="url(#clip0_438_1722)">
@@ -161,7 +161,7 @@ export function ScottyLabsIcon({ className }: { className?: string }) {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>ScottyLabs</title>
       <path
@@ -189,7 +189,7 @@ export function LogOutIcon({ className }: { className?: string }) {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Log Out</title>
       <path
@@ -209,7 +209,7 @@ export function CloseIcon({ className }: { className?: string }) {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Close</title>
       <path
@@ -229,7 +229,7 @@ export function CheckIcon({ className }: { className?: string }) {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Checkmark</title>
       <path
@@ -249,7 +249,7 @@ export function DownArrowIcon({ className }: { className?: string }) {
       height="6"
       viewBox="0 0 10 6"
       fill="none"
-      aria-hidden={true}
+      aria-hidden
     >
       <title>Down Arrow</title>
       <path

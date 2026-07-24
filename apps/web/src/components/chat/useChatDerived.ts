@@ -12,6 +12,24 @@ interface DerivedDeps {
   profile: AuthUser | null;
 }
 
+function useLastAssistantCmuMaps(messages: ChatSession["messages"]): CmuMapsPayload | null {
+  return useMemo<CmuMapsPayload | null>(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (
+        m.role === "assistant" &&
+        m.cmuMaps !== null &&
+        m.cmuMaps !== undefined &&
+        m.cmuMaps.url !== null &&
+        m.cmuMaps.url !== ""
+      ) {
+        return m.cmuMaps;
+      }
+    }
+    return null;
+  }, [messages]);
+}
+
 export function useChatDerived(deps: DerivedDeps) {
   const { session, stream, optimistic, profile } = deps;
   const { chatId, chats, messages, chatDetail, messagesLoading } = session;
@@ -30,23 +48,10 @@ export function useChatDerived(deps: DerivedDeps) {
   }, [chatDetail, currentChat, chatId]);
   const canEditChat = effectiveChatDetail?.isOwner === true;
   const showMakePrivate = effectiveChatDetail?.isOwner === true && effectiveChatDetail.isPublic;
-  const lastAssistantCmuMaps = useMemo<CmuMapsPayload | null>(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i];
-      if (
-        m.role === "assistant" &&
-        m.cmuMaps !== null &&
-        m.cmuMaps !== undefined &&
-        m.cmuMaps.url !== null &&
-        m.cmuMaps.url !== ""
-      ) {
-        return m.cmuMaps;
-      }
-    }
-    return null;
-  }, [messages]);
+  const lastAssistantCmuMaps = useLastAssistantCmuMaps(messages);
   const activeCmuMaps: CmuMapsPayload | null = stream.streamingCmuMaps ?? lastAssistantCmuMaps;
   const displayName = profile?.givenName ?? profile?.email ?? profile?.sub ?? "User";
+  const starred = chats.filter((c) => c.starred);
   const unstarred = chats.filter((c) => !c.starred);
   return {
     currentChat,
@@ -57,6 +62,7 @@ export function useChatDerived(deps: DerivedDeps) {
     showMakePrivate,
     activeCmuMaps,
     displayName,
+    starred,
     unstarred,
   };
 }

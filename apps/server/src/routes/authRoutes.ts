@@ -94,7 +94,14 @@ authRouter.get(
       returnTo,
       webOrigin,
     });
-    res.redirect(await buildAuthorizeUrl({ redirectUri, state, nonce, codeChallenge: challenge }));
+    res.redirect(
+      await buildAuthorizeUrl({
+        redirectUri,
+        state,
+        nonce,
+        codeChallenge: challenge,
+      }),
+    );
   }),
 );
 

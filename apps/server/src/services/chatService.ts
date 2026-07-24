@@ -4,8 +4,8 @@ import { chats, messages } from "../db/schema.ts";
 import { callAgent } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import {
-  DEFAULT_CHAT_TITLE,
   chatRowToListDto,
+  DEFAULT_CHAT_TITLE,
   finalizeAssistantMessage,
   getOwnedChat,
   getReadableChat,

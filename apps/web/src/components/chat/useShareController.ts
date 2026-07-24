@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   makeChatPrivate,
   shareChatById,
-  shareCurrentChat,
   type ShareCtx,
+  shareCurrentChat,
   type ShareFeedback,
 } from "./share.ts";
 import type { ChatMutations } from "./useChatMutations.ts";

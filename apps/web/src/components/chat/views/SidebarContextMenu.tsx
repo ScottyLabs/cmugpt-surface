@@ -7,7 +7,9 @@ interface MenuState {
   chatId: string;
 }
 
-function ContextMenuItems({ c, menuChat }: { c: ChatShellController; menuChat: ChatListItem }) {
+function ContextMenuItems(
+  { c, menuChat }: { c: ChatShellController; menuChat: ChatListItem },
+) {
   const { sidebar, share, mutations } = c;
   return (
     <div
@@ -54,24 +56,11 @@ function ContextMenuItems({ c, menuChat }: { c: ChatShellController; menuChat: C
 export function SidebarContextMenu({ c }: { c: ChatShellController }) {
   const { sidebar, session } = c;
   const menu: MenuState | null = sidebar.sidebarMenu;
-  const menuChat = menu === null ? undefined : session.chats.find((x) => x.id === menu.chatId);
+  const menuChat = menu === null
+    ? undefined
+    : session.chats.find((x) => x.id === menu.chatId);
   if (menu === null || menuChat === undefined) {
     return null;
   }
-  return (
-    <>
-      <div
-        className="fixed inset-0 z-40"
-        aria-hidden={true}
-        onClick={() => {
-          sidebar.closeSidebarMenu();
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          sidebar.closeSidebarMenu();
-        }}
-      />
-      <ContextMenuItems c={c} menuChat={menuChat} />
-    </>
-  );
+  return <ContextMenuItems c={c} menuChat={menuChat} />;
 }

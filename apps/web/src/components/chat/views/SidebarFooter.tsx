@@ -71,7 +71,7 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
         {sidebarOpen && (
           <div className="min-w-0 flex-1 text-left">
             <p className="truncate font-medium">{derived.displayName}</p>
-            <p className="text-sm text-fg-neutral-tertiary hover:text-neutral-800">
+            <p className="truncate text-sm text-fg-neutral-tertiary hover:text-neutral-800">
               {auth.user?.email}
             </p>
           </div>
