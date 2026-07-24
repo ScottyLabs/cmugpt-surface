@@ -11,7 +11,7 @@ interface AutoFocusDeps {
   isNewChatIntent: boolean;
 }
 
-export function useComposerAutoFocus(
+function useInitialComposerAutoFocus(
   deps: AutoFocusDeps,
   draftComposerRef: RefObject<HTMLTextAreaElement | null>,
   hasAutoFocusedComposerRef: RefObject<boolean>,
@@ -52,7 +52,12 @@ export function useComposerAutoFocus(
     draftComposerRef,
     hasAutoFocusedComposerRef,
   ]);
+}
 
+function useNewChatComposerAutoFocus(
+  isNewChatIntent: boolean,
+  draftComposerRef: RefObject<HTMLTextAreaElement | null>,
+) {
   useEffect(() => {
     if (!isNewChatIntent) {
       return () => {};
@@ -64,6 +69,15 @@ export function useComposerAutoFocus(
       cancelAnimationFrame(id);
     };
   }, [isNewChatIntent, draftComposerRef]);
+}
+
+export function useComposerAutoFocus(
+  deps: AutoFocusDeps,
+  draftComposerRef: RefObject<HTMLTextAreaElement | null>,
+  hasAutoFocusedComposerRef: RefObject<boolean>,
+) {
+  useInitialComposerAutoFocus(deps, draftComposerRef, hasAutoFocusedComposerRef);
+  useNewChatComposerAutoFocus(deps.isNewChatIntent, draftComposerRef);
 }
 
 interface AutoSelectDeps {
