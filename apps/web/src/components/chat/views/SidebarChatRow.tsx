@@ -1,8 +1,11 @@
-import { PinIcon, UnpinIcon } from "@/components/icons/index.tsx";
+import { UnpinIcon } from "@/components/icons/UnpinIcon.tsx";
+import { PinIcon } from "@/components/icons/index.tsx";
 import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
 
-function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem }) {
+function ChatRowLabel(
+  { c, chat }: { c: ChatShellController; chat: ChatListItem },
+) {
   const { sidebar } = c;
   if (sidebar.renamingChatId === chat.id) {
     return (
@@ -18,7 +21,7 @@ function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem 
         onKeyDown={(e) => {
           sidebar.onRenameKeyDown(e, chat.id, chat.title);
         }}
-        className="min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
+        className="min-w-0 w-full rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
         aria-label="Chat name"
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -38,10 +41,11 @@ function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem 
       }}
       onContextMenu={(e) => {
         e.preventDefault();
+        e.stopPropagation();
         sidebar.setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: chat.id });
       }}
       title="Double-click to rename"
-      className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
+      className="min-w-0 w-full truncate pr-7 text-left hover:bg-transparent"
     >
       {chat.title}
     </button>
@@ -56,9 +60,10 @@ interface SidebarChatRowProps {
 
 export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   const { sidebar, session } = c;
-  const rowClass = `group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
-    chat.id === session.chatId ? "bg-neutral-200" : ""
-  }`;
+  const rowClass =
+    `group relative flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
+      chat.id === session.chatId ? "bg-neutral-200" : ""
+    }`;
   return (
     <li className={rowClass}>
       <ChatRowLabel c={c} chat={chat} />
@@ -68,13 +73,15 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
           e.stopPropagation();
           sidebar.toggleStarChat(chat.id, !starFilled);
         }}
-        className={`shrink-0 rounded p-0.5 transition-opacity hover:bg-neutral-300/60 ${
+        className={`absolute right-2 top-1/2 shrink-0 -translate-y-1/2 rounded p-0.5 transition-opacity hover:bg-neutral-300/60 ${
           starFilled ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
         aria-label={starFilled ? "Unpin chat" : "Pin chat"}
         title={starFilled ? "Unpin chat" : "Pin chat"}
       >
-        {starFilled ? <UnpinIcon className="h-3.5 w-3.5" /> : <PinIcon className="h-3.5 w-3.5" />}
+        {starFilled
+          ? <UnpinIcon className="h-3.5 w-3.5" />
+          : <PinIcon className="h-3.5 w-3.5" />}
       </button>
     </li>
   );

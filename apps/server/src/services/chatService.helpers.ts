@@ -1,7 +1,7 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { callAgent, streamAgent } from "../lib/agentClient.ts";
+import { type callAgent, streamAgent } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import type {
   ChatListItemDto,

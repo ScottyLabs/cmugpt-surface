@@ -23,6 +23,17 @@ function closeOpenBlockMathFence(streamingMarkdown: string): string {
   return n % 2 === 1 ? `${streamingMarkdown}$$` : streamingMarkdown;
 }
 
+/**
+ * Odd ``` count means a code fence is still open, which swallows the rest of
+ * the streaming text into a single dark `<pre>` block until the model emits
+ * the closing fence. Close it early so mid-stream text renders as prose.
+ */
+function closeOpenCodeFence(streamingMarkdown: string): string {
+  const fences = streamingMarkdown.match(/```/gu);
+  const n = fences?.length ?? 0;
+  return n % 2 === 1 ? `${streamingMarkdown}\n\`\`\`` : streamingMarkdown;
+}
+
 /** Safe string input + LaTeX delimiters; optional streaming fence balance for partial SSE text. */
 export function markdownForReactComponent(raw: unknown, options?: { streaming?: boolean }): string {
   let base: string;
@@ -36,6 +47,7 @@ export function markdownForReactComponent(raw: unknown, options?: { streaming?: 
   let md = preprocessLlmLatexDelimiters(base);
   if (options?.streaming === true) {
     md = closeOpenBlockMathFence(md);
+    md = closeOpenCodeFence(md);
   }
   return md;
 }
@@ -102,15 +114,20 @@ export const remarkMarkdownPlugins = [remarkMath, remarkGfm];
 // Tuple form: unified calls `attacher.call(processor, options)` and uses the
 // *returned* function as the transformer. A pre-invoked `fn({...})` would be
 // mistaken for an attacher and invoked with no tree/file (both undefined).
-export const rehypeMarkdownPlugins = [[rehypeKatexWithGuards, { strict: "ignore" }]] as NonNullable<
-  ComponentProps<typeof ReactMarkdown>["rehypePlugins"]
->;
+export const rehypeMarkdownPlugins = [
+  [
+    rehypeKatexWithGuards,
+    {
+      strict: "ignore",
+    },
+  ],
+] as NonNullable<ComponentProps<typeof ReactMarkdown>["rehypePlugins"]>;
 
 function MarkdownLink({ href, children, ...props }: ComponentProps<"a"> & { href?: string }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
       {children}
-      <span className="text-xs" aria-hidden={true}>
+      <span className="text-xs" aria-hidden>
         ↗
       </span>
     </a>

@@ -18,16 +18,6 @@ function HeaderBrand({ c }: { c: ChatShellController }) {
           <span className="truncate text-lg font-semibold leading-none tracking-tight">CMUGPT</span>
         </div>
       )}
-      <div className="flex min-w-0 items-center gap-1.5">
-        <img
-          src="/sl-logo.svg"
-          alt=""
-          className="h-6 w-6 shrink-0 object-contain"
-          width={24}
-          height={24}
-        />
-        <span className="truncate text-lg font-semibold leading-none tracking-tight">cmuGPT</span>
-      </div>
       <div className="ml-2 hidden sm:block">
         <ModelSelector />
       </div>
@@ -62,7 +52,7 @@ function ShareButton({ c }: { c: ChatShellController }) {
       aria-label={shareLabel(share.shareFeedback)}
     >
       <span className="inline-flex items-center gap-1">
-        <span aria-hidden={true}>↗</span>
+        <span aria-hidden>↗</span>
         {share.shareFeedback === "copied"
           ? "Copied"
           : share.shareFeedback === "shared"
@@ -90,7 +80,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
           title="Anyone signed in can open this link. Click to make the chat private again."
           aria-label="Make chat private"
         >
-          <LockOpen className="h-4 w-4" aria-hidden={true} />
+          <LockOpen className="h-4 w-4" aria-hidden />
         </button>
       ) : null}
       <ShareButton c={c} />
@@ -115,13 +105,11 @@ export function ChatHeaderBar({ c }: { c: ChatShellController }) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
       <HeaderBrand c={c} />
-      {derived.shouldShowConversation ||
-        session.chatsLoading ||
-        (session.isNewChatIntent && (
-          <span className="text-black text-lg font-medium leading-relaxed">
-            {derived.currentChat?.title}
-          </span>
-        ))}
+      {(derived.shouldShowConversation || session.chatsLoading || session.isNewChatIntent) && (
+        <span className="text-black text-lg font-medium leading-relaxed">
+          {derived.currentChat?.title}
+        </span>
+      )}
       <HeaderActions c={c} />
     </header>
   );

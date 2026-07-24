@@ -51,7 +51,12 @@ function useChatShellCore() {
     chatId: session.chatId,
     messagesLength: session.messages.length,
   });
-  const derived = useChatDerived({ session, stream, optimistic, profile: auth.user });
+  const derived = useChatDerived({
+    session,
+    stream,
+    optimistic,
+    profile: auth.user,
+  });
   return { auth, session, mutations, stream, attachments, optimistic, derived };
 }
 
@@ -63,7 +68,10 @@ export function useChatShell() {
     chatId: session.chatId,
     effectiveChatDetail: derived.effectiveChatDetail,
   });
-  const sidebar = useSidebarInteractions({ mutations, navigate: session.navigate });
+  const sidebar = useSidebarInteractions({
+    mutations,
+    navigate: session.navigate,
+  });
   const search = useChatSearch();
   const modal = useModalState();
   const scroll = useConversationScroll({

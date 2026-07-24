@@ -13,7 +13,7 @@ export interface ShareCtx {
 }
 
 function buildShareUrl(chatId: string): string {
-  const url = new URL(window.location.href);
+  const url = new URL(globalThis.location.href);
   url.searchParams.set("chat", chatId);
   return url.toString();
 }
@@ -23,7 +23,11 @@ async function tryNativeShare(shareUrl: string): Promise<"shared" | "aborted" | 
     return "unsupported";
   }
   try {
-    await navigator.share({ title: "cmuGPT", text: "Chat on cmuGPT", url: shareUrl });
+    await navigator.share({
+      title: "cmuGPT",
+      text: "Chat on cmuGPT",
+      url: shareUrl,
+    });
     return "shared";
   } catch (e) {
     return e instanceof Error && e.name === "AbortError" ? "aborted" : "unsupported";
@@ -44,7 +48,7 @@ async function ensureChatPublic(ctx: ShareCtx, targetId: string, alreadyPublic: 
   if (alreadyPublic) {
     return true;
   }
-  const ok = window.confirm(
+  const ok = globalThis.confirm(
     "Anyone signed in to cmuGPT can open this chat with the link. Make this chat public and continue sharing?",
   );
   if (!ok) {
@@ -66,7 +70,7 @@ async function copyShareLink(ctx: ShareCtx, shareUrl: string) {
     await navigator.clipboard.writeText(shareUrl);
     ctx.setShareFeedback("copied");
   } catch {
-    window.prompt("Copy this link to share:", shareUrl);
+    globalThis.prompt("Copy this link to share:", shareUrl);
     ctx.setShareFeedback(null);
     return;
   }

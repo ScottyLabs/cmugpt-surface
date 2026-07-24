@@ -27,7 +27,11 @@ export function useOptimisticMessage(deps: OptimisticDeps) {
     }
   }, [persisted]);
 
-  return { optimisticUserMessage, setOptimisticUserMessage, shouldShowOptimisticUserMessage };
+  return {
+    optimisticUserMessage,
+    setOptimisticUserMessage,
+    shouldShowOptimisticUserMessage,
+  };
 }
 
 export type OptimisticMessage = ReturnType<typeof useOptimisticMessage>;

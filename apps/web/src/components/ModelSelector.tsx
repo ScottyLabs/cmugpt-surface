@@ -62,7 +62,7 @@ function ModelSelectorTrigger({
     >
       <span className="text-neutral-500">Model:</span>
       <span>{currentLabel}</span>
-      <ChevronDown className="h-3 w-3 text-neutral-400" aria-hidden={true} />
+      <ChevronDown className="h-3 w-3 text-neutral-400" aria-hidden />
     </button>
   );
 }

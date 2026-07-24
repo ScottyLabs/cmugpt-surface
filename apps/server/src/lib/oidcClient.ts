@@ -25,7 +25,11 @@ export const SCOPE = "openid profile email";
 
 let configPromise: Promise<client.Configuration> | null = null;
 
-function getConfiguredOidcParams(): { issuerUrl: string; clientId: string; clientSecret: string } {
+function getConfiguredOidcParams(): {
+  issuerUrl: string;
+  clientId: string;
+  clientSecret: string;
+} {
   const { OIDC_ISSUER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET } = env;
   if (
     OIDC_ISSUER_URL === undefined ||
@@ -37,7 +41,11 @@ function getConfiguredOidcParams(): { issuerUrl: string; clientId: string; clien
   ) {
     throw new Error("OIDC is not configured");
   }
-  return { issuerUrl: OIDC_ISSUER_URL, clientId: OIDC_CLIENT_ID, clientSecret: OIDC_CLIENT_SECRET };
+  return {
+    issuerUrl: OIDC_ISSUER_URL,
+    clientId: OIDC_CLIENT_ID,
+    clientSecret: OIDC_CLIENT_SECRET,
+  };
 }
 
 function getConfig(): Promise<client.Configuration> {
@@ -91,7 +99,9 @@ function toTokens(
   if (res.refresh_token !== undefined) tokens.refreshToken = res.refresh_token;
   if (res.id_token !== undefined) tokens.idToken = res.id_token;
   const expiresIn = res.expiresIn();
-  if (typeof expiresIn === "number") tokens.accessTokenExpiresAt = Date.now() + expiresIn * 1000;
+  if (typeof expiresIn === "number") {
+    tokens.accessTokenExpiresAt = Date.now() + expiresIn * 1000;
+  }
   return tokens;
 }
 
@@ -142,7 +152,9 @@ export async function exchangeCode(params: {
     idTokenExpected: true,
   });
   const idClaims = res.claims();
-  if (idClaims === undefined || idClaims.sub === "") throw new Error("id_token missing sub");
+  if (idClaims === undefined || idClaims.sub === "") {
+    throw new Error("id_token missing sub");
+  }
   return { tokens: toTokens(res), claims: extractClaims(idClaims) };
 }
 

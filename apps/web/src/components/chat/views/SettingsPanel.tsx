@@ -57,7 +57,9 @@ function ToolToggles({ c }: { c: ChatShellController }) {
     <div className="flex gap-4 flex-wrap">
       <button
         type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.mapsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${
+          modal.mapsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"
+        }`}
         onClick={() => {
           modal.setMapsIsDisabled((o) => !o);
         }}
@@ -69,13 +71,17 @@ function ToolToggles({ c }: { c: ChatShellController }) {
       </button>
       <button
         type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.coursesIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${
+          modal.coursesIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"
+        }`}
         onClick={() => {
           modal.setCoursesIsDisabled((o) => !o);
         }}
       >
         <span
-          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${modal.coursesIsDisabled ? "opacity-55" : "opacity-100"}`}
+          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${
+            modal.coursesIsDisabled ? "opacity-55" : "opacity-100"
+          }`}
           style={{
             aspectRatio: "18/17",
             backgroundImage: "url('../../public/cmucoursesicon.png')",
@@ -85,13 +91,17 @@ function ToolToggles({ c }: { c: ChatShellController }) {
       </button>
       <button
         type="button"
-        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${modal.eatsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"}`}
+        className={`flex items-center justify-center gap-[0.375rem] rounded-[6.25rem] px-3.5 py-1.5 text-xs font-medium bg-neutral-secondary-enabled ${
+          modal.eatsIsDisabled ? "text-fg-disabled-neutral" : "text-fg-neutral-primary"
+        }`}
         onClick={() => {
           modal.setEatsIsDisabled((o) => !o);
         }}
       >
         <span
-          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${modal.eatsIsDisabled ? "opacity-55" : "opacity-100"}`}
+          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${
+            modal.eatsIsDisabled ? "opacity-55" : "opacity-100"
+          }`}
           style={{ backgroundImage: "url('../../public/cmueatsicon.png')" }}
         />
         CMUEats

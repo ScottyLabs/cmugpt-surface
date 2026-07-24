@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from "../../../playwright-test.ts";
+import { expect, type Page, type Route, test } from "../../../playwright-test.ts";
 
 test("signed-out users see the login surface", async ({ page }: { page: Page }) => {
   await page.route("**/api/auth/me", async (route: Route) => {

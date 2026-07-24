@@ -130,7 +130,7 @@ export function CmuMapsLink({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
       rel="noreferrer"
       className="mt-2 inline-flex items-center gap-1 rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-neutral-700 text-xs hover:border-neutral-300 hover:bg-neutral-100"
     >
-      <ExternalLink className="h-3 w-3" aria-hidden={true} />
+      <ExternalLink className="h-3 w-3" aria-hidden />
       View on CMU Maps: {label}
     </a>
   );

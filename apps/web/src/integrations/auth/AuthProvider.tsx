@@ -69,13 +69,15 @@ export function AuthProviderIntegration({ children }: { children: React.ReactNod
       isAuthenticated: user !== null,
       isLoading,
       login: () => {
-        const returnTo = window.location.pathname + window.location.search;
-        const webOrigin = encodeURIComponent(window.location.origin);
-        window.location.href = `${API_BASE_URL}/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&webOrigin=${webOrigin}`;
+        const returnTo = globalThis.location.pathname + globalThis.location.search;
+        const webOrigin = encodeURIComponent(globalThis.location.origin);
+        globalThis.location.href = `${API_BASE_URL}/api/auth/login?returnTo=${encodeURIComponent(
+          returnTo,
+        )}&webOrigin=${webOrigin}`;
       },
       logout: () => {
-        const webOrigin = encodeURIComponent(window.location.origin);
-        window.location.href = `${API_BASE_URL}/api/auth/logout?webOrigin=${webOrigin}`;
+        const webOrigin = encodeURIComponent(globalThis.location.origin);
+        globalThis.location.href = `${API_BASE_URL}/api/auth/logout?webOrigin=${webOrigin}`;
       },
     }),
     [user, isLoading],

@@ -35,7 +35,9 @@ function handleAuthErrors(req: Request, res: Response) {
   const allReasons = req.authErrors.map(authDebugOrMessage).join(" | ");
   // Single-line log so Turbo's dev TUI (and similar) is not corrupted by multiline objects.
   console.warn(
-    `[auth-failure] ${req.method} ${req.path} -> ${errorToReturn.status} (${chosenReason}) [tried: ${allReasons}]; cookie=${Boolean(req.headers.cookie)} authorization=${Boolean(req.headers.authorization)}`,
+    `[auth-failure] ${req.method} ${req.path} -> ${errorToReturn.status} (${chosenReason}) [tried: ${allReasons}]; cookie=${Boolean(
+      req.headers.cookie,
+    )} authorization=${Boolean(req.headers.authorization)}`,
   );
 
   res.status(errorToReturn.status).json({
@@ -89,7 +91,10 @@ function handleUnknownError(err: unknown, req: Request, res: Response) {
     return false;
   }
   console.error("Error %s", req.path, err);
-  res.status(500).json({ message: "Internal Server Error", details: err.message });
+  res.status(500).json({
+    message: "Internal Server Error",
+    details: err.message,
+  });
   return true;
 }
 

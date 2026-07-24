@@ -10,7 +10,7 @@ function useChatQueries(chatId: string | undefined) {
     data: chats = [],
     refetch: refetchChats,
     isLoading: chatsLoading,
-  } = $api.useQuery("get", "/chats", undefined);
+  } = $api.useQuery("get", "/chats");
   const {
     data: messages = [],
     refetch: refetchMessages,

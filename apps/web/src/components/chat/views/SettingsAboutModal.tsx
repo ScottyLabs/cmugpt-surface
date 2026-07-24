@@ -40,9 +40,9 @@ function useCloseOnEscape(isOpen: boolean, close: () => void): void {
         close();
       }
     }
-    window.addEventListener("keydown", onKeyDown);
+    globalThis.addEventListener("keydown", onKeyDown);
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      globalThis.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen, close]);
 }
@@ -84,7 +84,9 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     >
       <dialog
         open
-        className={`relative rounded-2xl bg-white p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] w-[45.5625rem] ${isSettings ? "h-[20rem]" : "h-[30rem]"}`}
+        className={`relative rounded-2xl bg-white p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] w-[45.5625rem] ${
+          isSettings ? "h-[20rem]" : "h-[30rem]"
+        }`}
       >
         <ModalHeader isSettings={isSettings} onClose={close} />
         {isSettings ? <SettingsPanel c={c} /> : <AboutPanel />}

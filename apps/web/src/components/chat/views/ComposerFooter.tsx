@@ -58,31 +58,29 @@ export function ComposerFooter({ c }: { c: ChatShellController }) {
         type="file"
         className="sr-only"
         accept={FILE_ACCEPT}
-        multiple={true}
+        multiple
         onChange={attachments.onAttachmentFilesSelected}
       />
       <AttachmentsBar c={c} />
-      {derived.shouldShowConversation ||
-        session.chatsLoading ||
-        (session.isNewChatIntent && (
-          <>
-            <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-              <Composer
-                c={c}
-                rowClassName="flex items-end gap-1 sm:gap-2"
-                textareaClassName="max-h-40 min-h-[7.625rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
-              />
-            </div>
-            <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
-              CMUGPT is AI and can make mistakes. Please double-check responses.
+      {(derived.shouldShowConversation || session.chatsLoading || session.isNewChatIntent) && (
+        <>
+          <div className="mx-auto flex max-w-3xl flex-col gap-[0.625rem] rounded-[1.875rem] border-0 bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+            <Composer
+              c={c}
+              rowClassName="flex items-end gap-1 sm:gap-2"
+              textareaClassName="max-h-40 min-h-[7.625rem] flex-1 resize-none bg-transparent py-2 text-sm leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
+            />
+          </div>
+          <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-4">
+            CMUGPT is AI and can make mistakes. Please double-check responses.
+          </p>
+          {stream.streamError !== null && stream.streamError !== "" && (
+            <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
+              {stream.streamError}
             </p>
-            {stream.streamError !== null && stream.streamError !== "" && (
-              <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
-                {stream.streamError}
-              </p>
-            )}
-          </>
-        ))}
+          )}
+        </>
+      )}
     </div>
   );
 }

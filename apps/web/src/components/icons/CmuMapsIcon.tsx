@@ -65,7 +65,7 @@ export function CmuMapsIcon({ className }: { className?: string }) {
       viewBox="0 0 15 24"
       fill="none"
       className={className}
-      aria-hidden={true}
+      aria-hidden
     >
       <title>CMUMaps</title>
       <path
