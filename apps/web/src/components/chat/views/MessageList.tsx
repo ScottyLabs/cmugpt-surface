@@ -85,7 +85,7 @@ export function MessageList({ c }: { c: ChatShellController }) {
           {/* No map is shown while the answer is still being written. This
               block and the finished message above it are separate places in the
               component tree, so anything put here is thrown away and rebuilt
-              the instant the answer completes — the map would load twice. It is
+              the instant the answer completes, making the map load twice. It is
               rendered once, by the finished message. Downloading it, on the
               other hand, can start right now, which is what this does. */}
           <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
