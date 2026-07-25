@@ -1,5 +1,14 @@
 import { type RefObject, useEffect, useState } from "react";
 
+/**
+ * Cleanup for effect paths that set nothing up. Effects here return their real
+ * cleanup on the main path, and returning this from the others keeps every
+ * path returning a function, which the lint rules require over a bare return.
+ */
+function noCleanup(): void {
+  // Nothing to clean up.
+}
+
 /** How long the page must go without scrolling before a map may be revealed. */
 const SCROLL_QUIET_MS = 180;
 /** Upper bound on that wait, so continuous scrolling cannot postpone it forever. */
@@ -42,7 +51,7 @@ export function useScrollSettled(enabled: boolean): boolean {
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (!enabled || settled) {
-      return undefined;
+      return noCleanup;
     }
     return whenScrollSettles(() => {
       setSettled(true);
@@ -76,7 +85,7 @@ export function useLazyMapMount(
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!enabled || ready) {
-      return undefined;
+      return noCleanup;
     }
     const slot = slotRef.current;
     // Usually the map sits at the end of an answer already on screen. Measuring
@@ -84,7 +93,7 @@ export function useLazyMapMount(
     // the same thing a frame or two later; the observer is for maps further up.
     if (slot === null || typeof IntersectionObserver !== "function" || isNearViewport(slot)) {
       setReady(true);
-      return undefined;
+      return noCleanup;
     }
     const observer = new IntersectionObserver(
       (entries) => {
@@ -126,7 +135,7 @@ let focusReclaimCount = 0;
 export function useReclaimIframeFocus(enabled: boolean): void {
   useEffect(() => {
     if (!enabled) {
-      return undefined;
+      return noCleanup;
     }
     focusReclaimCount += 1;
     if (focusReclaimCount === 1) {
