@@ -6,41 +6,6 @@ components:
   requestBodies: {}
   responses: {}
   schemas:
-    AgentModelOption:
-      description: >-
-        List of LLM models the user can pick from. The `id` is the
-
-        OpenRouter model slug forwarded to the agent's `/agent/respond`
-        endpoint.
-
-        Surface UX assumes 4-6 options.
-      properties:
-        id:
-          type: string
-        label:
-          type: string
-        description:
-          type: string
-      required:
-        - id
-        - label
-        - description
-      type: object
-      additionalProperties: false
-    UserPreferencesDto:
-      properties:
-        preferredModel:
-          type: string
-      required:
-        - preferredModel
-      type: object
-      additionalProperties: false
-    PatchUserPreferencesBody:
-      properties:
-        preferredModel:
-          type: string
-      type: object
-      additionalProperties: false
     ChatListItemDto:
       properties:
         id:
@@ -183,6 +148,41 @@ components:
           type: boolean
       type: object
       additionalProperties: false
+    AgentModelOption:
+      description: >-
+        Curated list of LLM models the user can pick from. The `id` is the
+
+        OpenRouter model slug forwarded to the agent's `/agent/respond`
+        endpoint.
+
+        Surface UX assumes 4-6 options.
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - label
+        - description
+      type: object
+      additionalProperties: false
+    UserPreferencesDto:
+      properties:
+        preferredModel:
+          type: string
+      required:
+        - preferredModel
+      type: object
+      additionalProperties: false
+    PatchUserPreferencesBody:
+      properties:
+        preferredModel:
+          type: string
+      type: object
+      additionalProperties: false
   securitySchemes:
     oidc:
       type: openIdConnect
@@ -196,88 +196,17 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description:
-        Better Auth session cookie and/or Keycloak access token as Bearer;
+      description: Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
-  title: "@cmugpt-frontend/server"
-  version: 0.0.0
-  contact: {}
+  title: TSOA
+  version: 1.0.0
+  description: Build swagger-compliant REST APIs using TypeScript and Node
+  license:
+    name: MIT
+  contact:
+    name: unknown
 paths:
-  /me/oidc-admin:
-    get:
-      operationId: GetOidcAdminStatus
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                properties:
-                  isOidcAdmin:
-                    type: boolean
-                required:
-                  - isOidcAdmin
-                type: object
-      security:
-        - clerk: []
-      parameters: []
-  /me/models:
-    get:
-      operationId: ListModels
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                properties:
-                  models:
-                    items:
-                      $ref: "#/components/schemas/AgentModelOption"
-                    type: array
-                required:
-                  - models
-                type: object
-      description: Curated list of LLM models the user can pick from.
-      security:
-        - clerk: []
-      parameters: []
-  /me/preferences:
-    get:
-      operationId: GetPreferences
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserPreferencesDto"
-      description: Read the user's preferences (preferred model, etc.).
-      security:
-        - clerk: []
-      parameters: []
-    patch:
-      operationId: UpdatePreferences
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserPreferencesDto"
-      description:
-        Update the user's preferences. Only fields present in the body are
-        changed.
-      security:
-        - clerk: []
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchUserPreferencesBody"
   /hello:
     get:
       operationId: GetHello
@@ -311,7 +240,7 @@ paths:
                   - message
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /hello/admin:
     get:
@@ -329,7 +258,7 @@ paths:
                   - message
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /chats:
     get:
@@ -344,7 +273,7 @@ paths:
                   $ref: "#/components/schemas/ChatListItemDto"
                 type: array
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: query
           name: q
@@ -361,7 +290,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatListItemDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /chats/{id}/messages:
     get:
@@ -376,7 +305,7 @@ paths:
                   $ref: "#/components/schemas/MessageDto"
                 type: array
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -393,7 +322,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PostMessageResultDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -417,7 +346,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatDetailDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -434,7 +363,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ChatListItemDto"
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
@@ -453,12 +382,85 @@ paths:
         "204":
           description: ""
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
+  /me/oidc-admin:
+    get:
+      operationId: GetOidcAdminStatus
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  isOidcAdmin:
+                    type: boolean
+                required:
+                  - isOidcAdmin
+                type: object
+      security:
+        - oidc: []
+      parameters: []
+  /me/models:
+    get:
+      operationId: ListModels
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  models:
+                    items:
+                      $ref: "#/components/schemas/AgentModelOption"
+                    type: array
+                required:
+                  - models
+                type: object
+      description: Curated list of LLM models the user can pick from.
+      security:
+        - oidc: []
+      parameters: []
+  /me/preferences:
+    get:
+      operationId: GetPreferences
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferencesDto"
+      description: Read the user's preferences (preferred model, etc.).
+      security:
+        - oidc: []
+      parameters: []
+    patch:
+      operationId: UpdatePreferences
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferencesDto"
+      description: Update the user's preferences. Only fields present in the body are
+        changed.
+      security:
+        - oidc: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserPreferencesBody"
 servers:
   - url: /

@@ -12,7 +12,7 @@ import {
   Security,
   SuccessResponse,
 } from "tsoa";
-import { CLERK_AUTH } from "../lib/authentication.ts";
+import { OIDC_AUTH } from "../lib/authentication.ts";
 import { AuthenticationError } from "../middlewares/errorHandler.ts";
 import type {
   ChatDetailDto,
@@ -34,17 +34,15 @@ export interface PatchChatBody {
 
 function authenticatedSub(req: ExpressRequest): string {
   const sub = req.user?.sub;
-  if (!sub) {
-    throw new AuthenticationError(
-      "req.user.sub missing after security middleware (unexpected)",
-    );
+  if (sub === undefined || sub === "") {
+    throw new AuthenticationError("req.user.sub missing after security middleware (unexpected)");
   }
   return sub;
 }
 
 @Route("chats")
 export class ChatController {
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("/")
   @SuccessResponse(200)
   public listChats(
@@ -54,34 +52,28 @@ export class ChatController {
     return chatService.listChats(authenticatedSub(req), q);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Post("/")
   @SuccessResponse(201)
   public createChat(@Request() req: ExpressRequest): Promise<ChatListItemDto> {
     return chatService.createChat(authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("{id}/messages")
   @SuccessResponse(200)
-  public getMessages(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<MessageDto[]> {
+  public getMessages(@Request() req: ExpressRequest, @Path() id: string): Promise<MessageDto[]> {
     return chatService.getMessages(id, authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("{id}")
   @SuccessResponse(200)
-  public getChat(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<ChatDetailDto> {
+  public getChat(@Request() req: ExpressRequest, @Path() id: string): Promise<ChatDetailDto> {
     return chatService.getChat(id, authenticatedSub(req));
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Post("{id}/messages")
   @SuccessResponse(200)
   public postMessage(
@@ -92,7 +84,7 @@ export class ChatController {
     return chatService.postMessage(id, authenticatedSub(req), body.content);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Patch("{id}")
   @SuccessResponse(200)
   public patchChat(
@@ -103,13 +95,10 @@ export class ChatController {
     return chatService.patchChat(id, authenticatedSub(req), body);
   }
 
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Delete("{id}")
   @SuccessResponse(204)
-  public deleteChat(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<void> {
+  public deleteChat(@Request() req: ExpressRequest, @Path() id: string): Promise<void> {
     return chatService.deleteChat(id, authenticatedSub(req));
   }
 }
