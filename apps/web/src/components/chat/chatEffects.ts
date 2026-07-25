@@ -16,14 +16,7 @@ function useInitialComposerAutoFocus(
   draftComposerRef: RefObject<HTMLTextAreaElement | null>,
   hasAutoFocusedComposerRef: RefObject<boolean>,
 ) {
-  const {
-    chatId,
-    chatsLoading,
-    chatsLength,
-    isStreaming,
-    canEditChat,
-    isNewChatIntent,
-  } = deps;
+  const { chatId, chatsLoading, chatsLength, isStreaming, canEditChat, isNewChatIntent } = deps;
 
   useEffect(() => {
     if (
@@ -124,10 +117,7 @@ export function useRenameFocus(
   }, [renamingChatId, renameInputRef]);
 }
 
-export function useSidebarMenuEscape(
-  open: boolean,
-  closeSidebarMenu: () => void,
-) {
+export function useSidebarMenuEscape(open: boolean, closeSidebarMenu: () => void) {
   useEffect(() => {
     if (!open) {
       return () => {};
@@ -144,10 +134,7 @@ export function useSidebarMenuEscape(
   }, [open, closeSidebarMenu]);
 }
 
-export function useUserMenuOutsideClick(
-  open: boolean,
-  setOpen: (v: boolean) => void,
-) {
+export function useUserMenuOutsideClick(open: boolean, setOpen: (v: boolean) => void) {
   useEffect(() => {
     if (!open) {
       return () => {};
@@ -171,10 +158,7 @@ export function useUserMenuOutsideClick(
  * still reach its target, since window listeners fire after the target's own
  * handlers during the bubble phase.
  */
-export function useSidebarMenuOutsideInteraction(
-  open: boolean,
-  closeSidebarMenu: () => void,
-) {
+export function useSidebarMenuOutsideInteraction(open: boolean, closeSidebarMenu: () => void) {
   useEffect(() => {
     if (!open) {
       return () => {};

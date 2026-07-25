@@ -51,14 +51,17 @@ function LanguageSelect({ c }: { c: ChatShellController }) {
   );
 }
 
-function ToolToggleButton(
-  { label, disabled, onToggle, children }: {
-    label: string;
-    disabled: boolean;
-    onToggle: () => void;
-    children: ReactNode;
-  },
-) {
+function ToolToggleButton({
+  label,
+  disabled,
+  onToggle,
+  children,
+}: {
+  label: string;
+  disabled: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
