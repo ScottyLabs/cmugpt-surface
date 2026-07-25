@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { CmuMapsEmbed, CmuMapsLink } from "../cmuMaps.tsx";
+import { CmuMapsEmbed, CmuMapsPrefetch } from "../cmuMaps.tsx";
 import {
   assistantDisplayContent,
   markdownClass,
@@ -47,13 +47,13 @@ function AssistantMessage({ m }: { m: MessageItem }) {
           Low confidence: verify with an official CMU source.
         </p>
       )}
-      <CmuMapsLink cmuMaps={m.cmuMaps} />
+      <CmuMapsEmbed cmuMaps={m.cmuMaps} />
     </div>
   );
 }
 
 export function MessageList({ c }: { c: ChatShellController }) {
-  const { session, stream, optimistic, derived, scroll } = c;
+  const { session, stream, optimistic, scroll } = c;
   const optimisticMessage = optimistic.optimisticUserMessage;
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -67,25 +67,30 @@ export function MessageList({ c }: { c: ChatShellController }) {
       {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null ? (
         <UserBubble key="optimistic-user-message" content={optimisticMessage.content} />
       ) : null}
-      {stream.isStreaming && stream.streamingText === "" && (
-        <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
-      )}
-      {stream.isStreaming && stream.streamingText.length > 0 && (
+      {stream.isStreaming && (
         <div className={markdownClass}>
-          <ReactMarkdown
-            remarkPlugins={remarkMarkdownPlugins}
-            rehypePlugins={rehypeMarkdownPlugins}
-            components={markdownComponents}
-          >
-            {markdownForReactComponent(stream.streamingText, {
-              streaming: true,
-            })}
-          </ReactMarkdown>
+          {stream.streamingText === "" ? (
+            <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
+          ) : (
+            <ReactMarkdown
+              remarkPlugins={remarkMarkdownPlugins}
+              rehypePlugins={rehypeMarkdownPlugins}
+              components={markdownComponents}
+            >
+              {markdownForReactComponent(stream.streamingText, {
+                streaming: true,
+              })}
+            </ReactMarkdown>
+          )}
+          {/* No map is shown while the answer is still being written. This
+              block and the finished message above it are separate places in the
+              component tree, so anything put here is thrown away and rebuilt
+              the instant the answer completes, making the map load twice. It is
+              rendered once, by the finished message. Downloading it, on the
+              other hand, can start right now, which is what this does. */}
+          <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
         </div>
       )}
-      {/* Single stable slot for the active CMU Maps iframe: keeps the same DOM
-          position across streaming/done transitions so it doesn't remount. */}
-      <CmuMapsEmbed cmuMaps={derived.activeCmuMaps} />
       <div ref={scroll.bottomRef} />
     </div>
   );

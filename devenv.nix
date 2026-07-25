@@ -10,7 +10,10 @@
     project.name = "cmugpt-surface";
 
     secrets.enable = true;
-    postgres.enable = true;
+    postgres = {
+      enable = true;
+      extensions = e: [ e.pgvector ];
+    };
     ricochet = {
       enable = true;
       appUrl = "http://localhost:4173";

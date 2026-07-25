@@ -3,9 +3,7 @@ import { PinIcon } from "@/components/icons/index.tsx";
 import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
 
-function ChatRowLabel(
-  { c, chat }: { c: ChatShellController; chat: ChatListItem },
-) {
+function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem }) {
   const { sidebar } = c;
   if (sidebar.renamingChatId === chat.id) {
     return (
@@ -60,10 +58,9 @@ interface SidebarChatRowProps {
 
 export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   const { sidebar, session } = c;
-  const rowClass =
-    `group relative flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
-      chat.id === session.chatId ? "bg-neutral-200" : ""
-    }`;
+  const rowClass = `group relative flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-neutral-200/80 ${
+    chat.id === session.chatId ? "bg-neutral-200" : ""
+  }`;
   return (
     <li className={rowClass}>
       <ChatRowLabel c={c} chat={chat} />
@@ -79,9 +76,7 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
         aria-label={starFilled ? "Unpin chat" : "Pin chat"}
         title={starFilled ? "Unpin chat" : "Pin chat"}
       >
-        {starFilled
-          ? <UnpinIcon className="h-3.5 w-3.5" />
-          : <PinIcon className="h-3.5 w-3.5" />}
+        {starFilled ? <UnpinIcon className="h-3.5 w-3.5" /> : <PinIcon className="h-3.5 w-3.5" />}
       </button>
     </li>
   );

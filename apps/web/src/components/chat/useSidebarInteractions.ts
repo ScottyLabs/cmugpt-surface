@@ -41,11 +41,7 @@ function bindSidebarActions(ctx: SidebarCtx) {
     commitRename: (id: string, title: string) => {
       commitRename(ctx, id, title);
     },
-    onRenameKeyDown: (
-      e: KeyboardEvent<HTMLInputElement>,
-      id: string,
-      title: string,
-    ) => {
+    onRenameKeyDown: (e: KeyboardEvent<HTMLInputElement>, id: string, title: string) => {
       onRenameKeyDown(ctx, e, id, title);
     },
     confirmDeleteChatRow: (id: string) => {
