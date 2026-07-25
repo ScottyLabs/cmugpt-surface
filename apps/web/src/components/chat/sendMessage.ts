@@ -167,12 +167,16 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
   }
   await ctx.waitForStreamingFlush();
   if (shouldRefresh) {
-    // Refetch before removing the streaming message so its persisted assistant
-    // message, including any attached map, is ready to take its place.
+    // Load the saved copy of the answer first, so it is on screen ready to
+    // replace the live one, then stop streaming. Doing it the other way round
+    // would blank the answer out for as long as the request takes.
     await ctx.refetchMessages();
-    await ctx.refetchChats();
     ctx.setIsStreaming(false);
     ctx.resetStreamingBuffer();
+    // This one only updates the chat list in the sidebar. Waiting for it before
+    // the swap above would leave the saved answer and the live one on screen
+    // together for a full round trip, showing the reply twice.
+    void ctx.refetchChats();
   }
 }
 

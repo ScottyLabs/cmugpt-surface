@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { CmuMapsEmbed, CmuMapsLink } from "../cmuMaps.tsx";
+import { CmuMapsEmbed, CmuMapsPrefetch } from "../cmuMaps.tsx";
 import {
   assistantDisplayContent,
   markdownClass,
@@ -47,7 +47,6 @@ function AssistantMessage({ m }: { m: MessageItem }) {
           Low confidence: verify with an official CMU source.
         </p>
       )}
-      <CmuMapsLink cmuMaps={m.cmuMaps} />
       <CmuMapsEmbed cmuMaps={m.cmuMaps} />
     </div>
   );
@@ -83,7 +82,13 @@ export function MessageList({ c }: { c: ChatShellController }) {
               })}
             </ReactMarkdown>
           )}
-          <CmuMapsEmbed cmuMaps={stream.streamingCmuMaps} />
+          {/* No map is shown while the answer is still being written. This
+              block and the finished message above it are separate places in the
+              component tree, so anything put here is thrown away and rebuilt
+              the instant the answer completes — the map would load twice. It is
+              rendered once, by the finished message. Downloading it, on the
+              other hand, can start right now, which is what this does. */}
+          <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
         </div>
       )}
       <div ref={scroll.bottomRef} />
