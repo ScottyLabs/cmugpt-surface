@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { CheckIcon, DownArrowIcon } from "@/components/icons/index.tsx";
 import { CmuMapsIcon } from "@/components/icons/CmuMapsIcon.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
@@ -6,10 +6,6 @@ import type { ChatShellController } from "../useChatShell.ts";
 const LANG_OPTIONS = [
   { id: "auto-detect", label: "Auto-detect" },
   { id: "english-us", label: "English (US)" },
-  { id: "language-1", label: "Language" },
-  { id: "language-2", label: "Language" },
-  { id: "language-3", label: "Language" },
-  { id: "language-4", label: "Language" },
 ];
 
 function LanguageSelect({ c }: { c: ChatShellController }) {
@@ -29,21 +25,19 @@ function LanguageSelect({ c }: { c: ChatShellController }) {
       </button>
       {modal.langOpen && (
         <div className="absolute right-0 top-full mt-2 z-50 w-[14.5625rem] rounded-[0.75rem] bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] overflow-y-auto py-2">
-          {LANG_OPTIONS.map((option, i) => (
-            <Fragment key={option.id}>
-              {i === 2 && <div className="mx-3 my-2 border-b border-fg-disabled-brandneutral" />}
-              <button
-                type="button"
-                onClick={() => {
-                  modal.setLang(option.label);
-                  modal.setLangOpen(false);
-                }}
-                className="flex px-4 py-2 w-full items-center justify-between text-black text-xs font-medium text-left hover:bg-neutral-50"
-              >
-                {option.label}
-                {modal.lang === option.label && <CheckIcon />}
-              </button>
-            </Fragment>
+          {LANG_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => {
+                modal.setLang(option.label);
+                modal.setLangOpen(false);
+              }}
+              className="flex px-4 py-2 w-full items-center justify-between text-black text-xs font-medium text-left hover:bg-neutral-50"
+            >
+              {option.label}
+              {modal.lang === option.label && <CheckIcon />}
+            </button>
           ))}
         </div>
       )}
@@ -95,14 +89,12 @@ function ToolToggles({ c }: { c: ChatShellController }) {
           modal.setCoursesIsDisabled((o) => !o);
         }}
       >
-        <span
-          className={`w-[1.125rem] h-[1.0625rem] rounded-[0.25rem] bg-cover bg-center bg-no-repeat ${
+        <img
+          src="/cmucoursesicon.png"
+          alt=""
+          className={`h-[1.0625rem] w-[1.125rem] shrink-0 rounded-[0.25rem] object-contain ${
             modal.coursesIsDisabled ? "opacity-55" : "opacity-100"
           }`}
-          style={{
-            aspectRatio: "18/17",
-            backgroundImage: "url('../../public/cmucoursesicon.png')",
-          }}
         />
       </ToolToggleButton>
       <ToolToggleButton
@@ -112,11 +104,12 @@ function ToolToggles({ c }: { c: ChatShellController }) {
           modal.setEatsIsDisabled((o) => !o);
         }}
       >
-        <span
-          className={`w-[1.3125rem] h-[1.3125rem] bg-cover bg-center bg-no-repeat ${
+        <img
+          src="/cmueatsicon.png"
+          alt=""
+          className={`h-[1.3125rem] w-[1.3125rem] shrink-0 object-contain ${
             modal.eatsIsDisabled ? "opacity-55" : "opacity-100"
           }`}
-          style={{ backgroundImage: "url('../../public/cmueatsicon.png')" }}
         />
       </ToolToggleButton>
     </div>
