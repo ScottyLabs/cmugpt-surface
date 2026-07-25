@@ -9,31 +9,58 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    devenv.url = "github:cachix/devenv";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     scottylabs = {
       url = "git+https://codeberg.org/ScottyLabs/devenv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, devenv, scottylabs, ... }:
+  outputs =
+    {
+
+      nixpkgs,
+      ...
+    }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
-      packages = forAllSystems (system:
+      packages = forAllSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          packages = pkgs.callPackage ./nix/packages.nix {
-            inherit scottylabs;
+
+          # Local override: upstream helpers.buildDenoTask extracts npm tarballs
+          # with `tar -x` and chokes on packages shipping read-only directories.
+          # ./nix/build-deno-task.nix is a verbatim copy + --delay-directory-restore.
+          # TODO: remove once fixed upstream in ScottyLabs/devenv.
+          buildDenoTask = pkgs.callPackage ./nix/build-deno-task.nix { };
+
+          web = buildDenoTask {
+            pname = "cmugpt-surface-web";
+            src = ./apps/web;
+            # web's lock references the sibling `@cmugpt-frontend/server` (imported for
+            # types only via ../server/build/openapi.d.ts), which isn't in this src, so the
+            # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
+            frozen = false;
+            env.VITE_API_URL = "https://api.cmugpt.com";
+          };
+
+          api = buildDenoTask {
+            pname = "cmugpt-surface-api";
+            src = ./apps/server;
+            entrypoint = "src/server.ts";
+            compile = true;
+            sloppyImports = true;
           };
         in
         {
-          inherit (packages) api web;
-          default = packages.api;
-          devenv = devenv.packages.${system}.devenv;
+          inherit web api;
         }
       );
     };

@@ -1,31 +1,28 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "./playwright-test.ts";
 
-const port = Number(process.env.PLAYWRIGHT_PORT ?? 3000);
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
 const baseURL = `http://127.0.0.1:${port}`;
+const isCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "./apps/web/e2e",
   fullyParallel: true,
-  forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? "github" : "list",
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
+  reporter: isCI ? "github" : "list",
   use: {
     baseURL,
     trace: "on-first-retry",
   },
   webServer: {
-    command: "bun run --cwd apps/web dev",
+    command: "deno task --cwd apps/web dev",
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
     timeout: 120_000,
     env: {
       ...process.env,
       VITE_SERVER_URL: baseURL,
-      VITE_OIDC_ISSUER_URL: `${baseURL}/oidc`,
-      VITE_OIDC_CLIENT_ID: "playwright-ci",
-      VITE_OIDC_REDIRECT_URI: `${baseURL}/auth/callback`,
-      VITE_DEV_API_ORIGIN: baseURL,
     },
   },
   projects: [

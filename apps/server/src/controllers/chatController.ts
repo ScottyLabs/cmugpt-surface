@@ -34,10 +34,8 @@ export interface PatchChatBody {
 
 function authenticatedSub(req: ExpressRequest): string {
   const sub = req.user?.sub;
-  if (!sub) {
-    throw new AuthenticationError(
-      "req.user.sub missing after security middleware (unexpected)",
-    );
+  if (sub === undefined || sub === "") {
+    throw new AuthenticationError("req.user.sub missing after security middleware (unexpected)");
   }
   return sub;
 }
@@ -64,20 +62,14 @@ export class ChatController {
   @Security(OIDC_AUTH)
   @Get("{id}/messages")
   @SuccessResponse(200)
-  public getMessages(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<MessageDto[]> {
+  public getMessages(@Request() req: ExpressRequest, @Path() id: string): Promise<MessageDto[]> {
     return chatService.getMessages(id, authenticatedSub(req));
   }
 
   @Security(OIDC_AUTH)
   @Get("{id}")
   @SuccessResponse(200)
-  public getChat(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<ChatDetailDto> {
+  public getChat(@Request() req: ExpressRequest, @Path() id: string): Promise<ChatDetailDto> {
     return chatService.getChat(id, authenticatedSub(req));
   }
 
@@ -106,10 +98,7 @@ export class ChatController {
   @Security(OIDC_AUTH)
   @Delete("{id}")
   @SuccessResponse(204)
-  public deleteChat(
-    @Request() req: ExpressRequest,
-    @Path() id: string,
-  ): Promise<void> {
+  public deleteChat(@Request() req: ExpressRequest, @Path() id: string): Promise<void> {
     return chatService.deleteChat(id, authenticatedSub(req));
   }
 }

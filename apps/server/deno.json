@@ -1,0 +1,49 @@
+{
+  "name": "@cmugpt-frontend/server",
+  "version": "0.0.0",
+  "nodeModulesDir": "none",
+  "exports": {
+    ".": "./src/server.ts",
+    "./build/openapi": "./build/openapi.d.ts"
+  },
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "lib": ["ESNext", "DOM", "deno.ns"]
+  },
+  "imports": {
+    "@scalar/express-api-reference": "npm:@scalar/express-api-reference@^0.10.9",
+    "yaml": "npm:yaml@^2.9.0",
+    "@tsoa/runtime": "npm:@tsoa/runtime@^7.0.0-alpha.0",
+    "cors": "npm:cors@^2.8.6",
+    "drizzle-orm": "npm:drizzle-orm@^0.45.1",
+    "express": "npm:express@^5.2.1",
+    "jsonwebtoken": "npm:jsonwebtoken@^9.0.3",
+    "openid-client": "npm:openid-client@^6.8.4",
+    "jwks-rsa": "npm:jwks-rsa@^3.2.2",
+    "pg": "npm:pg@^8.20.0",
+    "tsoa": "npm:tsoa@^7.0.0-alpha.0",
+    "zod": "npm:zod@^4.3.6",
+    "@types/cors": "npm:@types/cors@^2.8.19",
+    "@types/express": "npm:@types/express@^5.0.6",
+    "@types/jsonwebtoken": "npm:@types/jsonwebtoken@^9.0.10",
+    "@types/node": "npm:@types/node@^22.15.3",
+    "@types/pg": "npm:@types/pg@^8.20.0",
+    "concurrently": "npm:concurrently@^9.2.1",
+    "drizzle-kit": "npm:drizzle-kit@^0.31.10",
+    "openapi-typescript": "npm:openapi-typescript@^7.10.1"
+  },
+  "tasks": {
+    "tsoa": "deno run -A npm:tsoa spec-and-routes",
+    "openapi": "deno run -A npm:openapi-typescript ./build/swagger.yaml -o ./build/openapi.d.ts && deno eval \"const f='./build/openapi.d.ts';Deno.writeTextFileSync(f,'// oxlint-disable\\n'+Deno.readTextFileSync(f))\"",
+    "generate": "deno task tsoa && deno task openapi",
+    "server": "deno run -A --watch --sloppy-imports --env-file=../../.env src/server.ts",
+    "tsoa:watch": "deno run -A --watch=src/controllers,tsoa.json npm:tsoa spec-and-routes",
+    "openapi:watch": "deno run -A --watch=build/swagger.yaml npm:openapi-typescript ./build/swagger.yaml -o ./build/openapi.d.ts && deno eval \"const f='./build/openapi.d.ts';Deno.writeTextFileSync(f,'// oxlint-disable\\n'+Deno.readTextFileSync(f))\"",
+    "dev": "deno task generate && deno run -A npm:concurrently -k -n server,tsoa,openapi \"deno task server\" \"deno task tsoa:watch\" \"deno task openapi:watch\"",
+    "build": "deno task generate && deno compile --frozen --no-check --cached-only --sloppy-imports --allow-all --include build --include drizzle --include src --output dist/bin/cmugpt-surface-api src/server.ts",
+    "start": "deno run -A --sloppy-imports --env-file=../../.env src/server.ts",
+    "db:generate": "deno run -A npm:drizzle-kit generate",
+    "db:migrate": "deno run -A --env-file=../../.env npm:drizzle-kit migrate",
+    "check": "deno check --sloppy-imports"
+  }
+}

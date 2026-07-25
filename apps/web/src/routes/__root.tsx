@@ -1,12 +1,10 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackDevtoolsGate } from "@/components/TanStackDevtoolsGate.tsx";
-import { OidcProviderIntegration } from "@/integrations/oidc/provider.tsx";
+import { AuthProviderIntegration } from "@/integrations/auth/AuthProvider.tsx";
 
 export const Route = createRootRoute({
   component: () => (
-    <OidcProviderIntegration>
+    <AuthProviderIntegration>
       <Outlet />
-      <TanStackDevtoolsGate />
-    </OidcProviderIntegration>
+    </AuthProviderIntegration>
   ),
 });
