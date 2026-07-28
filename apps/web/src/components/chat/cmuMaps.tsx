@@ -123,6 +123,17 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const showIframe = useLazyMapMount(slotRef, mapUrl !== null);
   const settled = useScrollSettled(showIframe);
   useReclaimIframeFocus(showIframe);
+  // Whether a load this card asked for is still to come. A frame reports `load`
+  // for every page it lands on, its own navigations included, and its address
+  // sits on another origin and so cannot be read; this flag is what tells the
+  // two apart. Assigning `src` is the only way this card ever asks for a load,
+  // and it cancels any load already in flight, so one flag covers every
+  // request. A flag also survives React running the effect below twice for a
+  // single mount, as it does in development, where a tally would drift.
+  const owedLoad = useRef(false);
+  useEffect(() => {
+    owedLoad.current = true;
+  }, [mapUrl]);
 
   function reloadMap() {
     const frame = frameRef.current;
@@ -130,10 +141,28 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
       return;
     }
     setReloading(true);
+    owedLoad.current = true;
     // Reassigning `src` reloads the frame in place, keeping the element and its
     // open connection. The map stays on screen while that happens, since the
     // browser shows the old one until the new one is ready.
     frame.src = mapUrl;
+  }
+
+  function handleFrameLoad() {
+    if (owedLoad.current) {
+      owedLoad.current = false;
+      setLoaded(true);
+      setReloading(false);
+      return;
+    }
+    // The map has left for a page this card cannot show. Signing in is how: it
+    // sends the frame to CMU's login, which refuses to be framed by anyone, so
+    // the frame is now an error page or the map's API root. Hide that and put
+    // the map back, which is what keeps signing in from being reachable here at
+    // all. Restoring cannot repeat: the load it causes is one this card asked
+    // for.
+    setLoaded(false);
+    reloadMap();
   }
 
   if (!cmuMaps || mapUrl === null) {
@@ -152,10 +181,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
             frameRef={frameRef}
             mapUrl={mapUrl}
             revealed={revealed}
-            onLoad={() => {
-              setLoaded(true);
-              setReloading(false);
-            }}
+            onLoad={handleFrameLoad}
           />
         )}
       </MapSlot>
