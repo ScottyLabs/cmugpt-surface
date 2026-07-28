@@ -1,51 +1,8 @@
 import { BookOpen } from "lucide-react";
 import { useState } from "react";
-import { CheckIcon, DownArrowIcon } from "@/components/icons/index.tsx";
 import { CmuMapsIcon } from "@/components/icons/CmuMapsIcon.tsx";
 import { CHAT_TOOLS, type ChatToolOption } from "../tools.ts";
 import type { ChatShellController } from "../useChatShell.ts";
-
-const LANG_OPTIONS = [
-  { id: "auto-detect", label: "Auto-detect" },
-  { id: "english-us", label: "English (US)" },
-];
-
-function LanguageSelect({ c }: { c: ChatShellController }) {
-  const { modal } = c;
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          modal.setLangOpen((o) => !o);
-        }}
-        className="flex items-center gap-2 text-sm font-medium text-black"
-      >
-        {modal.lang}
-        <DownArrowIcon />
-      </button>
-      {modal.langOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-[14.5625rem] rounded-[0.75rem] bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] overflow-y-auto py-2">
-          {LANG_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => {
-                modal.setLang(option.label);
-                modal.setLangOpen(false);
-              }}
-              className="flex px-4 py-2 w-full items-center justify-between text-black text-xs font-medium text-left hover:bg-neutral-50"
-            >
-              {option.label}
-              {modal.lang === option.label && <CheckIcon />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** Per-tool artwork. Dimmed and desaturated while the tool is switched off. */
 function ToolIcon({ id, enabled }: { id: string; enabled: boolean }) {
@@ -170,13 +127,6 @@ function ToolToggles({ c }: { c: ChatShellController }) {
 export function SettingsPanel({ c }: { c: ChatShellController }) {
   return (
     <div className="flex flex-col gap-6 px-2 pt-2">
-      <div className="flex flex-col gap-4">
-        <div className="pl-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-black">Language</span>
-          <LanguageSelect c={c} />
-        </div>
-        <div className="ml-4 border-b border-fg-disabled-brandneutral" />
-      </div>
       <div className="flex flex-col gap-4 pl-4">
         <div className="flex flex-col gap-1">
           <p className="text-left text-sm font-medium text-black">Tools</p>
