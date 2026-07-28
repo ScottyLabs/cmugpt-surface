@@ -13,6 +13,7 @@ import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
 import { type StreamController, useStreamController } from "./useStreamController.ts";
+import { useToolToggles } from "./useToolToggles.ts";
 
 function useChatShellEffects(
   session: ChatSession,
@@ -74,6 +75,7 @@ export function useChatShell() {
   });
   const search = useChatSearch();
   const modal = useModalState();
+  const tools = useToolToggles();
   const scroll = useConversationScroll({
     isStreaming: stream.isStreaming,
     messagesLength: session.messages.length,
@@ -87,6 +89,7 @@ export function useChatShell() {
     scroll,
     canEditChat: derived.canEditChat,
     setOptimisticUserMessage: optimistic.setOptimisticUserMessage,
+    disabledToolIds: tools.disabledToolIds,
   });
 
   useChatShellEffects(session, stream, derived, composer);
@@ -105,6 +108,7 @@ export function useChatShell() {
     sidebar,
     search,
     modal,
+    tools,
     scroll,
     composer,
   };

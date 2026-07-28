@@ -10,6 +10,9 @@ interface AgentRequest {
   /** OpenRouter model slug forwarded to the agent. Falls back to the
    *  agent's own default when omitted. */
   model?: string;
+  /** CMU tool groups the user switched off. The agent removes their tools
+   *  before binding its toolset, so the model cannot call them. */
+  disabledTools?: string[];
 }
 
 export interface AgentResponseBody {
@@ -60,6 +63,7 @@ interface AgentPayload {
   message_history?: { role: string; content: string }[];
   user_id?: string;
   model?: string;
+  disabled_tools?: string[];
 }
 
 function buildAgentPayload(request: AgentRequest): AgentPayload {
@@ -72,6 +76,9 @@ function buildAgentPayload(request: AgentRequest): AgentPayload {
   }
   if (request.model !== undefined) {
     payload.model = request.model;
+  }
+  if (request.disabledTools !== undefined && request.disabledTools.length > 0) {
+    payload.disabled_tools = request.disabledTools;
   }
   return payload;
 }

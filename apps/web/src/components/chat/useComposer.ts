@@ -15,6 +15,7 @@ interface UseComposerDeps {
   scroll: ConversationScroll;
   canEditChat: boolean;
   setOptimisticUserMessage: (value: OptimisticUserMessage | null) => void;
+  disabledToolIds: string[];
 }
 
 export function useComposer(deps: UseComposerDeps) {
@@ -38,6 +39,7 @@ export function useComposer(deps: UseComposerDeps) {
     setOptimisticUserMessage: deps.setOptimisticUserMessage,
     draft,
     clearComposer,
+    disabledToolIds: deps.disabledToolIds,
   });
 
   return {
