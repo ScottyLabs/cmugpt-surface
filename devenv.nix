@@ -9,6 +9,8 @@
     enable = true;
     project.name = "cmugpt-surface";
 
+    conventionalCommits.enable = false;
+
     secrets.enable = true;
     postgres = {
       enable = true;
