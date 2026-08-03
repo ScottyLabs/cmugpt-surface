@@ -14,7 +14,7 @@ function isAgentToolId(value: unknown): value is AgentToolId {
 
 /**
  * Normalize a client-supplied disabled-tool list: keep only known ids, drop
- * duplicates. Unknown entries are ignored rather than rejected — a stale client
+ * duplicates. Unknown entries are ignored rather than rejected: a stale client
  * naming a tool this server hasn't heard of should still get an answer.
  */
 export function sanitizeDisabledToolIds(value: unknown): AgentToolId[] {

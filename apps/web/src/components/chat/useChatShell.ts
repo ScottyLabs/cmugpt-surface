@@ -58,12 +58,18 @@ function useChatShellCore() {
     optimistic,
     profile: auth.user,
   });
-  return { auth, session, mutations, stream, attachments, optimistic, derived };
+  const scroll = useConversationScroll({
+    isStreaming: stream.isStreaming,
+    messagesLength: session.messages.length,
+    streamingTextLength: stream.streamingText.length,
+  });
+  return { auth, session, mutations, stream, attachments, optimistic, derived, scroll };
 }
 
 export function useChatShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { auth, session, mutations, stream, attachments, optimistic, derived } = useChatShellCore();
+  const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } =
+    useChatShellCore();
   const share = useShareController({
     patchChat: mutations.patchChat,
     chatId: session.chatId,
@@ -76,11 +82,6 @@ export function useChatShell() {
   const search = useChatSearch();
   const modal = useModalState();
   const tools = useToolToggles();
-  const scroll = useConversationScroll({
-    isStreaming: stream.isStreaming,
-    messagesLength: session.messages.length,
-    streamingTextLength: stream.streamingText.length,
-  });
   const composer = useComposer({
     session,
     mutations,

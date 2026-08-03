@@ -55,7 +55,7 @@ function ToolStateBadge({ enabled }: { enabled: boolean }) {
 
 /** A tool switch. Raised and full colour means the agent may call it; flat and
  *  greyed means it is withheld for the turn. Both states keep the exact same
- *  footprint — only colours change on toggle, never the layout. */
+ *  footprint: only colours change on toggle, never the layout. */
 function ToolToggleButton({
   tool,
   enabled,
@@ -84,8 +84,8 @@ function ToolToggleButton({
       aria-pressed={enabled}
       title={
         enabled
-          ? `${tool.label} is on — click to stop the assistant using it`
-          : `${tool.label} is off — click to let the assistant use it again`
+          ? `${tool.label} is on. Click to stop the assistant using it`
+          : `${tool.label} is off. Click to let the assistant use it again`
       }
       className={`flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-neutral-tertiary ${
         enabled
