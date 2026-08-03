@@ -4,7 +4,7 @@
  * Surface UX assumes 4-6 options.
  *
  * Every entry is the current mini / low-cost tier of its provider, and every
- * entry must support tool calling — the agent binds the CMU MCP tools, so a
+ * entry must support tool calling: the agent binds the CMU MCP tools, so a
  * model without tool support cannot answer campus questions. The first entry
  * is the default for new users.
  */
