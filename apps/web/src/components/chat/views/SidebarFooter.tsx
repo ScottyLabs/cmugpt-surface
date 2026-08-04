@@ -27,14 +27,14 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
         <AboutIcon />
         About
       </button>
-      <a href="https://scottylabs.org/" target="_blank" rel="noreferrer">
-        <button
-          type="button"
-          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
-        >
-          <ScottyLabsIcon />
-          ScottyLabs
-        </button>
+      <a
+        href="https://scottylabs.org/"
+        target="_blank"
+        rel="noreferrer"
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+      >
+        <ScottyLabsIcon />
+        ScottyLabs
       </a>
       <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
       <button

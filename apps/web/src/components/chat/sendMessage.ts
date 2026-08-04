@@ -13,6 +13,8 @@ export interface SendCtx {
   isStreaming: boolean;
   draft: string;
   pendingAttachments: PendingAttachment[];
+  /** CMU tools the user switched off; the agent won't be given these. */
+  disabledTools: string[];
   chatId: string | undefined;
   canEditChat: boolean;
   messagesLength: number;
@@ -44,6 +46,7 @@ export interface SendCtxInput {
   setOptimisticUserMessage: (value: OptimisticUserMessage | null) => void;
   draft: string;
   clearComposer: () => void;
+  disabledToolIds: string[];
 }
 
 export function buildSendCtx(input: SendCtxInput): SendCtx {
@@ -52,6 +55,7 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     isStreaming: stream.isStreaming,
     draft: input.draft,
     pendingAttachments: attachments.pendingAttachments,
+    disabledTools: input.disabledToolIds,
     chatId: session.chatId,
     canEditChat: input.canEditChat,
     messagesLength: session.messages.length,
@@ -74,14 +78,18 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
   };
 }
 
-function postChatMessageStream(chatId: string, content: string): Promise<Response> {
+function postChatMessageStream(
+  chatId: string,
+  content: string,
+  disabledTools: string[],
+): Promise<Response> {
   // Cross-origin in production (web on cmugpt.com, API on api.cmugpt.com);
   // credentials carry the session cookie, and the server bridges it to a Bearer.
   return fetch(`${API_BASE_URL}/chats/${chatId}/messages/stream`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, disabledTools }),
   });
 }
 
@@ -233,7 +241,7 @@ export async function runSend(ctx: SendCtx): Promise<void> {
   }
   beginSend(ctx, activeChatId, content);
   try {
-    const res = await postChatMessageStream(activeChatId, content);
+    const res = await postChatMessageStream(activeChatId, content, ctx.disabledTools);
     if (!res.ok) {
       ctx.setStreamError((await readStreamErrorDetail(res)) || "Request failed");
       ctx.setOptimisticUserMessage(null);

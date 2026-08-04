@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response, Router } from "express";
+import { sanitizeDisabledToolIds } from "../lib/agentTools.ts";
 import { requireOidcAuth } from "../lib/authentication.ts";
 import { asyncHandler } from "../lib/asyncHandler.ts";
 import { AuthenticationError, BadRequestError } from "../middlewares/errorHandler.ts";
@@ -19,10 +20,17 @@ function resolveMessageContent(req: Request): string {
   return isRecord(body) && typeof body["content"] === "string" ? body["content"] : "";
 }
 
+/** Tool groups the user switched off in Settings, sent with each message. */
+function resolveDisabledTools(req: Request): string[] {
+  const body: unknown = req.body;
+  return isRecord(body) ? sanitizeDisabledToolIds(body["disabledTools"]) : [];
+}
+
 async function streamChatResponse(
   chatId: string,
   userSub: string,
   content: string,
+  disabledTools: string[],
   res: Response,
   next: NextFunction,
 ): Promise<void> {
@@ -37,6 +45,7 @@ async function streamChatResponse(
   try {
     for await (const ev of chatService.postMessageStream(chatId, userSub, content, {
       signal: ac.signal,
+      disabledTools,
     })) {
       if (!wrote) {
         res.status(200);
@@ -86,7 +95,7 @@ async function handleChatMessageStream(
     return;
   }
 
-  await streamChatResponse(chatId, userSub, content, res, next);
+  await streamChatResponse(chatId, userSub, content, resolveDisabledTools(req), res, next);
 }
 
 export function registerChatMessageStreamRoute(router: Router): void {

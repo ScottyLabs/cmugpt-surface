@@ -147,6 +147,7 @@ export async function* runAgentStream(
   messageHistory: { role: string; content: string }[],
   userSub: string,
   preferredModel: string,
+  disabledTools: string[],
   signal: AbortSignal | undefined,
 ): AsyncGenerator<ChatStreamEvent, StreamCollectResult, undefined> {
   let result: Awaited<ReturnType<typeof callAgent>> | undefined;
@@ -159,6 +160,7 @@ export async function* runAgentStream(
         ...(messageHistory.length > 0 && { messageHistory }),
         userId: userSub,
         model: preferredModel,
+        ...(disabledTools.length > 0 && { disabledTools }),
       },
       signal,
     )) {
