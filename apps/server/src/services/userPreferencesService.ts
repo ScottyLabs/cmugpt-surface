@@ -9,15 +9,21 @@ export interface UserPreferencesDto {
 }
 
 export const userPreferencesService = {
-  /** Read the user's preferences. Returns the default model if no row exists. */
+  /** Read the user's preferences. Returns the default model if no row exists.
+   *
+   * A stored model that has since left the curated list (retired upstream, or
+   * dropped from AGENT_MODELS) also reads back as the default, so trimming the
+   * list can't leave a user pinned to a model the agent would reject.
+   */
   async get(userSub: string): Promise<UserPreferencesDto> {
     const [row] = await db
       .select()
       .from(userPreferences)
       .where(eq(userPreferences.userSub, userSub))
       .limit(1);
+    const stored = row?.preferredModel;
     return {
-      preferredModel: row?.preferredModel ?? DEFAULT_MODEL_ID,
+      preferredModel: stored !== undefined && isValidModelId(stored) ? stored : DEFAULT_MODEL_ID,
     };
   },
 

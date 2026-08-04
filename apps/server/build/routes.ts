@@ -151,7 +151,6 @@ const models: TsoaRoute.Models = {
     properties: {
       id: { dataType: "string", required: true },
       label: { dataType: "string", required: true },
-      description: { dataType: "string", required: true },
     },
     additionalProperties: false,
   },
