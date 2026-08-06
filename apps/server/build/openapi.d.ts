@@ -5,660 +5,660 @@
  */
 
 export interface paths {
-    "/hello": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetHello"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/hello": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/hello/authenticated": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetHelloAuthenticated"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["GetHello"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hello/authenticated": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/hello/admin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetHelloAdmin"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["GetHelloAuthenticated"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hello/admin": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/chats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ListChats"];
-        put?: never;
-        post: operations["CreateChat"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["GetHelloAdmin"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chats": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/chats/{id}/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetMessages"];
-        put?: never;
-        post: operations["PostMessage"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["ListChats"];
+    put?: never;
+    post: operations["CreateChat"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chats/{id}/messages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/chats/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetChat"];
-        put?: never;
-        post?: never;
-        delete: operations["DeleteChat"];
-        options?: never;
-        head?: never;
-        patch: operations["PatchChat"];
-        trace?: never;
+    get: operations["GetMessages"];
+    put?: never;
+    post: operations["PostMessage"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chats/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me/oidc-admin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["GetOidcAdminStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["GetChat"];
+    put?: never;
+    post?: never;
+    delete: operations["DeleteChat"];
+    options?: never;
+    head?: never;
+    patch: operations["PatchChat"];
+    trace?: never;
+  };
+  "/me/oidc-admin": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me/models": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Curated list of LLM models the user can pick from. */
-        get: operations["ListModels"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations["GetOidcAdminStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/models": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me/preferences": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Read the user's preferences (preferred model, etc.). */
-        get: operations["GetPreferences"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** @description Update the user's preferences. Only fields present in the body are changed. */
-        patch: operations["UpdatePreferences"];
-        trace?: never;
+    /** @description Curated list of LLM models the user can pick from. */
+    get: operations["ListModels"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/preferences": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me/memories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Search the authenticated user's learned and explicitly remembered facts. */
-        get: operations["ListMemories"];
-        put?: never;
-        post?: never;
-        /** @description Delete every learned and explicitly remembered fact for the user. */
-        delete: operations["ClearMemories"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** @description Read the user's preferences (preferred model, etc.). */
+    get: operations["GetPreferences"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** @description Update the user's preferences. Only fields present in the body are changed. */
+    patch: operations["UpdatePreferences"];
+    trace?: never;
+  };
+  "/me/memories": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/me/memories/{kind}/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** @description Delete one learned or explicitly remembered fact. */
-        delete: operations["DeleteMemory"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** @description Search the authenticated user's learned and explicitly remembered facts. */
+    get: operations["ListMemories"];
+    put?: never;
+    post?: never;
+    /** @description Delete every learned and explicitly remembered fact for the user. */
+    delete: operations["ClearMemories"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/memories/{kind}/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** @description Delete one learned or explicitly remembered fact. */
+    delete: operations["DeleteMemory"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        ChatListItemDto: {
-            id: string;
-            title: string;
-            starred: boolean;
-            isPublic: boolean;
-            updatedAt: string;
-        };
-        CmuMapsDto: {
-            url: string | null;
-            mode: string | null;
-            target: string | null;
-            targetLabel: string | null;
-            src: string | null;
-            srcLabel: string | null;
-            dest: string | null;
-            destLabel: string | null;
-        };
-        MessageDto: {
-            id: string;
-            /** @enum {string} */
-            role: "user" | "assistant" | "system";
-            content: string;
-            createdAt: string;
-            cmuMaps?: components["schemas"]["CmuMapsDto"] | null;
-            /**
-             * Format: double
-             * @description Agent confidence for the just-generated turn. Not persisted; only set on
-             *     fresh assistant messages, undefined when re-reading history.
-             */
-            confidence?: number;
-        };
-        ChatDetailDto: {
-            id: string;
-            title: string;
-            starred: boolean;
-            isPublic: boolean;
-            updatedAt: string;
-            isOwner: boolean;
-        };
-        PostMessageResultDto: {
-            userMessage: components["schemas"]["MessageDto"];
-            assistantMessage: components["schemas"]["MessageDto"];
-        };
-        PostChatMessageBody: {
-            content: string;
-        };
-        PatchChatBody: {
-            starred?: boolean;
-            title?: string;
-            isPublic?: boolean;
-        };
-        /**
-         * @description Curated list of LLM models the user can pick from. The `id` is the
-         *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
-         *     Surface UX assumes 4-6 options.
-         *
-         *     Every entry is the current mini / low-cost tier of its provider, and every
-         *     entry must support tool calling: the agent binds the CMU MCP tools, so a
-         *     model without tool support cannot answer campus questions. The first entry
-         *     is the default for new users.
-         */
-        AgentModelOption: {
-            id: string;
-            label: string;
-        };
-        UserPreferencesDto: {
-            preferredModel: string;
-        };
-        PatchUserPreferencesBody: {
-            preferredModel?: string;
-        };
-        /** @enum {string} */
-        AgentMemoryType: "learned" | "remembered";
-        AgentMemoryItem: {
-            id: string;
-            type: components["schemas"]["AgentMemoryType"];
-            text: string;
-            createdAt: string;
-        };
-        AgentMemoryPage: {
-            items: components["schemas"]["AgentMemoryItem"][];
-            /** Format: double */
-            total: number;
-            /** Format: double */
-            limit: number;
-            /** Format: double */
-            offset: number;
-        };
-        MemoryPageDto: components["schemas"]["AgentMemoryPage"];
-        MemoryTypeDto: components["schemas"]["AgentMemoryType"];
+  schemas: {
+    ChatListItemDto: {
+      id: string;
+      title: string;
+      starred: boolean;
+      isPublic: boolean;
+      updatedAt: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    CmuMapsDto: {
+      url: string | null;
+      mode: string | null;
+      target: string | null;
+      targetLabel: string | null;
+      src: string | null;
+      srcLabel: string | null;
+      dest: string | null;
+      destLabel: string | null;
+    };
+    MessageDto: {
+      id: string;
+      /** @enum {string} */
+      role: "user" | "assistant" | "system";
+      content: string;
+      createdAt: string;
+      cmuMaps?: components["schemas"]["CmuMapsDto"] | null;
+      /**
+       * Format: double
+       * @description Agent confidence for the just-generated turn. Not persisted; only set on
+       *     fresh assistant messages, undefined when re-reading history.
+       */
+      confidence?: number;
+    };
+    ChatDetailDto: {
+      id: string;
+      title: string;
+      starred: boolean;
+      isPublic: boolean;
+      updatedAt: string;
+      isOwner: boolean;
+    };
+    PostMessageResultDto: {
+      userMessage: components["schemas"]["MessageDto"];
+      assistantMessage: components["schemas"]["MessageDto"];
+    };
+    PostChatMessageBody: {
+      content: string;
+    };
+    PatchChatBody: {
+      starred?: boolean;
+      title?: string;
+      isPublic?: boolean;
+    };
+    /**
+     * @description Curated list of LLM models the user can pick from. The `id` is the
+     *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
+     *     Surface UX assumes 4-6 options.
+     *
+     *     Every entry is the current mini / low-cost tier of its provider, and every
+     *     entry must support tool calling: the agent binds the CMU MCP tools, so a
+     *     model without tool support cannot answer campus questions. The first entry
+     *     is the default for new users.
+     */
+    AgentModelOption: {
+      id: string;
+      label: string;
+    };
+    UserPreferencesDto: {
+      preferredModel: string;
+    };
+    PatchUserPreferencesBody: {
+      preferredModel?: string;
+    };
+    /** @enum {string} */
+    AgentMemoryType: "learned" | "remembered";
+    AgentMemoryItem: {
+      id: string;
+      type: components["schemas"]["AgentMemoryType"];
+      text: string;
+      createdAt: string;
+    };
+    AgentMemoryPage: {
+      items: components["schemas"]["AgentMemoryItem"][];
+      /** Format: double */
+      total: number;
+      /** Format: double */
+      limit: number;
+      /** Format: double */
+      offset: number;
+    };
+    MemoryPageDto: components["schemas"]["AgentMemoryPage"];
+    MemoryTypeDto: components["schemas"]["AgentMemoryType"];
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    GetHello: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                    };
-                };
-            };
-        };
+  GetHello: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetHelloAuthenticated: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                    };
-                };
-            };
+        content: {
+          "application/json": {
+            message: string;
+          };
         };
+      };
     };
-    GetHelloAdmin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                    };
-                };
-            };
-        };
+  };
+  GetHelloAuthenticated: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    ListChats: {
-        parameters: {
-            query?: {
-                q?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatListItemDto"][];
-                };
-            };
+        content: {
+          "application/json": {
+            message: string;
+          };
         };
+      };
     };
-    CreateChat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatListItemDto"];
-                };
-            };
-        };
+  };
+  GetHelloAdmin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetMessages: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageDto"][];
-                };
-            };
+        content: {
+          "application/json": {
+            message: string;
+          };
         };
+      };
     };
-    PostMessage: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PostChatMessageBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PostMessageResultDto"];
-                };
-            };
-        };
+  };
+  ListChats: {
+    parameters: {
+      query?: {
+        q?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    GetChat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatDetailDto"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["ChatListItemDto"][];
         };
+      };
     };
-    DeleteChat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  CreateChat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    PatchChat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PatchChatBody"];
-            };
+        content: {
+          "application/json": components["schemas"]["ChatListItemDto"];
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatListItemDto"];
-                };
-            };
-        };
+      };
     };
-    GetOidcAdminStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        isOidcAdmin: boolean;
-                    };
-                };
-            };
-        };
+  };
+  GetMessages: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    ListModels: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        models: components["schemas"]["AgentModelOption"][];
-                    };
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["MessageDto"][];
         };
+      };
     };
-    GetPreferences: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserPreferencesDto"];
-                };
-            };
-        };
+  };
+  PostMessage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    UpdatePreferences: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PatchUserPreferencesBody"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserPreferencesDto"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PostChatMessageBody"];
+      };
     };
-    ListMemories: {
-        parameters: {
-            query?: {
-                q?: string;
-                kind?: components["schemas"]["MemoryTypeDto"];
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MemoryPageDto"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["PostMessageResultDto"];
         };
+      };
     };
-    ClearMemories: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** Format: double */
-                        removed: number;
-                        /** @enum {string} */
-                        status: "cleared";
-                    };
-                };
-            };
-        };
+  };
+  GetChat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    DeleteMemory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kind: components["schemas"]["MemoryTypeDto"];
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "deleted";
-                    };
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["ChatDetailDto"];
         };
+      };
     };
+  };
+  DeleteChat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PatchChat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PatchChatBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ChatListItemDto"];
+        };
+      };
+    };
+  };
+  GetOidcAdminStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            isOidcAdmin: boolean;
+          };
+        };
+      };
+    };
+  };
+  ListModels: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            models: components["schemas"]["AgentModelOption"][];
+          };
+        };
+      };
+    };
+  };
+  GetPreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserPreferencesDto"];
+        };
+      };
+    };
+  };
+  UpdatePreferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PatchUserPreferencesBody"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserPreferencesDto"];
+        };
+      };
+    };
+  };
+  ListMemories: {
+    parameters: {
+      query?: {
+        q?: string;
+        kind?: components["schemas"]["MemoryTypeDto"];
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryPageDto"];
+        };
+      };
+    };
+  };
+  ClearMemories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** Format: double */
+            removed: number;
+            /** @enum {string} */
+            status: "cleared";
+          };
+        };
+      };
+    };
+  };
+  DeleteMemory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        kind: components["schemas"]["MemoryTypeDto"];
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @enum {string} */
+            status: "deleted";
+          };
+        };
+      };
+    };
+  };
 }
