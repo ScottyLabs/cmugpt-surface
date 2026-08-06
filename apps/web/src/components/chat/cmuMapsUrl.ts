@@ -2,7 +2,6 @@
  * URL handling for CMU Maps, the separate web app the chat embeds in an
  * iframe for building and route answers.
  */
-import { cmuMapsBuildingCode } from "./cmuMapsPlaces.ts";
 
 export const CMU_MAPS_ORIGIN = "https://maps.scottylabs.org";
 
@@ -17,46 +16,11 @@ function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
   }
 }
 
-/** Query parameters naming the ends of a route. */
-const ROUTE_PARAMS = ["src", "dst"];
-
-/** Percent decoded path segment. Undecodable escapes are returned as written
- *  and match no building. */
-function decodedPath(parsed: URL): string {
-  const path = parsed.pathname.slice(1);
-  try {
-    return decodeURIComponent(path);
-  } catch {
-    return path;
-  }
-}
-
-/**
- * Rewrite each place name in the URL to its CMU Maps building code. Names that
- * resolve to no single building pass through unchanged, since a wrong guess
- * would route to the wrong building.
- */
-function applyBuildingCodes(parsed: URL): void {
-  // The path is the place the map opens on. Multi segment paths are rooms,
-  // floors, or map internal routes, which cmuMapsBuildingCode declines anyway.
-  const code = cmuMapsBuildingCode(decodedPath(parsed));
-  if (code !== null) {
-    parsed.pathname = `/${code}`;
-  }
-  for (const param of ROUTE_PARAMS) {
-    const value = parsed.searchParams.get(param);
-    const paramCode = value === null ? null : cmuMapsBuildingCode(value);
-    if (paramCode !== null) {
-      parsed.searchParams.set(param, paramCode);
-    }
-  }
-}
-
 /**
  * The map URL to embed, or null when it is not on the CMU Maps origin. The
  * origin check is what makes the iframe permissions safe, so every embedded
  * map URL must pass through here. Also renames the legacy dest parameter to
- * dst and rewrites place names to building codes.
+ * dst. The agent addresses buildings by code, so waypoints need no rewriting.
  */
 export function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
   if (!isSafeCmuMapsUrl(url)) {
@@ -68,7 +32,6 @@ export function normalizedCmuMapsUrl(url: string | null | undefined): string | n
     parsed.searchParams.set("dst", legacyDest);
     parsed.searchParams.delete("dest");
   }
-  applyBuildingCodes(parsed);
   return parsed.toString();
 }
 
