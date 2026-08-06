@@ -1,27 +1,25 @@
-/** The toolbar strip along the top of a CMU Maps card: what it shows, and the
- *  two buttons for reloading it and opening it in a new tab. */
+/** Toolbar strip at the top of a CMU Maps card, with reload and open in new
+ *  tab actions. */
 import { ExternalLink, RotateCw } from "lucide-react";
 import { useState } from "react";
 import { mapDisplayValue } from "./cmuMapsText.ts";
 import type { CmuMapsPayload } from "./types.ts";
 
-/** Shared appearance for the two small buttons. */
+/** Shared appearance for the small header buttons. */
 const MAP_CHIP_CLASS =
   "inline-flex items-center gap-1 rounded border border-neutral-200 bg-white px-1.5 py-0.5";
 const MAP_RELOAD_CLASS = `${MAP_CHIP_CLASS} text-neutral-600 hover:bg-neutral-100`;
 /**
- * Red text, matching how links look everywhere else in an answer. The card sits
- * inside the container that styles assistant markdown (`markdownClass` in
- * ./markdown.tsx), whose link rules are descendant selectors and so beat plain
- * utility classes on the link itself. Every property those rules set needs a
- * `!` to win; the background and border they say nothing about do not.
+ * Red link text matching answer links. The markdown container styles links
+ * with descendant selectors that beat plain utilities, so each property they
+ * set needs an important marker. Background and border need none.
  */
 const MAP_LINK_CLASS = `${MAP_CHIP_CLASS} hover:bg-red-50 gap-1! text-red-800! no-underline!`;
 
 /**
- * What the header states about the map. A route names both ends; a single-place
- * answer names one, and saying nothing beats printing two empty "From"/"To"
- * fields for a map with no route to describe.
+ * Facts the header states. A route names both ends, a single place answer
+ * names one, and an empty payload prints nothing rather than blank From and
+ * To fields.
  */
 function mapHeaderFacts(cmuMaps: CmuMapsPayload): { label: string; value: string }[] {
   if (cmuMaps.mode === "directions") {
@@ -34,15 +32,14 @@ function mapHeaderFacts(cmuMaps: CmuMapsPayload): { label: string; value: string
   return target === undefined || target === "" ? [] : [{ label: "Showing", value: target }];
 }
 
-/** The header already names the place, so the link only repeats it in a tooltip. */
+/** The header already names the place, the link repeats it only in a tooltip. */
 function mapLinkLabel(cmuMaps: CmuMapsPayload): string {
   return cmuMaps.targetLabel ?? cmuMaps.destLabel ?? "this route";
 }
 
 /**
- * The icon spins while the map reloads, then keeps spinning until it completes
- * the turn it is in the middle of: dropping the animation the moment the map is
- * back would leave the icon mid-rotation and snap it upright.
+ * The icon spins during reload and finishes its current turn before stopping,
+ * so it never snaps upright mid rotation.
  */
 function MapReloadButton({ reloading, onReload }: { reloading: boolean; onReload: () => void }) {
   const [spinning, setSpinning] = useState(false);
@@ -56,8 +53,8 @@ function MapReloadButton({ reloading, onReload }: { reloading: boolean; onReload
         onReload();
       }}
     >
-      {/* The animation sits on a wrapper because this event fires only at the
-          end of a whole turn, which is where the rotation has to stop. */}
+      {/* The animation lives on a wrapper because animationiteration fires at
+          whole turn boundaries, where stopping looks right. */}
       <span
         className={`inline-flex ${
           spinning ? "animate-spin [animation-duration:0.7s] motion-reduce:animate-none" : ""

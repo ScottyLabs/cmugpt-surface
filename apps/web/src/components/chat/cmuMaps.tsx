@@ -1,7 +1,7 @@
 /**
- * The card that shows a CMU Maps route inside an assistant answer. The map is a
- * separate web app running in an iframe (see ./cmuMapsUrl.ts); what lives here
- * is the frame drawn around it and when it becomes visible.
+ * Card that embeds CMU Maps inside an assistant answer. The map is a separate
+ * web app in an iframe. This file owns the surrounding frame and its reveal
+ * timing.
  */
 import { memo, type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { MapHeader } from "./cmuMapsHeader.tsx";
@@ -9,22 +9,20 @@ import { useLazyMapMount, useReclaimIframeFocus, useScrollSettled } from "./cmuM
 import { CMU_MAPS_ORIGIN, normalizedCmuMapsUrl, prefetchMapDocument } from "./cmuMapsUrl.ts";
 import type { CmuMapsPayload } from "./types.ts";
 
-// Re-exported so ./markdown.tsx keeps importing the answer-text helpers from
-// here, rather than every caller having to know they moved.
+// Re-exported so markdown.tsx keeps its existing text helper import path.
 export { cmuMapsSuccessText, MAP_FAILURE_CLAIM_RE } from "./cmuMapsText.ts";
 
 /**
- * The map app is laid out at 1/MAP_ZOOM the size of the space it occupies and
- * scaled back down, fitting more of campus into the card. Deriving the
- * pre-scale size from the same factor keeps the two in step at any card height,
- * so nothing hangs over the edge and gets clipped.
+ * The map is laid out at 1/MAP_ZOOM of its slot and scaled back down, fitting
+ * more campus into the card. Deriving both values from one factor prevents
+ * clipping at any card height.
  */
 const MAP_ZOOM = 0.9;
 const MAP_PRESCALE_SIZE = `calc(100% / ${MAP_ZOOM})`;
 
 /**
- * Draws nothing. Rendered while an answer is still being written so the map it
- * will end up showing starts downloading now, not once the text is complete.
+ * Renders nothing. Mounted while the answer streams so the upcoming map starts
+ * downloading before the iframe exists.
  */
 export function CmuMapsPrefetch({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const rawUrl = cmuMaps?.url;
@@ -40,13 +38,11 @@ export function CmuMapsPrefetch({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }
 /**
  * The embedded map app.
  *
- * `allow-scripts` plus `allow-same-origin` lets framed content escape the
- * sandbox, but only when that content shares this page's origin. This frame is
- * always CMU Maps, checked by `normalizedCmuMapsUrl`: a separate, trusted
- * origin. It needs `allow-same-origin` so its own scripts and styles load as
- * that origin rather than the anonymous "null" one, which its server refuses to
- * serve. Without `geolocation`, its "show my location" call retries in a loop
- * and fills the console with permission errors.
+ * allow-scripts with allow-same-origin can escape the sandbox only for same
+ * origin content, and this frame is always the CMU Maps origin, enforced by
+ * normalizedCmuMapsUrl. allow-same-origin is required for its assets to load
+ * as that origin instead of null, which its server rejects. The geolocation
+ * grant stops its location lookup from retrying in a loop.
  */
 function MapFrame({
   frameRef,
@@ -65,14 +61,13 @@ function MapFrame({
       title="CMU Maps"
       src={mapUrl}
       onLoad={onLoad}
-      // Short and plain on purpose: this covers only the map's first
-      // appearance, and a showier entrance pulls the eye off the answer.
+      // Covers only the first appearance. A stronger entrance would pull
+      // attention off the answer.
       className={`absolute top-0 left-0 border-0 transition-opacity duration-200 ease-out motion-reduce:transition-none ${
         revealed ? "opacity-100" : "opacity-0"
       }`}
-      // Deliberately not `lazy`. This element exists only once `useLazyMapMount`
-      // has decided the map is on screen, so the browser repeating that check
-      // can only add delay.
+      // Not lazy. useLazyMapMount has already decided the map is near the
+      // viewport, so a browser recheck only adds delay.
       loading="eager"
       referrerPolicy="no-referrer"
       allow={`geolocation 'self' ${CMU_MAPS_ORIGIN}; clipboard-write`}
@@ -89,9 +84,9 @@ function MapFrame({
 }
 
 /**
- * The space the map occupies. It is at full height from the moment the card
- * appears, so nothing shifts when the map fades in, and `contain` tells the
- * browser that redrawing in here can never affect the conversation outside it.
+ * The slot the map occupies. Full height from first paint so the fade in
+ * causes no layout shift. The contain property isolates repaints from the
+ * surrounding conversation.
  */
 function MapSlot({
   busy,
@@ -123,13 +118,11 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const showIframe = useLazyMapMount(slotRef, mapUrl !== null);
   const settled = useScrollSettled(showIframe);
   useReclaimIframeFocus(showIframe);
-  // Whether a load this card asked for is still to come. A frame reports `load`
-  // for every page it lands on, its own navigations included, and its address
-  // sits on another origin and so cannot be read; this flag is what tells the
-  // two apart. Assigning `src` is the only way this card ever asks for a load,
-  // and it cancels any load already in flight, so one flag covers every
-  // request. A flag also survives React running the effect below twice for a
-  // single mount, as it does in development, where a tally would drift.
+  // True while a load this card requested is pending. The frame also fires
+  // load for its own navigations and its cross origin URL cannot be read, so
+  // this flag is what tells the two apart. Assigning src is the only way the
+  // card requests a load and cancels any load in flight, so one flag suffices.
+  // Unlike a counter it also survives StrictMode running the effect twice.
   const owedLoad = useRef(false);
   useEffect(() => {
     owedLoad.current = true;
@@ -142,9 +135,8 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
     }
     setReloading(true);
     owedLoad.current = true;
-    // Reassigning `src` reloads the frame in place, keeping the element and its
-    // open connection. The map stays on screen while that happens, since the
-    // browser shows the old one until the new one is ready.
+    // Reassigning src reloads the frame in place. The old page stays visible
+    // until the new one is ready.
     frame.src = mapUrl;
   }
 
@@ -155,12 +147,10 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
       setReloading(false);
       return;
     }
-    // The map has left for a page this card cannot show. Signing in is how: it
-    // sends the frame to CMU's login, which refuses to be framed by anyone, so
-    // the frame is now an error page or the map's API root. Hide that and put
-    // the map back, which is what keeps signing in from being reachable here at
-    // all. Restoring cannot repeat: the load it causes is one this card asked
-    // for.
+    // The frame navigated to a page this card cannot show. The in map sign in
+    // does this, since its identity provider refuses framing and strands the
+    // frame on an error page or the API root. Hide the stray page and restore
+    // the map. The restore cannot loop because the card requests its load.
     setLoaded(false);
     reloadMap();
   }
@@ -168,9 +158,9 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   if (!cmuMaps || mapUrl === null) {
     return null;
   }
-  // Two waits at once: the map has to have loaded and the page has to have
-  // stopped scrolling. Loading is much the longer, so the scroll costs nothing.
-  // Both apply only to the first appearance; a reload leaves the map on screen.
+  // Reveal waits for both load and scroll settle. Load dominates, so the
+  // scroll wait is free. Both gates apply only to the first appearance, a
+  // reload keeps the map on screen.
   const revealed = loaded && settled;
   return (
     <div className="mt-4 mb-2 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
@@ -190,10 +180,9 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
 }
 
 /**
- * The card re-renders only when the map it describes actually changed. The
- * server may send the same map a second time with the building names filled
- * in, so every field the header shows is compared, not just the URL. Comparing
- * the URL alone leaves those names permanently blank.
+ * Re-renders only when the map payload changed. The server may resend the
+ * same URL with the labels filled in, so every header field is compared, not
+ * only the URL.
  */
 export const CmuMapsEmbed = memo(CmuMapsEmbedImpl, (prev, next) => {
   const a = prev.cmuMaps;

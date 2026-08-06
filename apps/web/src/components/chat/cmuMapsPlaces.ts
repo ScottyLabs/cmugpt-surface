@@ -1,16 +1,13 @@
 /**
- * CMU Maps addresses every building by a short code (MUD, STE, GHC) and
- * accepts nothing else. Handed a name instead, it reports "Invalid building
- * code", throws away the route, and sends the map back to the campus overview,
- *
- * The agent writes its map links the way a person names a building: "mudge",
- * "Stever House". This file turns those into the codes the map answers to. The
- * list below is the map's own, from its `/buildings` endpoint; it is kept here
- * rather than fetched because a request would have to finish before the frame
- * could start loading, and building codes effectively never change.
+ * Resolves place names to CMU Maps building codes. The map accepts only its
+ * short codes such as MUD or GHC. Given a name it rejects the waypoint,
+ * discards the route, and falls back to the campus overview. The agent may
+ * still write names like mudge or Stever House, so this table translates
+ * them. The list mirrors the map's own /buildings endpoint and is kept inline
+ * because codes effectively never change and a fetch would delay the frame.
  */
 
-/** Every building CMU Maps knows, as `[code, name]`. */
+/** Every building CMU Maps knows, as code and name pairs. */
 const BUILDINGS: readonly (readonly [string, string])[] = [
   ["2SC", "205 S. Craig"],
   ["3SC", "300 S. Craig (Police)"],
@@ -89,9 +86,8 @@ const BUILDINGS: readonly (readonly [string, string])[] = [
 ];
 
 /**
- * Names people shorten past what dropping a suffix below would reach, and the
- * two names that belong to more than one building but mean only one of them in
- * practice. Applied after the derived names, so these win.
+ * Shortenings beyond suffix dropping, plus shared names that mean one building
+ * in practice. Applied after the derived names, so these win.
  */
 const EXTRA_ALIASES: readonly (readonly [string, string])[] = [
   ["cohon", "CUC"],
@@ -105,22 +101,18 @@ const EXTRA_ALIASES: readonly (readonly [string, string])[] = [
   ["universitycenter", "CUC"],
 ];
 
-/** The word ending a building's name that people drop when they say it out
- *  loud: "Mudge House" is "Mudge". */
+/** Trailing generic word dropped in speech, Mudge House resolves as Mudge. */
 const DROPPABLE_NAME_ENDING = /\s+(?:apartments|building|centers?|hall|house|library)$/iu;
 
-/** Names compare on their letters and digits alone, so "Newell-Simon Hall"
- *  matches whether it arrives hyphenated, spaced, or lowercase. */
+/** Compares on letters and digits only, ignoring hyphens, spaces, and case. */
 function aliasKey(value: string): string {
   return value.toLowerCase().replaceAll(/[^a-z0-9]+/gu, "");
 }
 
 /**
- * Every spelling of a building that resolves to a single code. A name shared by
- * several buildings — "Greek Quad" covers six — resolves to none of them:
- * guessing which one was meant would send someone to the wrong door, and
- * leaving the identifier alone is what the caller already does with anything it
- * does not recognise.
+ * Index of every spelling that resolves to a single code. A name shared by
+ * several buildings, such as Greek Quad, resolves to none of them rather than
+ * guessing.
  */
 function buildAliasIndex(): Map<string, string> {
   const index = new Map<string, string>();
@@ -144,8 +136,8 @@ function buildAliasIndex(): Map<string, string> {
   for (const [alias, code] of EXTRA_ALIASES) {
     index.set(aliasKey(alias), code);
   }
-  // Last, so that a code always stands for its own building no matter what the
-  // names above made of it, and so a URL that already holds one survives.
+  // Added last so a code always stands for its own building even when name
+  // derivation made it ambiguous.
   for (const [code] of BUILDINGS) {
     index.set(aliasKey(code), code);
   }
@@ -155,17 +147,15 @@ function buildAliasIndex(): Map<string, string> {
 const ALIAS_INDEX = buildAliasIndex();
 
 /**
- * Waypoints that are not a plain building name. A comma is a coordinate pair, a
- * colon is the map's `floor:` prefix, and a slash is a nested route such as
- * `events/<id>`. Each already carries a code where it needs one, so translating
- * would only corrupt them.
+ * Waypoints that are not plain building names. A comma marks coordinates, a
+ * colon the floor prefix, a slash a nested route. Each already carries any
+ * code it needs.
  */
 const STRUCTURED_WAYPOINT = /[,:/]/u;
 
 /**
- * The CMU Maps building code for `value`, or null if it names no single
- * building. A room or floor waypoint such as `GHC-4301` returns null too: the
- * building code inside it is already a code, and rewriting the pair as a whole
+ * The building code for value, or null when it names no single building. Room
+ * and floor waypoints such as GHC-4301 also return null because rewriting them
  * would drop the room.
  */
 export function cmuMapsBuildingCode(value: string): string | null {

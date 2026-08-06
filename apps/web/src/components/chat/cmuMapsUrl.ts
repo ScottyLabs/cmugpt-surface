@@ -1,7 +1,6 @@
 /**
- * CMU Maps is a separate web app, hosted at the origin below, that the chat
- * embeds in an iframe when an answer is about a campus building or a walking
- * route. This file covers the URLs that point at it.
+ * URL handling for CMU Maps, the separate web app the chat embeds in an
+ * iframe for building and route answers.
  */
 import { cmuMapsBuildingCode } from "./cmuMapsPlaces.ts";
 
@@ -18,12 +17,11 @@ function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
   }
 }
 
-/** The two query parameters naming the ends of a route. */
+/** Query parameters naming the ends of a route. */
 const ROUTE_PARAMS = ["src", "dst"];
 
-/** The path as it was written, with `%20` and the like turned back into the
- *  characters they stand for. Undecodable escapes are left alone to be matched
- *  as they are, which simply finds no building. */
+/** Percent decoded path segment. Undecodable escapes are returned as written
+ *  and match no building. */
 function decodedPath(parsed: URL): string {
   const path = parsed.pathname.slice(1);
   try {
@@ -34,15 +32,13 @@ function decodedPath(parsed: URL): string {
 }
 
 /**
- * Replace each place the URL names with the building code CMU Maps knows it by.
- * Anything that names no single building is left exactly as it came: an
- * identifier the map rejects is no worse than one this cannot improve, and a
- * wrong guess would silently draw a route to the wrong building.
+ * Rewrite each place name in the URL to its CMU Maps building code. Names that
+ * resolve to no single building pass through unchanged, since a wrong guess
+ * would route to the wrong building.
  */
 function applyBuildingCodes(parsed: URL): void {
-  // The path is the place the map opens on, and is the whole of it: a URL
-  // deeper than one segment is a room, a floor, or a route of the map's own,
-  // which `cmuMapsBuildingCode` declines to touch anyway.
+  // The path is the place the map opens on. Multi segment paths are rooms,
+  // floors, or map internal routes, which cmuMapsBuildingCode declines anyway.
   const code = cmuMapsBuildingCode(decodedPath(parsed));
   if (code !== null) {
     parsed.pathname = `/${code}`;
@@ -57,12 +53,10 @@ function applyBuildingCodes(parsed: URL): void {
 }
 
 /**
- * The map URL to embed, or null if it does not point at CMU Maps. Turning away
- * every other origin is what makes it safe to load the result into an iframe
- * with as many permissions as this one gets, so nothing should embed a map URL
- * without passing it through here. The rewrites below translate an older name
- * for the destination parameter, and the place names the agent writes into the
- * codes the map itself uses.
+ * The map URL to embed, or null when it is not on the CMU Maps origin. The
+ * origin check is what makes the iframe permissions safe, so every embedded
+ * map URL must pass through here. Also renames the legacy dest parameter to
+ * dst and rewrites place names to building codes.
  */
 export function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
   if (!isSafeCmuMapsUrl(url)) {
@@ -81,11 +75,9 @@ export function normalizedCmuMapsUrl(url: string | null | undefined): string | n
 const prefetchedMapUrls = new Set<string>();
 
 /**
- * Ask the browser to download a map page before anything on screen displays it.
- * The server sends the URL partway through writing an answer, but the iframe is
- * not created until the answer is finished, so otherwise the download would not
- * start until then. The `<link>` is deliberately never removed: removing one
- * can cancel a download still in progress.
+ * Prefetch a map page before the iframe exists. The URL arrives while the
+ * answer streams but the iframe mounts only once it completes. The link
+ * element is never removed because removal can cancel an in flight download.
  */
 export function prefetchMapDocument(url: string): void {
   if (prefetchedMapUrls.has(url)) {
