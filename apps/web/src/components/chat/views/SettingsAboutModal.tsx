@@ -9,7 +9,7 @@ function AboutPanel() {
       <p className="text-left text-sm text-black pl-4 font-normal">
         CMUGPT is an AI tool for CMU community ..... made by Scottylabs...........
       </p>
-      <div className="flex items-center justify-end gap-2 mt-[19rem] mr-4">
+      <div className="flex items-center justify-end gap-2 mt-10 sm:mt-[19rem] mr-4">
         <p className="text-base font-medium text-black">With love,</p>
         <button
           type="button"
@@ -75,7 +75,7 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     <button
       type="button"
       aria-label="Close modal"
-      className="fixed inset-0 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full"
+      className="fixed inset-0 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full px-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           close();
@@ -84,8 +84,8 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     >
       <dialog
         open
-        className={`relative rounded-2xl bg-white p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] w-[45.5625rem] ${
-          isSettings ? "h-[15rem]" : "h-[30rem]"
+        className={`relative w-[45.5625rem] max-w-full max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] ${
+          isSettings ? "sm:h-[15rem]" : "sm:h-[30rem]"
         }`}
       >
         <ModalHeader isSettings={isSettings} onClose={close} />

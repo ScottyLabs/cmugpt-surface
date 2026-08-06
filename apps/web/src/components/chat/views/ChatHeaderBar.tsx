@@ -1,11 +1,29 @@
 import { LockOpen } from "lucide-react";
+import { SidebarPanelIcon } from "@/components/icons/index.tsx";
 import { ModelSelector } from "../../ModelSelector.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
+
+function MobileSidebarToggle({ c }: { c: ChatShellController }) {
+  const { setSidebarOpen } = c;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setSidebarOpen(true);
+      }}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-200/80 hover:text-neutral-800 md:hidden"
+      aria-label="Open sidebar"
+    >
+      <SidebarPanelIcon />
+    </button>
+  );
+}
 
 function HeaderBrand({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
   return (
-    <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+    <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+      <MobileSidebarToggle c={c} />
       {!sidebarOpen && (
         <div className="flex min-w-0 items-center gap-1.5">
           <img
@@ -68,7 +86,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
   const { chatId } = session;
   const { currentChat } = derived;
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-2">
       {derived.showMakePrivate ? (
         <button
           type="button"
@@ -103,10 +121,10 @@ function HeaderActions({ c }: { c: ChatShellController }) {
 export function ChatHeaderBar({ c }: { c: ChatShellController }) {
   const { derived, session } = c;
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-neutral-200 px-3 sm:px-4">
       <HeaderBrand c={c} />
       {(derived.shouldShowConversation || session.chatsLoading || session.isNewChatIntent) && (
-        <span className="text-black text-lg font-medium leading-relaxed">
+        <span className="min-w-0 flex-1 truncate text-center text-black text-lg font-medium leading-relaxed">
           {derived.currentChat?.title}
         </span>
       )}

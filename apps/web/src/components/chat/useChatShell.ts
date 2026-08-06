@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
+import { useIsMobile } from "@/lib/useIsMobile.ts";
 import { useAutoSelectFirstChat, useComposerAutoFocus } from "./chatEffects.ts";
 import { useAttachments } from "./useAttachments.ts";
 import { type ChatDerived, useChatDerived } from "./useChatDerived.ts";
@@ -67,7 +68,8 @@ function useChatShellCore() {
 }
 
 export function useChatShell() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
   const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } =
     useChatShellCore();
   const share = useShareController({
@@ -97,6 +99,7 @@ export function useChatShell() {
 
   return {
     auth,
+    isMobile,
     sidebarOpen,
     setSidebarOpen,
     session,
