@@ -223,7 +223,7 @@ export function ChatMessages({
         </ReactMarkdown>
         {typeof message.confidence === "number" && message.confidence < 0.5 ? (
           <p className="mt-2 text-xs text-amber-700">
-            Low confidence — verify with an official CMU source.
+            Low confidence - verify with an official CMU source.
           </p>
         ) : null}
         <CmuMapsLink cmuMaps={message.cmuMaps} />

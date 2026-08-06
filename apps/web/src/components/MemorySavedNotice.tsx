@@ -137,7 +137,7 @@ export function MemorySavedNotice({
           )}
         </span>
         <span className="truncate">
-          {deleting ? "Removing memory…" : "Memory saved"}
+          {deleting ? "Removing memory..." : "Memory saved"}
         </span>
       </button>
 
@@ -188,7 +188,7 @@ export function MemorySavedNotice({
             id="inline-memory-delete-description"
             className="mt-1.5 text-sm font-normal leading-5 text-fg-neutral-secondary"
           >
-            CMUGPT will stop using “{memory.fact}” in future replies.
+            CMUGPT will stop using "{memory.fact}" in future replies.
           </p>
           <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-xs font-normal text-fg-neutral-secondary">
             <input
@@ -197,7 +197,7 @@ export function MemorySavedNotice({
               onChange={(event) => setDontShowAgain(event.target.checked)}
               className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
             />
-            <span>Don’t show this confirmation again on this device</span>
+            <span>Don't show this confirmation again on this device</span>
           </label>
           <div className="mt-4 flex justify-end gap-2">
             <button

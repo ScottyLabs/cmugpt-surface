@@ -348,7 +348,7 @@ export function MemoryManager({
                 }
                 className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {clearMemories.isPending ? "Clearing…" : "Clear all"}
+                {clearMemories.isPending ? "Clearing..." : "Clear all"}
               </button>
             </div>
 
@@ -359,7 +359,7 @@ export function MemoryManager({
                     className="h-4 w-4 animate-spin motion-reduce:animate-none"
                     aria-hidden="true"
                   />
-                  Loading memories…
+                  Loading memories...
                 </div>
               ) : memories.isError ? (
                 <div className="flex h-40 flex-col items-center justify-center gap-3 text-center">
@@ -441,7 +441,7 @@ export function MemoryManager({
                     disabled={memories.isFetchingNextPage}
                     className="rounded-lg bg-brand-secondary-enabled px-4 py-2 text-sm font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-wait disabled:opacity-60"
                   >
-                    {memories.isFetchingNextPage ? "Loading…" : "Load more"}
+                    {memories.isFetchingNextPage ? "Loading..." : "Load more"}
                   </button>
                 </div>
               )}
@@ -506,7 +506,7 @@ export function MemoryManager({
                     onChange={(event) => setDontShowAgain(event.target.checked)}
                     className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
                   />
-                  <span>Don’t show this confirmation again on this device</span>
+                  <span>Don't show this confirmation again on this device</span>
                 </label>
               )}
 
