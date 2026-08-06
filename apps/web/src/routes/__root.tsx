@@ -1,12 +1,10 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackDevtoolsGate } from "@/components/TanStackDevtoolsGate.tsx";
-import { ClerkProviderIntegration } from "@/integrations/clerk/provider.tsx";
+import { AuthProviderIntegration } from "@/integrations/auth/AuthProvider.tsx";
 
 export const Route = createRootRoute({
   component: () => (
-    <ClerkProviderIntegration>
+    <AuthProviderIntegration>
       <Outlet />
-      <TanStackDevtoolsGate />
-    </ClerkProviderIntegration>
+    </AuthProviderIntegration>
   ),
 });

@@ -9,15 +9,21 @@ export interface UserPreferencesDto {
 }
 
 export const userPreferencesService = {
-  /** Read the user's preferences. Returns the default model if no row exists. */
+  /** Read the user's preferences. Returns the default model if no row exists.
+   *
+   * A stored model that has since left the curated list (retired upstream, or
+   * dropped from AGENT_MODELS) also reads back as the default, so trimming the
+   * list can't leave a user pinned to a model the agent would reject.
+   */
   async get(userSub: string): Promise<UserPreferencesDto> {
     const [row] = await db
       .select()
       .from(userPreferences)
       .where(eq(userPreferences.userSub, userSub))
       .limit(1);
+    const stored = row?.preferredModel;
     return {
-      preferredModel: row?.preferredModel ?? DEFAULT_MODEL_ID,
+      preferredModel: stored !== undefined && isValidModelId(stored) ? stored : DEFAULT_MODEL_ID,
     };
   },
 
@@ -28,33 +34,31 @@ export const userPreferencesService = {
   },
 
   /** Upsert the user's preferences. Validates the model against the curated list. */
-  async update(
-    userSub: string,
-    body: { preferredModel?: string },
-  ): Promise<UserPreferencesDto> {
-    if (body.preferredModel === undefined) {
+  async update(userSub: string, body: { preferredModel?: string }): Promise<UserPreferencesDto> {
+    const { preferredModel } = body;
+    if (preferredModel === undefined) {
       throw new BadRequestError("preferredModel is required");
     }
-    if (!isValidModelId(body.preferredModel)) {
+    if (!isValidModelId(preferredModel)) {
       throw new BadRequestError(
-        `Unknown model id: ${body.preferredModel}. Use one of the values from GET /me/models.`,
+        `Unknown model id: ${preferredModel}. Use one of the values from GET /me/models.`,
       );
     }
     const [row] = await db
       .insert(userPreferences)
       .values({
         userSub,
-        preferredModel: body.preferredModel,
+        preferredModel,
       })
       .onConflictDoUpdate({
         target: userPreferences.userSub,
         set: {
-          preferredModel: body.preferredModel,
+          preferredModel,
           updatedAt: sql`now()`,
         },
       })
       .returning();
-    if (!row) {
+    if (row === undefined) {
       throw new Error("Failed to upsert user preferences");
     }
     return { preferredModel: row.preferredModel };

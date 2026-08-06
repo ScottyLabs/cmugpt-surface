@@ -1,23 +1,13 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Nix / devenv
+.devenv/
+.pre-commit-config.yaml
 
-# Dependencies
+# AI
+.mcp.json
+.claude
+
+# Deno
 node_modules/
 
-# Local env files
-.env*
-
-# Cache
-.turbo/
-
-# Build
-dist/
-build/
-
-# OpenAPI / tsoa outputs consumed by @cmugpt-frontend/web (must be present in CI)
-!apps/server/build/
-!apps/server/build/swagger.yaml
-!apps/server/build/swagger.d.ts
-!apps/server/build/routes.ts
-
-# Misc
+# OS
 .DS_Store

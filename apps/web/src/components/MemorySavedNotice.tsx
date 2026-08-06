@@ -1,7 +1,7 @@
 import { Brain, LoaderCircle, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
-import type { SavedMemoryNotice } from "@/lib/chatUtils.ts";
+import type { SavedMemoryNotice } from "@/components/chat/types.ts";
 import {
   rememberDeleteConfirmationPreference,
   shouldSkipDeleteConfirmation,

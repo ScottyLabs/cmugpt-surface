@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/style/useNamingConvention: cmugpt-agent uses snake_case JSON */
 import { env } from "../env.ts";
 import { InternalServerError } from "../middlewares/errorHandler.ts";
+import { agentBodyToResult, isAgentResponseBody, readAgentStream } from "./agentStreamParsing.ts";
 
 interface AgentRequest {
   query: string;
@@ -9,16 +10,19 @@ interface AgentRequest {
   /** OpenRouter model slug forwarded to the agent. Falls back to the
    *  agent's own default when omitted. */
   model?: string;
+  /** CMU tool groups the user switched off. The agent removes their tools
+   *  before binding its toolset, so the model cannot call them. */
+  disabledTools?: string[];
 }
 
-interface AgentResponseBody {
+export interface AgentResponseBody {
   response_text: string;
   thought?: { reasoning?: string; confidence?: number };
   services_used?: string[];
   cmu_maps?: AgentCmuMapsBody | null;
 }
 
-interface AgentCmuMapsBody {
+export interface AgentCmuMapsBody {
   url?: string | null;
   mode?: string | null;
   target?: string | null;
@@ -85,18 +89,16 @@ export type AgentStreamEvent =
   | { type: "done"; result: AgentResult }
   | { type: "error"; message: string };
 
-function buildAgentPayload(request: AgentRequest): {
+interface AgentPayload {
   query: string;
   message_history?: { role: string; content: string }[];
   user_id?: string;
   model?: string;
-} {
-  const payload: {
-    query: string;
-    message_history?: { role: string; content: string }[];
-    user_id?: string;
-    model?: string;
-  } = { query: request.query };
+  disabled_tools?: string[];
+}
+
+function buildAgentPayload(request: AgentRequest): AgentPayload {
+  const payload: AgentPayload = { query: request.query };
   if (request.messageHistory !== undefined) {
     payload.message_history = request.messageHistory;
   }
@@ -106,6 +108,9 @@ function buildAgentPayload(request: AgentRequest): {
   if (request.model !== undefined) {
     payload.model = request.model;
   }
+  if (request.disabledTools !== undefined && request.disabledTools.length > 0) {
+    payload.disabled_tools = request.disabledTools;
+  }
   return payload;
 }
 
@@ -113,7 +118,7 @@ function buildAgentHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     "content-type": "application/json",
   };
-  if (env.AGENT_SHARED_SECRET) {
+  if (env.AGENT_SHARED_SECRET !== undefined && env.AGENT_SHARED_SECRET !== "") {
     headers["authorization"] = `Bearer ${env.AGENT_SHARED_SECRET}`;
   }
   return headers;
@@ -124,61 +129,24 @@ async function readAgentError(res: Response): Promise<string> {
   try {
     // Agent emits {error, detail}; older versions emitted only {error};
     // FastAPI defaults emit only {detail}. Try all of them.
-    const body = (await res.json()) as { error?: string; detail?: string };
-    msg = body.error ?? body.detail ?? msg;
+    const raw: unknown = await res.json();
+    if (typeof raw === "object" && raw !== null) {
+      const error = "error" in raw && typeof raw.error === "string" ? raw.error : undefined;
+      const detail = "detail" in raw && typeof raw.detail === "string" ? raw.detail : undefined;
+      msg = error ?? detail ?? msg;
+    }
   } catch {
     /* ignore */
   }
   return msg;
 }
 
-function agentBodyToResult(body: AgentResponseBody): AgentResult {
-  const text = body.response_text;
-  if (typeof text !== "string" || !text.trim()) {
-    throw new InternalServerError("Empty agent response");
-  }
-  const result: AgentResult = { text };
-  if (typeof body.thought?.confidence === "number") {
-    result.confidence = body.thought.confidence;
-  }
-  if (Array.isArray(body.services_used)) {
-    result.servicesUsed = body.services_used;
-  }
-  result.cmuMaps = normalizeCmuMaps(body.cmu_maps);
-  return result;
-}
-
-function nullableString(value: unknown): string | null {
-  return typeof value === "string" && value.trim() ? value : null;
-}
-
-function normalizeCmuMaps(raw: unknown): CmuMapsPayload | null {
-  if (typeof raw !== "object" || raw === null) {
-    return null;
-  }
-  const body = raw as AgentCmuMapsBody;
-  const url = nullableString(body.url);
-  const payload: CmuMapsPayload = {
-    url,
-    mode: nullableString(body.mode),
-    target: nullableString(body.target),
-    targetLabel: nullableString(body.target_label),
-    src: nullableString(body.src),
-    srcLabel: nullableString(body.src_label),
-    dest: nullableString(body.dest),
-    destLabel: nullableString(body.dest_label),
-  };
-  return Object.values(payload).some((value) => value !== null)
-    ? payload
-    : null;
-}
-
-export async function callAgent(
+async function postToAgent(
+  path: string,
   request: AgentRequest,
   signal?: AbortSignal,
-): Promise<AgentResult> {
-  const url = `${env.AGENT_API_URL.replace(/\/$/, "")}/agent/respond`;
-
+): Promise<Response> {
+  const url = `${env.AGENT_API_URL.replace(/\/$/u, "")}${path}`;
   const init: RequestInit = {
     method: "POST",
     headers: buildAgentHeaders(),
@@ -187,15 +155,11 @@ export async function callAgent(
   if (signal !== undefined) {
     init.signal = signal;
   }
-
   const res = await fetch(url, init);
-
   if (!res.ok) {
     throw new InternalServerError(await readAgentError(res));
   }
-
-  const body = (await res.json()) as AgentResponseBody;
-  return agentBodyToResult(body);
+  return res;
 }
 
 function normalizeMemoryItem(value: unknown): AgentMemoryItem | null {
@@ -280,172 +244,19 @@ export async function clearAgentMemory(userId: string): Promise<number> {
   return typeof body.removed === "number" ? body.removed : 0;
 }
 
-function parseSseBlock(block: string): { event: string; data: unknown } | null {
-  let event = "message";
-  const dataLines: string[] = [];
-
-  for (const rawLine of block.split(/\r?\n/)) {
-    if (!rawLine || rawLine.startsWith(":")) {
-      continue;
-    }
-    const sep = rawLine.indexOf(":");
-    const field = sep === -1 ? rawLine : rawLine.slice(0, sep);
-    const rawValue = sep === -1 ? "" : rawLine.slice(sep + 1);
-    const value = rawValue.startsWith(" ") ? rawValue.slice(1) : rawValue;
-    if (field === "event") {
-      event = value;
-    } else if (field === "data") {
-      dataLines.push(value);
-    }
-  }
-
-  if (dataLines.length === 0) {
-    return null;
-  }
-
-  const rawData = dataLines.join("\n");
-  try {
-    return { event, data: JSON.parse(rawData) };
-  } catch {
-    return { event, data: rawData };
-  }
-}
-
-function normalizeAgentStreamEvent(parsed: {
-  event: string;
-  data: unknown;
-}): AgentStreamEvent | null {
-  if (
-    parsed.event === "status" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null &&
-    "text" in parsed.data &&
-    typeof parsed.data.text === "string"
-  ) {
-    return { type: "status", text: parsed.data.text };
-  }
-
-  if (parsed.event === "map") {
-    const cmuMaps = normalizeCmuMaps(parsed.data);
-    if (cmuMaps) {
-      return { type: "map", cmuMaps };
-    }
-    return null;
-  }
-
-  if (
-    parsed.event === "memory" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null
-  ) {
-    const data = parsed.data as Record<string, unknown>;
-    const op = data["op"];
-    const text = data["text"];
-    if ((op !== "add" && op !== "remove") || typeof text !== "string") {
-      return null;
-    }
-    const event: Extract<AgentStreamEvent, { type: "memory" }> = {
-      type: "memory",
-      op,
-      text,
-    };
-    if (typeof data["id"] === "string") event.id = data["id"];
-    if (data["kind"] === "learned" || data["kind"] === "remembered") {
-      event.kind = data["kind"];
-    }
-    if (typeof data["fact"] === "string") event.fact = data["fact"];
-    return event;
-  }
-
-  if (
-    parsed.event === "delta" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null &&
-    "text" in parsed.data &&
-    typeof parsed.data.text === "string"
-  ) {
-    return { type: "delta", text: parsed.data.text };
-  }
-
-  if (
-    parsed.event === "done" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null
-  ) {
-    return {
-      type: "done",
-      result: agentBodyToResult(parsed.data as AgentResponseBody),
-    };
-  }
-
-  if (
-    parsed.event === "error" &&
-    typeof parsed.data === "object" &&
-    parsed.data !== null
-  ) {
-    const data = parsed.data as { error?: unknown; detail?: unknown };
-    const message =
-      typeof data.error === "string"
-        ? data.error
-        : typeof data.detail === "string"
-          ? data.detail
-          : "Agent stream failed";
-    return { type: "error", message };
-  }
-
-  return null;
+export async function callAgent(request: AgentRequest, signal?: AbortSignal): Promise<AgentResult> {
+  const res = await postToAgent("/agent/respond", request, signal);
+  const raw: unknown = await res.json();
+  return agentBodyToResult(isAgentResponseBody(raw) ? raw : { response_text: "" });
 }
 
 export async function* streamAgent(
   request: AgentRequest,
   signal?: AbortSignal,
 ): AsyncGenerator<AgentStreamEvent, void, undefined> {
-  const url = `${env.AGENT_API_URL.replace(/\/$/, "")}/agent/respond/stream`;
-
-  const init: RequestInit = {
-    method: "POST",
-    headers: buildAgentHeaders(),
-    body: JSON.stringify(buildAgentPayload(request)),
-  };
-  if (signal !== undefined) {
-    init.signal = signal;
-  }
-
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    throw new InternalServerError(await readAgentError(res));
-  }
+  const res = await postToAgent("/agent/respond/stream", request, signal);
   if (!res.body) {
     throw new InternalServerError("Agent stream response had no body");
   }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    const blocks = buffer.split(/\r?\n\r?\n/);
-    buffer = blocks.pop() ?? "";
-
-    for (const block of blocks) {
-      const parsed = parseSseBlock(block);
-      const event = parsed ? normalizeAgentStreamEvent(parsed) : null;
-      if (event) {
-        yield event;
-      }
-    }
-  }
-
-  buffer += decoder.decode();
-  const parsed = buffer.trim() ? parseSseBlock(buffer) : null;
-  const event = parsed ? normalizeAgentStreamEvent(parsed) : null;
-  if (event) {
-    yield event;
-  }
+  yield* readAgentStream(res.body.getReader());
 }

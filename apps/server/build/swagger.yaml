@@ -6,89 +6,6 @@ components:
   requestBodies: {}
   responses: {}
   schemas:
-    AgentModelOption:
-      description: >-
-        Curated list of LLM models the user can pick from. The `id` is the
-
-        OpenRouter model slug forwarded to the agent's `/agent/respond`
-        endpoint.
-
-        Surface UX assumes 4-6 options.
-      properties:
-        id:
-          type: string
-        label:
-          type: string
-        description:
-          type: string
-      required:
-        - id
-        - label
-        - description
-      type: object
-      additionalProperties: false
-    UserPreferencesDto:
-      properties:
-        preferredModel:
-          type: string
-      required:
-        - preferredModel
-      type: object
-      additionalProperties: false
-    PatchUserPreferencesBody:
-      properties:
-        preferredModel:
-          type: string
-      type: object
-      additionalProperties: false
-    AgentMemoryType:
-      type: string
-      enum:
-        - learned
-        - remembered
-    AgentMemoryItem:
-      properties:
-        id:
-          type: string
-        type:
-          $ref: "#/components/schemas/AgentMemoryType"
-        text:
-          type: string
-        createdAt:
-          type: string
-      required:
-        - id
-        - type
-        - text
-        - createdAt
-      type: object
-      additionalProperties: false
-    AgentMemoryPage:
-      properties:
-        items:
-          items:
-            $ref: "#/components/schemas/AgentMemoryItem"
-          type: array
-        total:
-          type: number
-          format: double
-        limit:
-          type: number
-          format: double
-        offset:
-          type: number
-          format: double
-      required:
-        - items
-        - total
-        - limit
-        - offset
-      type: object
-      additionalProperties: false
-    MemoryPageDto:
-      $ref: "#/components/schemas/AgentMemoryPage"
-    MemoryTypeDto:
-      $ref: "#/components/schemas/AgentMemoryType"
     ChatListItemDto:
       properties:
         id:
@@ -231,6 +148,97 @@ components:
           type: boolean
       type: object
       additionalProperties: false
+    AgentModelOption:
+      description: >-
+        Curated list of LLM models the user can pick from. The `id` is the
+
+        OpenRouter model slug forwarded to the agent's `/agent/respond`
+        endpoint.
+
+        Surface UX assumes 4-6 options.
+
+
+        Every entry is the current mini / low-cost tier of its provider, and
+        every
+
+        entry must support tool calling: the agent binds the CMU MCP tools, so a
+
+        model without tool support cannot answer campus questions. The first
+        entry
+
+        is the default for new users.
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+      required:
+        - id
+        - label
+      type: object
+      additionalProperties: false
+    UserPreferencesDto:
+      properties:
+        preferredModel:
+          type: string
+      required:
+        - preferredModel
+      type: object
+      additionalProperties: false
+    PatchUserPreferencesBody:
+      properties:
+        preferredModel:
+          type: string
+      type: object
+      additionalProperties: false
+    AgentMemoryType:
+      type: string
+      enum:
+        - learned
+        - remembered
+    AgentMemoryItem:
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/AgentMemoryType"
+        text:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - text
+        - createdAt
+      type: object
+      additionalProperties: false
+    AgentMemoryPage:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/AgentMemoryItem"
+          type: array
+        total:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        offset:
+          type: number
+          format: double
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      type: object
+      additionalProperties: false
+    MemoryPageDto:
+      $ref: "#/components/schemas/AgentMemoryPage"
+    MemoryTypeDto:
+      $ref: "#/components/schemas/AgentMemoryType"
   securitySchemes:
     oidc:
       type: openIdConnect
@@ -247,10 +255,196 @@ components:
       description: Better Auth session cookie and/or Keycloak access token as Bearer;
         server merges both.
 info:
-  title: "@cmugpt-frontend/server"
-  version: 0.0.0
-  contact: {}
+  title: TSOA
+  version: 1.0.0
+  description: Build swagger-compliant REST APIs using TypeScript and Node
+  license:
+    name: MIT
+  contact:
+    name: unknown
 paths:
+  /hello:
+    get:
+      operationId: GetHello
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security: []
+      parameters: []
+  /hello/authenticated:
+    get:
+      operationId: GetHelloAuthenticated
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security:
+        - oidc: []
+      parameters: []
+  /hello/admin:
+    get:
+      operationId: GetHelloAdmin
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      security:
+        - oidc: []
+      parameters: []
+  /chats:
+    get:
+      operationId: ListChats
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ChatListItemDto"
+                type: array
+      security:
+        - oidc: []
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+    post:
+      operationId: CreateChat
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatListItemDto"
+      security:
+        - oidc: []
+      parameters: []
+  /chats/{id}/messages:
+    get:
+      operationId: GetMessages
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/MessageDto"
+                type: array
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    post:
+      operationId: PostMessage
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostMessageResultDto"
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostChatMessageBody"
+  /chats/{id}:
+    get:
+      operationId: GetChat
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetailDto"
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      operationId: PatchChat
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatListItemDto"
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchChatBody"
+    delete:
+      operationId: DeleteChat
+      responses:
+        "204":
+          description: ""
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
   /me/oidc-admin:
     get:
       operationId: GetOidcAdminStatus
@@ -267,7 +461,7 @@ paths:
                   - isOidcAdmin
                 type: object
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /me/models:
     get:
@@ -288,7 +482,7 @@ paths:
                 type: object
       description: Curated list of LLM models the user can pick from.
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /me/preferences:
     get:
@@ -302,7 +496,7 @@ paths:
                 $ref: "#/components/schemas/UserPreferencesDto"
       description: Read the user's preferences (preferred model, etc.).
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
     patch:
       operationId: UpdatePreferences
@@ -316,7 +510,7 @@ paths:
       description: Update the user's preferences. Only fields present in the body are
         changed.
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
       requestBody:
         required: true
@@ -336,7 +530,7 @@ paths:
                 $ref: "#/components/schemas/MemoryPageDto"
       description: Search the authenticated user's learned and explicitly remembered facts.
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: query
           name: q
@@ -385,7 +579,7 @@ paths:
                 type: object
       description: Delete every learned and explicitly remembered fact for the user.
       security:
-        - clerk: []
+        - oidc: []
       parameters: []
   /me/memories/{kind}/{id}:
     delete:
@@ -407,195 +601,13 @@ paths:
                 type: object
       description: Delete one learned or explicitly remembered fact.
       security:
-        - clerk: []
+        - oidc: []
       parameters:
         - in: path
           name: kind
           required: true
           schema:
             $ref: "#/components/schemas/MemoryTypeDto"
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-  /hello:
-    get:
-      operationId: GetHello
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-                type: object
-      security: []
-      parameters: []
-  /hello/authenticated:
-    get:
-      operationId: GetHelloAuthenticated
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-                type: object
-      security:
-        - clerk: []
-      parameters: []
-  /hello/admin:
-    get:
-      operationId: GetHelloAdmin
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-                type: object
-      security:
-        - clerk: []
-      parameters: []
-  /chats:
-    get:
-      operationId: ListChats
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/ChatListItemDto"
-                type: array
-      security:
-        - clerk: []
-      parameters:
-        - in: query
-          name: q
-          required: false
-          schema:
-            type: string
-    post:
-      operationId: CreateChat
-      responses:
-        "201":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ChatListItemDto"
-      security:
-        - clerk: []
-      parameters: []
-  /chats/{id}/messages:
-    get:
-      operationId: GetMessages
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/MessageDto"
-                type: array
-      security:
-        - clerk: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-    post:
-      operationId: PostMessage
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PostMessageResultDto"
-      security:
-        - clerk: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PostChatMessageBody"
-  /chats/{id}:
-    get:
-      operationId: GetChat
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ChatDetailDto"
-      security:
-        - clerk: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-    patch:
-      operationId: PatchChat
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ChatListItemDto"
-      security:
-        - clerk: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchChatBody"
-    delete:
-      operationId: DeleteChat
-      responses:
-        "204":
-          description: ""
-      security:
-        - clerk: []
-      parameters:
         - in: path
           name: id
           required: true

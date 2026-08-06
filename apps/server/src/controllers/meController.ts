@@ -11,7 +11,7 @@ import {
   Security,
   SuccessResponse,
 } from "tsoa";
-import { CLERK_AUTH } from "../lib/authentication.ts";
+import { OIDC_AUTH } from "../lib/authentication.ts";
 import type { AgentModelOption } from "../lib/models.ts";
 import { AGENT_MODELS } from "../lib/models.ts";
 import { userIsOidcAdmin } from "../lib/oidcAdmin.ts";
@@ -30,17 +30,15 @@ export interface PatchUserPreferencesBody {
 
 function authenticatedSub(req: ExpressRequest): string {
   const sub = req.user?.sub;
-  if (!sub) {
-    throw new AuthenticationError(
-      "req.user.sub missing after security middleware (unexpected)",
-    );
+  if (sub === undefined || sub === "") {
+    throw new AuthenticationError("req.user.sub missing after security middleware (unexpected)");
   }
   return sub;
 }
 
 @Route("me")
 export class MeController {
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("oidc-admin")
   @SuccessResponse(200)
   public getOidcAdminStatus(@Request() req: ExpressRequest): {
@@ -50,27 +48,25 @@ export class MeController {
   }
 
   /** Curated list of LLM models the user can pick from. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("models")
   @SuccessResponse(200)
   public listModels(): {
     models: AgentModelOption[];
   } {
-    return { models: AGENT_MODELS.map((m) => ({ ...m })) };
+    return { models: [...AGENT_MODELS] };
   }
 
   /** Read the user's preferences (preferred model, etc.). */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("preferences")
   @SuccessResponse(200)
-  public getPreferences(
-    @Request() req: ExpressRequest,
-  ): Promise<UserPreferencesDto> {
+  public getPreferences(@Request() req: ExpressRequest): Promise<UserPreferencesDto> {
     return userPreferencesService.get(authenticatedSub(req));
   }
 
   /** Update the user's preferences. Only fields present in the body are changed. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Patch("preferences")
   @SuccessResponse(200)
   public updatePreferences(
@@ -81,7 +77,7 @@ export class MeController {
   }
 
   /** Search the authenticated user's learned and explicitly remembered facts. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Get("memories")
   @SuccessResponse(200)
   public listMemories(
@@ -100,7 +96,7 @@ export class MeController {
   }
 
   /** Delete one learned or explicitly remembered fact. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Delete("memories/{kind}/{id}")
   @SuccessResponse(200)
   public deleteMemory(
@@ -112,7 +108,7 @@ export class MeController {
   }
 
   /** Delete every learned and explicitly remembered fact for the user. */
-  @Security(CLERK_AUTH)
+  @Security(OIDC_AUTH)
   @Delete("memories")
   @SuccessResponse(200)
   public clearMemories(

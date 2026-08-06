@@ -1,0 +1,106 @@
+import ReactMarkdown from "react-markdown";
+import { MemorySavedNotice } from "@/components/MemorySavedNotice.tsx";
+import { CmuMapsEmbed, CmuMapsPrefetch } from "../cmuMaps.tsx";
+import {
+  assistantDisplayContent,
+  markdownClass,
+  markdownComponents,
+  markdownForReactComponent,
+  rehypeMarkdownPlugins,
+  remarkMarkdownPlugins,
+  userBubbleMarkdownClass,
+  userMarkdownComponents,
+} from "../markdown.tsx";
+import { StreamingStatus } from "../StreamingStatus.tsx";
+import type { MessageItem } from "../types.ts";
+import type { ChatShellController } from "../useChatShell.ts";
+
+function UserBubble({ content }: { content: string }) {
+  return (
+    <div className="flex justify-end">
+      <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+        <div className={userBubbleMarkdownClass}>
+          <ReactMarkdown
+            remarkPlugins={remarkMarkdownPlugins}
+            rehypePlugins={rehypeMarkdownPlugins}
+            components={userMarkdownComponents}
+          >
+            {markdownForReactComponent(content)}
+          </ReactMarkdown>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AssistantMessage({ m }: { m: MessageItem }) {
+  return (
+    <div className={markdownClass}>
+      <ReactMarkdown
+        remarkPlugins={remarkMarkdownPlugins}
+        rehypePlugins={rehypeMarkdownPlugins}
+        components={markdownComponents}
+      >
+        {markdownForReactComponent(assistantDisplayContent(m.content, m.cmuMaps))}
+      </ReactMarkdown>
+      {typeof m.confidence === "number" && m.confidence < 0.5 && (
+        <p className="mt-2 text-xs text-amber-700">
+          Low confidence: verify with an official CMU source.
+        </p>
+      )}
+      <CmuMapsEmbed cmuMaps={m.cmuMaps} />
+    </div>
+  );
+}
+
+export function MessageList({ c }: { c: ChatShellController }) {
+  const { session, stream, optimistic, scroll, memory } = c;
+  const optimisticMessage = optimistic.optimisticUserMessage;
+  // Show the saved-memory notice with the response of the turn that saved it:
+  // under the live text while it streams, under the persisted message after.
+  const hasVisibleStreamingText = stream.streamingText.trim().length > 0;
+  const shouldShowMemoryNotice =
+    memory.savedNotice !== null && (!stream.isStreaming || hasVisibleStreamingText);
+  return (
+    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      {session.messages.map((m) =>
+        m.role === "user" ? (
+          <UserBubble key={m.id} content={m.content} />
+        ) : (
+          <AssistantMessage key={m.id} m={m} />
+        ),
+      )}
+      {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null ? (
+        <UserBubble key="optimistic-user-message" content={optimisticMessage.content} />
+      ) : null}
+      {stream.isStreaming && (
+        <div className={markdownClass}>
+          {stream.streamingText === "" ? (
+            <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
+          ) : (
+            <ReactMarkdown
+              remarkPlugins={remarkMarkdownPlugins}
+              rehypePlugins={rehypeMarkdownPlugins}
+              components={markdownComponents}
+            >
+              {markdownForReactComponent(stream.streamingText, {
+                streaming: true,
+              })}
+            </ReactMarkdown>
+          )}
+          {/* No map is shown while the answer is still being written. This
+              block and the finished message above it are separate places in the
+              component tree, so anything put here is thrown away and rebuilt
+              the instant the answer completes, making the map load twice. It is
+              rendered once, by the finished message. Downloading it, on the
+              other hand, can start right now, which is what this does. */}
+          <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
+        </div>
+      )}
+      {shouldShowMemoryNotice && memory.savedNotice !== null && (
+        <MemorySavedNotice memory={memory.savedNotice} onDeleted={memory.onSavedMemoryDeleted} />
+      )}
+      <div ref={scroll.bottomRef} />
+    </div>
+  );
+}
