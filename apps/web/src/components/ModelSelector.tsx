@@ -5,7 +5,6 @@ import { $api } from "@/lib/api/client.ts";
 type Model = {
   id: string;
   label: string;
-  description?: string;
 };
 
 function useCloseOnOutsideOrEscape(
@@ -84,14 +83,13 @@ function ModelOption({
           onSelect(model.id);
         }}
         aria-pressed={selected}
-        className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-neutral-50 ${
+        className={`flex w-full items-start px-3 py-2 text-left text-sm hover:bg-neutral-50 ${
           selected ? "bg-neutral-50" : ""
         }`}
       >
         <span className={`font-medium ${selected ? "text-red-800" : "text-neutral-900"}`}>
           {model.label}
         </span>
-        <span className="text-neutral-500 text-xs">{model.description}</span>
       </button>
     </li>
   );

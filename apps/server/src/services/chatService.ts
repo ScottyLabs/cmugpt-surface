@@ -123,7 +123,7 @@ export const chatService = {
     chatId: string,
     userSub: string,
     content: string,
-    options: { signal?: AbortSignal } = {},
+    options: { signal?: AbortSignal; disabledTools?: string[] } = {},
   ): AsyncGenerator<ChatStreamEvent, void, undefined> {
     const { userRow, messageHistory } = await prepareAssistantTurn(chatId, userSub, content);
 
@@ -135,6 +135,7 @@ export const chatService = {
       messageHistory,
       userSub,
       preferredModel,
+      options.disabledTools ?? [],
       options.signal,
     );
     if (errored) {

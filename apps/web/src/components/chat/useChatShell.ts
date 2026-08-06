@@ -13,6 +13,7 @@ import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
 import { type StreamController, useStreamController } from "./useStreamController.ts";
+import { useToolToggles } from "./useToolToggles.ts";
 
 function useChatShellEffects(
   session: ChatSession,
@@ -57,12 +58,18 @@ function useChatShellCore() {
     optimistic,
     profile: auth.user,
   });
-  return { auth, session, mutations, stream, attachments, optimistic, derived };
+  const scroll = useConversationScroll({
+    isStreaming: stream.isStreaming,
+    messagesLength: session.messages.length,
+    streamingTextLength: stream.streamingText.length,
+  });
+  return { auth, session, mutations, stream, attachments, optimistic, derived, scroll };
 }
 
 export function useChatShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { auth, session, mutations, stream, attachments, optimistic, derived } = useChatShellCore();
+  const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } =
+    useChatShellCore();
   const share = useShareController({
     patchChat: mutations.patchChat,
     chatId: session.chatId,
@@ -74,11 +81,7 @@ export function useChatShell() {
   });
   const search = useChatSearch();
   const modal = useModalState();
-  const scroll = useConversationScroll({
-    isStreaming: stream.isStreaming,
-    messagesLength: session.messages.length,
-    streamingTextLength: stream.streamingText.length,
-  });
+  const tools = useToolToggles();
   const composer = useComposer({
     session,
     mutations,
@@ -87,6 +90,7 @@ export function useChatShell() {
     scroll,
     canEditChat: derived.canEditChat,
     setOptimisticUserMessage: optimistic.setOptimisticUserMessage,
+    disabledToolIds: tools.disabledToolIds,
   });
 
   useChatShellEffects(session, stream, derived, composer);
@@ -105,6 +109,7 @@ export function useChatShell() {
     sidebar,
     search,
     modal,
+    tools,
     scroll,
     composer,
   };
