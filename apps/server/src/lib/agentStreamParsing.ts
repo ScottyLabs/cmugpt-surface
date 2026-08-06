@@ -150,7 +150,13 @@ function normalizeAgentStreamEvent(parsed: {
 
   if (parsed.event === "done" && typeof parsed.data === "object" && parsed.data !== null) {
     const body = isAgentResponseBody(parsed.data) ? parsed.data : { response_text: "" };
-    return { type: "done", result: agentBodyToResult(body) };
+    try {
+      return { type: "done", result: agentBodyToResult(body) };
+    } catch {
+      // A malformed done payload must not throw away already-streamed text.
+      // Dropping the event lets the caller fall back to what was streamed.
+      return null;
+    }
   }
 
   if (parsed.event === "error" && typeof parsed.data === "object" && parsed.data !== null) {
@@ -167,6 +173,32 @@ function normalizeAgentStreamEvent(parsed: {
   return null;
 }
 
+// A hung agent connection would otherwise block reader.read() forever with
+// no cancel path in the UI.
+const STREAM_IDLE_TIMEOUT_MS = 90_000;
+
+async function readWithIdleTimeout(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      reader.read(),
+      new Promise<never>((_, reject) => {
+        idleTimer = setTimeout(
+          () => reject(new InternalServerError("Agent stream stalled")),
+          STREAM_IDLE_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  } catch (e) {
+    await reader.cancel().catch(() => undefined);
+    throw e;
+  } finally {
+    clearTimeout(idleTimer);
+  }
+}
+
 export async function* readAgentStream(
   reader: ReadableStreamDefaultReader<Uint8Array>,
 ): AsyncGenerator<AgentStreamEvent, void, undefined> {
@@ -175,7 +207,7 @@ export async function* readAgentStream(
 
   while (true) {
     // oxlint-disable-next-line no-await-in-loop -- each read depends on stream position from the previous one
-    const { done, value } = await reader.read();
+    const { done, value } = await readWithIdleTimeout(reader);
     if (done) {
       break;
     }

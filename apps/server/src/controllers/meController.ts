@@ -87,11 +87,14 @@ export class MeController {
     @Query() limit = 200,
     @Query() offset = 0,
   ): Promise<MemoryPageDto> {
+    // Clamp to what the agent accepts. It rejects q over 200 chars and
+    // non-integer paging with a 422 that would surface here as a 500.
+    const query = q?.trim().slice(0, 200);
     return memoryService.list(authenticatedSub(req), {
-      ...(q?.trim() && { q: q.trim() }),
+      ...(query && { q: query }),
       ...(kind && { kind }),
-      limit: Math.min(Math.max(limit, 1), 200),
-      offset: Math.max(offset, 0),
+      limit: Math.min(Math.max(Math.floor(limit), 1), 200),
+      offset: Math.max(Math.floor(offset), 0),
     });
   }
 

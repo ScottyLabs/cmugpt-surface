@@ -15,6 +15,10 @@ import type {
 
 export const DEFAULT_CHAT_TITLE = "New chat";
 
+// The agent rejects longer queries with a 400. Fail before persisting the
+// user row, or the chat keeps a message that can never get a reply.
+const MAX_MESSAGE_CHARS = 8_000;
+
 function titleFromFirstMessage(content: string): string {
   const line = content.trim().split("\n")[0]?.trim() ?? "";
   if (!line) {
@@ -109,6 +113,11 @@ export async function prepareAssistantTurn(
   const trimmed = content.trim();
   if (!trimmed) {
     throw new BadRequestError("Message content is required");
+  }
+  if (trimmed.length > MAX_MESSAGE_CHARS) {
+    throw new BadRequestError(
+      `Message is too long (max ${MAX_MESSAGE_CHARS.toLocaleString("en-US")} characters)`,
+    );
   }
 
   const chat = await getOwnedChat(chatId, userSub);
@@ -205,7 +214,11 @@ export async function* finalizeAssistantMessage(
       };
       return;
     }
-    finalResult = { text: streamedText };
+    // The stream died before the agent's final event. Keep the partial text
+    // but mark it, instead of persisting it as a complete answer.
+    const truncationNote = "\n\n_(This response was cut off before completing.)_";
+    yield { type: "delta", text: truncationNote };
+    finalResult = { text: streamedText + truncationNote };
   } else if (!streamedText) {
     yield { type: "delta", text: finalResult.text };
   }

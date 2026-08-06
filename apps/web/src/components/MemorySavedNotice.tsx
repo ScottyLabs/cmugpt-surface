@@ -1,6 +1,7 @@
 import { Brain, LoaderCircle, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
+import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import type { SavedMemoryNotice } from "@/components/chat/types.ts";
 import {
   rememberDeleteConfirmationPreference,
@@ -28,6 +29,8 @@ export function MemorySavedNotice({
   memory,
   onDeleted,
 }: MemorySavedNoticeProps) {
+  const auth = useAuth();
+  const userSub = auth.user?.sub;
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
@@ -79,7 +82,7 @@ export function MemorySavedNotice({
 
   function requestDeletion() {
     setActionsOpen(false);
-    if (shouldSkipDeleteConfirmation()) {
+    if (shouldSkipDeleteConfirmation(userSub)) {
       void removeMemory();
       return;
     }
@@ -89,7 +92,7 @@ export function MemorySavedNotice({
   }
 
   function confirmDeletion() {
-    if (dontShowAgain) rememberDeleteConfirmationPreference();
+    if (dontShowAgain) rememberDeleteConfirmationPreference(userSub);
     void removeMemory();
   }
 

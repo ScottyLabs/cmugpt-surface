@@ -2,6 +2,7 @@ import { Brain, LoaderCircle, Search, Trash2, X } from "lucide-react";
 import type { RefObject } from "react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
+import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import {
   rememberDeleteConfirmationPreference,
   shouldSkipDeleteConfirmation,
@@ -57,8 +58,10 @@ export function MemoryManager({
     null,
   );
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [skipDeleteConfirmation, setSkipDeleteConfirmation] = useState(
-    shouldSkipDeleteConfirmation,
+  const auth = useAuth();
+  const userSub = auth.user?.sub;
+  const [skipDeleteConfirmation, setSkipDeleteConfirmation] = useState(() =>
+    shouldSkipDeleteConfirmation(userSub),
   );
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
@@ -200,7 +203,7 @@ export function MemoryManager({
     const action = pendingAction;
     if (action === null) return;
     if (action.kind === "item" && dontShowAgain) {
-      rememberDeleteConfirmationPreference();
+      rememberDeleteConfirmationPreference(userSub);
       setSkipDeleteConfirmation(true);
     }
     setPendingAction(null);
@@ -344,7 +347,7 @@ export function MemoryManager({
                 disabled={
                   clearMemories.isPending ||
                   deletingKey !== null ||
-                  (!deferredSearch && filter === "all" && total === 0)
+                  total === 0
                 }
                 className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
