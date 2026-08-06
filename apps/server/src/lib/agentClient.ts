@@ -67,13 +67,6 @@ export interface AgentMemoryPage {
   offset: number;
 }
 
-interface AgentMemoryBody {
-  items?: unknown;
-  total?: unknown;
-  limit?: unknown;
-  offset?: unknown;
-}
-
 export type AgentStreamEvent =
   | { type: "status"; text: string }
   | {
@@ -162,6 +155,16 @@ async function postToAgent(
   return res;
 }
 
+/** Fetch an agent path with shared-secret headers, throwing on non-2xx. */
+async function agentFetch(path: string, method: "GET" | "DELETE" = "GET"): Promise<Response> {
+  const url = `${env.AGENT_API_URL.replace(/\/$/u, "")}${path}`;
+  const res = await fetch(url, { method, headers: buildAgentHeaders() });
+  if (!res.ok) {
+    throw new InternalServerError(await readAgentError(res));
+  }
+  return res;
+}
+
 function normalizeMemoryItem(value: unknown): AgentMemoryItem | null {
   if (typeof value !== "object" || value === null) return null;
   const item = value as Record<string, unknown>;
@@ -195,15 +198,8 @@ export async function listAgentMemories(
   if (options.kind) params.set("kind", options.kind);
   params.set("limit", String(options.limit ?? 200));
   params.set("offset", String(options.offset ?? 0));
-  const base = env.AGENT_API_URL.replace(/\/$/, "");
-  const res = await fetch(
-    `${base}/memory/${encodeURIComponent(userId)}?${params.toString()}`,
-    { headers: buildAgentHeaders() },
-  );
-  if (!res.ok) {
-    throw new InternalServerError(await readAgentError(res));
-  }
-  const body = (await res.json()) as AgentMemoryBody;
+  const res = await agentFetch(`/memory/${encodeURIComponent(userId)}?${params.toString()}`);
+  const body = (await res.json()) as Record<string, unknown>;
   const rawItems = Array.isArray(body.items) ? body.items : [];
   return {
     items: rawItems
@@ -211,8 +207,7 @@ export async function listAgentMemories(
       .filter((item): item is AgentMemoryItem => item !== null),
     total: typeof body.total === "number" ? body.total : 0,
     limit: typeof body.limit === "number" ? body.limit : (options.limit ?? 200),
-    offset:
-      typeof body.offset === "number" ? body.offset : (options.offset ?? 0),
+    offset: typeof body.offset === "number" ? body.offset : (options.offset ?? 0),
   };
 }
 
@@ -221,25 +216,14 @@ export async function deleteAgentMemory(
   kind: AgentMemoryType,
   itemId: string,
 ): Promise<void> {
-  const base = env.AGENT_API_URL.replace(/\/$/, "");
-  const res = await fetch(
-    `${base}/memory/${encodeURIComponent(userId)}/items/${kind}/${encodeURIComponent(itemId)}`,
-    { method: "DELETE", headers: buildAgentHeaders() },
+  await agentFetch(
+    `/memory/${encodeURIComponent(userId)}/items/${kind}/${encodeURIComponent(itemId)}`,
+    "DELETE",
   );
-  if (!res.ok) {
-    throw new InternalServerError(await readAgentError(res));
-  }
 }
 
 export async function clearAgentMemory(userId: string): Promise<number> {
-  const base = env.AGENT_API_URL.replace(/\/$/, "");
-  const res = await fetch(`${base}/memory/${encodeURIComponent(userId)}`, {
-    method: "DELETE",
-    headers: buildAgentHeaders(),
-  });
-  if (!res.ok) {
-    throw new InternalServerError(await readAgentError(res));
-  }
+  const res = await agentFetch(`/memory/${encodeURIComponent(userId)}`, "DELETE");
   const body = (await res.json()) as { removed?: unknown };
   return typeof body.removed === "number" ? body.removed : 0;
 }

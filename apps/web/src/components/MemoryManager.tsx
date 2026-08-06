@@ -1,22 +1,19 @@
 import { Brain, LoaderCircle, Search, Trash2, X } from "lucide-react";
 import type { RefObject } from "react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
+import type { components } from "@cmugpt-frontend/server/build/openapi";
 import { $api } from "@/lib/api/client.ts";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import {
   rememberDeleteConfirmationPreference,
   shouldSkipDeleteConfirmation,
 } from "@/lib/memoryPreferences.ts";
+import { waitForMotion } from "@/lib/reducedMotion.ts";
 
-type MemoryType = "learned" | "remembered";
+type MemoryType = components["schemas"]["AgentMemoryType"];
 type MemoryFilter = "all" | MemoryType;
 
-interface MemoryItem {
-  id: string;
-  type: MemoryType;
-  text: string;
-  createdAt: string;
-}
+type MemoryItem = components["schemas"]["AgentMemoryItem"];
 
 type PendingAction = { kind: "item"; item: MemoryItem } | { kind: "all" };
 
@@ -33,16 +30,6 @@ const FILTERS: { value: MemoryFilter; label: string }[] = [
 ];
 
 const DELETE_TRANSITION_MS = 180;
-
-async function waitForDeleteTransition(): Promise<void> {
-  const reduceMotion =
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion) return;
-  await new Promise<void>((resolve) => {
-    window.setTimeout(resolve, DELETE_TRANSITION_MS);
-  });
-}
 
 export function MemoryManager({
   open,
@@ -222,10 +209,13 @@ export function MemoryManager({
     setActionMessage(null);
     setDeletingKey(key);
     try {
-      await waitForDeleteTransition();
-      await deleteMemory.mutateAsync({
-        params: { path: { kind: item.type, id: item.id } },
-      });
+      // Exit animation and DELETE round-trip are independent; overlap them.
+      await Promise.all([
+        waitForMotion(DELETE_TRANSITION_MS),
+        deleteMemory.mutateAsync({
+          params: { path: { kind: item.type, id: item.id } },
+        }),
+      ]);
       await memories.refetch();
       setActionMessage("Memory deleted.");
     } catch {

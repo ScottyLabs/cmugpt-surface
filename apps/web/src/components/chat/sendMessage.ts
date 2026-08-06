@@ -33,9 +33,6 @@ export interface SendCtx {
   setStreamStatus: (value: string | null) => void;
   setStreamingCmuMaps: (value: CmuMapsPayload | null) => void;
   setSavedMemoryNotice: (value: SavedMemoryNotice | null) => void;
-  /** Pin the memory notice to this turn: remember the last persisted
-   *  assistant message id before the new response starts streaming. */
-  recordMemoryStreamStart: () => void;
   setIsStreaming: (value: boolean) => void;
   setOptimisticUserMessage: (value: OptimisticUserMessage | null) => void;
   setAttachmentHint: (value: string | null) => void;
@@ -78,11 +75,6 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     setStreamStatus: stream.setStreamStatus,
     setStreamingCmuMaps: stream.setStreamingCmuMaps,
     setSavedMemoryNotice: stream.setSavedMemoryNotice,
-    recordMemoryStreamStart: () => {
-      stream.streamStartAssistantIdRef.current =
-        [...session.messages].reverse().find((message) => message.role === "assistant")?.id ??
-        null;
-    },
     setIsStreaming: stream.setIsStreaming,
     setOptimisticUserMessage: input.setOptimisticUserMessage,
     setAttachmentHint: attachments.setAttachmentHint,
@@ -149,15 +141,9 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
       ctx.setStreamStatus(ev.text);
       return false;
     case "memory": {
-      if (ev.op === "add" && ev.id !== undefined) {
-        const fact = ev.fact ?? ev.text.replace(/^Saved to memory:\s*/iu, "").trim();
-        if (fact) {
-          ctx.setSavedMemoryNotice({
-            id: ev.id,
-            kind: ev.kind ?? "remembered",
-            fact,
-          });
-        }
+      // The agent always sends id/kind/fact together on add events.
+      if (ev.op === "add" && ev.id !== undefined && ev.fact !== undefined) {
+        ctx.setSavedMemoryNotice({ id: ev.id, kind: ev.kind ?? "remembered", fact: ev.fact });
       } else if (ev.op === "remove") {
         ctx.setSavedMemoryNotice(null);
       }
@@ -242,7 +228,6 @@ function beginSend(ctx: SendCtx, activeChatId: string, content: string): void {
   }
   ctx.resetStreamingBuffer();
   ctx.setSavedMemoryNotice(null);
-  ctx.recordMemoryStreamStart();
   ctx.setStreamStatus("Thinking...");
   ctx.setOptimisticUserMessage({
     chatId: activeChatId,

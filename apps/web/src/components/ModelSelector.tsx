@@ -7,7 +7,7 @@ type Model = {
   label: string;
 };
 
-function useCloseOnOutsideOrEscape(
+export function useCloseOnOutsideOrEscape(
   open: boolean,
   setOpen: (open: boolean) => void,
   wrapperRef: React.RefObject<HTMLDivElement | null>,

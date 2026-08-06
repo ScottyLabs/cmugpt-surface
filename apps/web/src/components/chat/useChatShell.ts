@@ -73,15 +73,14 @@ export function useChatShell() {
   const [memoryManagerOpen, setMemoryManagerOpen] = useState(false);
   const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const previousMemoryChatIdRef = useRef(session.chatId);
-  const { setSavedMemoryNotice, streamStartAssistantIdRef } = stream;
+  const { setSavedMemoryNotice } = stream;
   useEffect(() => {
     if (previousMemoryChatIdRef.current === session.chatId) {
       return;
     }
     previousMemoryChatIdRef.current = session.chatId;
     setSavedMemoryNotice(null);
-    streamStartAssistantIdRef.current = null;
-  }, [session.chatId, setSavedMemoryNotice, streamStartAssistantIdRef]);
+  }, [session.chatId, setSavedMemoryNotice]);
   const memory = {
     managerOpen: memoryManagerOpen,
     openManager: useCallback(() => {
@@ -98,7 +97,6 @@ export function useChatShell() {
       },
       [setSavedMemoryNotice],
     ),
-    streamStartAssistantId: streamStartAssistantIdRef.current,
   };
   const share = useShareController({
     patchChat: mutations.patchChat,

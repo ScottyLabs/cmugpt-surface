@@ -1,12 +1,14 @@
 import { Brain, LoaderCircle, Sparkles, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import type { SavedMemoryNotice } from "@/components/chat/types.ts";
+import { useCloseOnOutsideOrEscape } from "@/components/ModelSelector.tsx";
 import {
   rememberDeleteConfirmationPreference,
   shouldSkipDeleteConfirmation,
 } from "@/lib/memoryPreferences.ts";
+import { waitForMotion } from "@/lib/reducedMotion.ts";
 
 interface MemorySavedNoticeProps {
   memory: SavedMemoryNotice;
@@ -15,15 +17,7 @@ interface MemorySavedNoticeProps {
 
 type NoticePhase = "saved" | "deleting" | "deleted";
 
-function waitForExitAnimation(): Promise<void> {
-  if (
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
-    return Promise.resolve();
-  }
-  return new Promise((resolve) => window.setTimeout(resolve, 320));
-}
+const EXIT_ANIMATION_MS = 320;
 
 export function MemorySavedNotice({
   memory,
@@ -39,27 +33,10 @@ export function MemorySavedNotice({
   const containerRef = useRef<HTMLDivElement>(null);
   const deleteMemory = $api.useMutation("delete", "/me/memories/{kind}/{id}");
 
-  useEffect(() => {
-    if (!actionsOpen && !confirmationOpen) return;
-    function closeOnOutsideClick(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setActionsOpen(false);
-        setConfirmationOpen(false);
-      }
-    }
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setActionsOpen(false);
-        setConfirmationOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [actionsOpen, confirmationOpen]);
+  useCloseOnOutsideOrEscape(actionsOpen || confirmationOpen, () => {
+    setActionsOpen(false);
+    setConfirmationOpen(false);
+  }, containerRef);
 
   async function removeMemory() {
     if (phase !== "saved") return;
@@ -72,7 +49,7 @@ export function MemorySavedNotice({
         params: { path: { kind: memory.kind, id: memory.id } },
       });
       setPhase("deleted");
-      await waitForExitAnimation();
+      await waitForMotion(EXIT_ANIMATION_MS);
       onDeleted(memory.id);
     } catch {
       setPhase("saved");
