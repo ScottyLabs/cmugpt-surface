@@ -15,10 +15,9 @@ export interface AgentModelOption {
 
 export const AGENT_MODELS: readonly AgentModelOption[] = [
   { id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna" },
-  { id: "deepseek/deepseek-v4-flash", label: "DeepSeek V4 Flash" },
-  { id: "z-ai/glm-5.2", label: "GLM 5.2" },
+  { id: "deepseek/deepseek-v4-pro", label: "DeepSeek V4 Pro" },
   { id: "minimax/minimax-m3", label: "MiniMax M3" },
-  { id: "anthropic/claude-haiku-4.5", label: "Claude Haiku 4.5" },
+  { id: "z-ai/glm-5.2", label: "GLM 5.2" },
   { id: "google/gemini-3.5-flash-lite", label: "Gemini 3.5 Flash Lite" },
 ] as const;
 
