@@ -27,7 +27,7 @@ const envSchema = z.object({
   // Shared ricochet OAuth relay callback. Login uses it as the IdP
   // redirect_uri and puts our real callback in the OAuth `state` (return_to),
   // so preview hosts authenticate without registering a redirect URI.
-  OAUTH_RELAY_URL: z.url(),
+  OAUTH_RELAY_URL: z.url().optional(),
 
   DATABASE_URL: z.url(),
 
