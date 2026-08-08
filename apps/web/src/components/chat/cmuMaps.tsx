@@ -14,8 +14,8 @@ export { cmuMapsSuccessText, MAP_FAILURE_CLAIM_RE } from "./cmuMapsText.ts";
 
 /**
  * The map is laid out at 1/MAP_ZOOM of its slot and scaled back down, fitting
- * more campus into the card. Deriving both values from one factor prevents
- * clipping at any card height.
+ * more of the campus into the card. Deriving both values from one factor
+ * prevents clipping at any card height.
  */
 const MAP_ZOOM = 0.9;
 const MAP_PRESCALE_SIZE = `calc(100% / ${MAP_ZOOM})`;
@@ -38,11 +38,11 @@ export function CmuMapsPrefetch({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }
 /**
  * The embedded map app.
  *
- * allow-scripts with allow-same-origin can escape the sandbox only for same
- * origin content, and this frame is always the CMU Maps origin, enforced by
- * normalizedCmuMapsUrl. allow-same-origin is required for its assets to load
- * as that origin instead of null, which its server rejects. The geolocation
- * grant stops its location lookup from retrying in a loop.
+ * allow-scripts with allow-same-origin can escape the sandbox only for
+ * same-origin content, and this frame is always the CMU Maps origin,
+ * enforced by normalizedCmuMapsUrl. allow-same-origin is required for its
+ * assets to load as that origin rather than null, which its server rejects.
+ * The geolocation grant prevents its location lookup from retrying in a loop.
  */
 function MapFrame({
   frameRef,
@@ -61,8 +61,8 @@ function MapFrame({
       title="CMU Maps"
       src={mapUrl}
       onLoad={onLoad}
-      // Covers only the first appearance. A stronger entrance would pull
-      // attention off the answer.
+      // Covers only the first appearance. A stronger entrance would draw
+      // attention away from the answer.
       className={`absolute top-0 left-0 border-0 transition-opacity duration-200 ease-out motion-reduce:transition-none ${
         revealed ? "opacity-100" : "opacity-0"
       }`}
@@ -84,7 +84,7 @@ function MapFrame({
 }
 
 /**
- * The slot the map occupies. Full height from first paint so the fade in
+ * The slot the map occupies. Full height from first paint so the fade-in
  * causes no layout shift. The contain property isolates repaints from the
  * surrounding conversation.
  */
@@ -119,10 +119,11 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const settled = useScrollSettled(showIframe);
   useReclaimIframeFocus(showIframe);
   // True while a load this card requested is pending. The frame also fires
-  // load for its own navigations and its cross origin URL cannot be read, so
-  // this flag is what tells the two apart. Assigning src is the only way the
-  // card requests a load and cancels any load in flight, so one flag suffices.
-  // Unlike a counter it also survives StrictMode running the effect twice.
+  // load for its own navigations, whose cross-origin URL cannot be read, so
+  // this flag is what distinguishes the two. Assigning src is the only way
+  // the card requests a load, and it cancels any load in flight, so a single
+  // flag suffices. Unlike a counter, it also survives StrictMode running the
+  // effect twice.
   const owedLoad = useRef(false);
   useEffect(() => {
     owedLoad.current = true;
@@ -147,10 +148,10 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
       setReloading(false);
       return;
     }
-    // The frame navigated to a page this card cannot show. The in map sign in
+    // The frame navigated to a page this card cannot show. The in-map sign-in
     // does this, since its identity provider refuses framing and strands the
     // frame on an error page or the API root. Hide the stray page and restore
-    // the map. The restore cannot loop because the card requests its load.
+    // the map. The restore cannot loop, because the card requests its load.
     setLoaded(false);
     reloadMap();
   }
@@ -158,9 +159,9 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   if (!cmuMaps || mapUrl === null) {
     return null;
   }
-  // Reveal waits for both load and scroll settle. Load dominates, so the
-  // scroll wait is free. Both gates apply only to the first appearance, a
-  // reload keeps the map on screen.
+  // Reveal waits for both the load and the scroll to settle. The load
+  // dominates, so the scroll wait adds no perceptible delay. Both gates apply
+  // only to the first appearance, since a reload keeps the map on screen.
   const revealed = loaded && settled;
   return (
     <div className="mt-4 mb-2 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
@@ -182,7 +183,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
 /**
  * Re-renders only when the map payload changed. The server may resend the
  * same URL with the labels filled in, so every header field is compared, not
- * only the URL.
+ * the URL alone.
  */
 export const CmuMapsEmbed = memo(CmuMapsEmbedImpl, (prev, next) => {
   const a = prev.cmuMaps;

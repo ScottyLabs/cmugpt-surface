@@ -1,8 +1,8 @@
 import { type RefObject, useEffect, useState } from "react";
 
 /**
- * No op cleanup for effect paths that set nothing up, keeping every path
- * returning a function as the lint rules require.
+ * No-op cleanup for effect paths that set nothing up, so that every path
+ * returns a function as the lint rules require.
  */
 function noCleanup(): void {
   // Nothing to clean up.
@@ -14,8 +14,8 @@ const SCROLL_QUIET_MS = 180;
 const SCROLL_SETTLE_DEADLINE_MS = 1500;
 
 /**
- * Calls run once scrolling stops and returns a cancel function. Revealing a
- * map mid scroll would show it sliding across the screen.
+ * Invokes `run` once scrolling stops and returns a cancel function. Revealing
+ * a map mid-scroll would show it sliding across the screen.
  */
 function whenScrollSettles(run: () => void): () => void {
   let quietTimer = 0;
@@ -42,7 +42,7 @@ function whenScrollSettles(run: () => void): () => void {
 
 /**
  * False until scrolling settles. Runs concurrently with the map download,
- * which takes longer, so this wait is free.
+ * which takes longer, so this wait adds no perceptible delay.
  */
 export function useScrollSettled(enabled: boolean): boolean {
   const [settled, setSettled] = useState(false);
@@ -69,9 +69,9 @@ function isNearViewport(el: HTMLElement): boolean {
 
 /**
  * False until the slot is on or near the viewport, which is when the map may
- * start loading. Each embed is a full web app, so this keeps a long
- * conversation from starting every map at once. Visibility is the only gate
- * because the iframe downloads while transparent.
+ * start loading. Each embed is a full web app, so this prevents a long
+ * conversation from starting every map at once. Visibility is the only gate,
+ * since the iframe downloads while transparent.
  */
 export function useLazyMapMount(
   slotRef: RefObject<HTMLDivElement | null>,
@@ -84,7 +84,7 @@ export function useLazyMapMount(
     }
     const slot = slotRef.current;
     // Most maps mount already on screen. A direct measurement starts the
-    // download immediately, the observer covers maps scrolled out of view.
+    // download immediately. The observer covers maps scrolled out of view.
     if (slot === null || typeof IntersectionObserver !== "function" || isNearViewport(slot)) {
       setReady(true);
       return noCleanup;
@@ -119,9 +119,10 @@ let focusReclaimCount = 0;
 /**
  * A click inside an iframe leaves it holding keyboard focus, and the next
  * click back in the page is spent returning focus. Reclaiming focus on
- * pointerdown saves that click. One shared listener serves every map, the
- * counter installs it with the first and removes it with the last. pointerdown
- * is cheap where hover events would fire per element crossed.
+ * pointerdown saves that click. One shared listener serves every map: the
+ * counter installs it with the first and removes it with the last.
+ * pointerdown is inexpensive, whereas hover events would fire for every
+ * element the pointer crosses.
  */
 export function useReclaimIframeFocus(enabled: boolean): void {
   useEffect(() => {

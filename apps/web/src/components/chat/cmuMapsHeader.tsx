@@ -1,5 +1,5 @@
-/** Toolbar strip at the top of a CMU Maps card, with reload and open in new
- *  tab actions. */
+/** Toolbar strip at the top of a CMU Maps card, with reload and
+ *  open-in-new-tab actions. */
 import { ExternalLink, RotateCw } from "lucide-react";
 import { useState } from "react";
 import { mapDisplayValue } from "./cmuMapsText.ts";
@@ -11,13 +11,13 @@ const MAP_CHIP_CLASS =
 const MAP_RELOAD_CLASS = `${MAP_CHIP_CLASS} text-neutral-600 hover:bg-neutral-100`;
 /**
  * Red link text matching answer links. The markdown container styles links
- * with descendant selectors that beat plain utilities, so each property they
- * set needs an important marker. Background and border need none.
+ * with descendant selectors that override plain utilities, so each property
+ * they set requires an important marker. Background and border require none.
  */
 const MAP_LINK_CLASS = `${MAP_CHIP_CLASS} hover:bg-red-50 gap-1! text-red-800! no-underline!`;
 
 /**
- * Facts the header states. A route names both ends, a single place answer
+ * Facts the header states. A route names both ends, a single-place answer
  * names one, and an empty payload prints nothing rather than blank From and
  * To fields.
  */
@@ -32,14 +32,14 @@ function mapHeaderFacts(cmuMaps: CmuMapsPayload): { label: string; value: string
   return target === undefined || target === "" ? [] : [{ label: "Showing", value: target }];
 }
 
-/** The header already names the place, the link repeats it only in a tooltip. */
+/** The header already names the place, so the link repeats it only in a tooltip. */
 function mapLinkLabel(cmuMaps: CmuMapsPayload): string {
   return cmuMaps.targetLabel ?? cmuMaps.destLabel ?? "this route";
 }
 
 /**
- * The icon spins during reload and finishes its current turn before stopping,
- * so it never snaps upright mid rotation.
+ * The icon spins during reload and completes its current turn before
+ * stopping, so it never snaps upright mid-rotation.
  */
 function MapReloadButton({ reloading, onReload }: { reloading: boolean; onReload: () => void }) {
   const [spinning, setSpinning] = useState(false);
@@ -54,7 +54,7 @@ function MapReloadButton({ reloading, onReload }: { reloading: boolean; onReload
       }}
     >
       {/* The animation lives on a wrapper because animationiteration fires at
-          whole turn boundaries, where stopping looks right. */}
+          whole-turn boundaries, where stopping looks correct. */}
       <span
         className={`inline-flex ${
           spinning ? "animate-spin [animation-duration:0.7s] motion-reduce:animate-none" : ""

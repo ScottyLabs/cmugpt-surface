@@ -19,8 +19,9 @@ function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
 /**
  * The map URL to embed, or null when it is not on the CMU Maps origin. The
  * origin check is what makes the iframe permissions safe, so every embedded
- * map URL must pass through here. Also renames the legacy dest parameter to
- * dst. The agent addresses buildings by code, so waypoints need no rewriting.
+ * map URL must pass through here. It also renames the legacy `dest` parameter
+ * to `dst`. The agent addresses buildings by code, so waypoints require no
+ * rewriting.
  */
 export function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
   if (!isSafeCmuMapsUrl(url)) {
@@ -39,8 +40,9 @@ const prefetchedMapUrls = new Set<string>();
 
 /**
  * Prefetch a map page before the iframe exists. The URL arrives while the
- * answer streams but the iframe mounts only once it completes. The link
- * element is never removed because removal can cancel an in flight download.
+ * answer streams, but the iframe mounts only once streaming completes. The
+ * link element is never removed, since removal can cancel an in-flight
+ * download.
  */
 export function prefetchMapDocument(url: string): void {
   if (prefetchedMapUrls.has(url)) {
