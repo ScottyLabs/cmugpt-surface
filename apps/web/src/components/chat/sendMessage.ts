@@ -11,7 +11,6 @@ import type {
   ChatStreamEvent,
   CmuMapsPayload,
   OptimisticUserMessage,
-  SavedMemoryNotice,
 } from "./types.ts";
 
 export interface SendCtx {
@@ -32,7 +31,6 @@ export interface SendCtx {
   setStreamError: (value: string | null) => void;
   setStreamStatus: (value: string | null) => void;
   setStreamingCmuMaps: (value: CmuMapsPayload | null) => void;
-  setSavedMemoryNotice: (value: SavedMemoryNotice | null) => void;
   setIsStreaming: (value: boolean) => void;
   setOptimisticUserMessage: (value: OptimisticUserMessage | null) => void;
   setAttachmentHint: (value: string | null) => void;
@@ -74,7 +72,6 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     setStreamError: stream.setStreamError,
     setStreamStatus: stream.setStreamStatus,
     setStreamingCmuMaps: stream.setStreamingCmuMaps,
-    setSavedMemoryNotice: stream.setSavedMemoryNotice,
     setIsStreaming: stream.setIsStreaming,
     setOptimisticUserMessage: input.setOptimisticUserMessage,
     setAttachmentHint: attachments.setAttachmentHint,
@@ -140,15 +137,11 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
     case "status":
       ctx.setStreamStatus(ev.text);
       return false;
-    case "memory": {
-      // The agent always sends id/kind/fact together on add events.
-      if (ev.op === "add" && ev.id !== undefined && ev.fact !== undefined) {
-        ctx.setSavedMemoryNotice({ id: ev.id, kind: ev.kind ?? "remembered", fact: ev.fact });
-      } else if (ev.op === "remove") {
-        ctx.setSavedMemoryNotice(null);
-      }
+    case "memory":
+      // The chip is persisted on the assistant message server-side and
+      // appears on the post-`done` message refetch, so nothing is done with
+      // this event on the client.
       return false;
-    }
     case "map":
       ctx.setStreamingCmuMaps(ev.cmuMaps);
       return false;
@@ -227,7 +220,9 @@ function beginSend(ctx: SendCtx, activeChatId: string, content: string): void {
       STICKY_SCROLL_THRESHOLD_PX;
   }
   ctx.resetStreamingBuffer();
-  ctx.setSavedMemoryNotice(null);
+  // The saved-memory notice is deliberately not cleared here: once anchored
+  // to its message it stays visible through later questions. It clears on
+  // chat switch, deletion, or a newer fact replacing it.
   ctx.setStreamStatus("Thinking...");
   ctx.setOptimisticUserMessage({
     chatId: activeChatId,

@@ -24,12 +24,20 @@ export interface CmuMapsDto {
   destLabel: string | null;
 }
 
+export interface SavedMemoryDto {
+  id: string;
+  kind: "learned" | "remembered";
+  fact: string;
+}
+
 export interface MessageDto {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   createdAt: string;
   cmuMaps?: CmuMapsDto | null;
+  /** The memory this turn saved, persisted so the chip survives reloads. */
+  savedMemory?: SavedMemoryDto | null;
   /** Agent confidence for the just-generated turn. Not persisted; only set on
    *  fresh assistant messages, undefined when re-reading history. */
   confidence?: number;

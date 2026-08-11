@@ -11,6 +11,7 @@ import type {
   CmuMapsDto,
   MessageDto,
   MessageRow,
+  SavedMemoryDto,
 } from "./chatService.types.ts";
 
 export const DEFAULT_CHAT_TITLE = "New chat";
@@ -37,6 +38,7 @@ export function messageRowToDto(row: MessageRow): MessageDto {
     content: row.content,
     createdAt: row.createdAt.toISOString(),
     cmuMaps: row.cmuMaps ?? null,
+    savedMemory: row.savedMemory ?? null,
   };
 }
 
@@ -149,6 +151,7 @@ interface StreamCollectResult {
   result: Awaited<ReturnType<typeof callAgent>> | undefined;
   streamedText: string;
   streamedCmuMaps: CmuMapsDto | null;
+  streamedSavedMemory: SavedMemoryDto | null;
   errored: boolean;
 }
 
@@ -163,6 +166,7 @@ export async function* runAgentStream(
   let result: Awaited<ReturnType<typeof callAgent>> | undefined;
   let streamedText = "";
   let streamedCmuMaps: CmuMapsDto | null = null;
+  let streamedSavedMemory: SavedMemoryDto | null = null;
   try {
     for await (const ev of streamAgent(
       {
@@ -177,6 +181,17 @@ export async function* runAgentStream(
       if (ev.type === "status") {
         yield { type: "status", text: ev.text };
       } else if (ev.type === "memory") {
+        // An explicit remember carries the fact to persist on this message.
+        // A forget clears any pending chip for the turn.
+        if (ev.op === "add" && ev.id !== undefined && ev.fact !== undefined) {
+          streamedSavedMemory = {
+            id: ev.id,
+            kind: ev.kind ?? "remembered",
+            fact: ev.fact,
+          };
+        } else if (ev.op === "remove") {
+          streamedSavedMemory = null;
+        }
         yield ev;
       } else if (ev.type === "map") {
         streamedCmuMaps = ev.cmuMaps;
@@ -188,15 +203,15 @@ export async function* runAgentStream(
         ({ result } = ev);
       } else if (ev.type === "error") {
         yield { type: "error", message: ev.message };
-        return { result, streamedText, streamedCmuMaps, errored: true };
+        return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
       }
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Agent request failed";
     yield { type: "error", message: msg };
-    return { result, streamedText, streamedCmuMaps, errored: true };
+    return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
   }
-  return { result, streamedText, streamedCmuMaps, errored: false };
+  return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: false };
 }
 
 export async function* finalizeAssistantMessage(
@@ -204,6 +219,7 @@ export async function* finalizeAssistantMessage(
   result: Awaited<ReturnType<typeof callAgent>> | undefined,
   streamedText: string,
   streamedCmuMaps: CmuMapsDto | null,
+  streamedSavedMemory: SavedMemoryDto | null,
 ): AsyncGenerator<ChatStreamEvent, void, undefined> {
   let finalResult = result;
   if (finalResult === undefined) {
@@ -236,6 +252,7 @@ export async function* finalizeAssistantMessage(
       role: "assistant",
       content: finalResult.text,
       cmuMaps: finalResult.cmuMaps ?? finalCmuMaps,
+      savedMemory: streamedSavedMemory,
     })
     .returning();
 

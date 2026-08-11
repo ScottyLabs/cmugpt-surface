@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { StreamBuffer } from "./StreamBuffer.ts";
-import type { CmuMapsPayload, SavedMemoryNotice } from "./types.ts";
+import type { CmuMapsPayload } from "./types.ts";
 
 export function useStreamController() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
   const [streamingCmuMaps, setStreamingCmuMaps] = useState<CmuMapsPayload | null>(null);
-  const [savedMemoryNotice, setSavedMemoryNotice] = useState<SavedMemoryNotice | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const bufferRef = useRef<StreamBuffer | null>(null);
   bufferRef.current ??= new StreamBuffer((chunk) => {
@@ -36,8 +35,6 @@ export function useStreamController() {
     setStreamStatus,
     streamingCmuMaps,
     setStreamingCmuMaps,
-    savedMemoryNotice,
-    setSavedMemoryNotice,
     streamError,
     setStreamError,
     enqueueStreamingText: (text: string) => {

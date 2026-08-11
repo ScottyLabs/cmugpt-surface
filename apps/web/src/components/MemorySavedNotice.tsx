@@ -2,7 +2,7 @@ import { Brain, LoaderCircle, Sparkles, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
-import type { SavedMemoryNotice } from "@/components/chat/types.ts";
+import type { SavedMemory } from "@/components/chat/types.ts";
 import { useCloseOnOutsideOrEscape } from "@/components/ModelSelector.tsx";
 import {
   rememberDeleteConfirmationPreference,
@@ -11,8 +11,8 @@ import {
 import { waitForMotion } from "@/lib/reducedMotion.ts";
 
 interface MemorySavedNoticeProps {
-  memory: SavedMemoryNotice;
-  onDeleted: (id: string) => void;
+  memory: SavedMemory;
+  onDeleted: () => void;
 }
 
 type NoticePhase = "saved" | "deleting" | "deleted";
@@ -50,7 +50,7 @@ export function MemorySavedNotice({
       });
       setPhase("deleted");
       await waitForMotion(EXIT_ANIMATION_MS);
-      onDeleted(memory.id);
+      onDeleted();
     } catch {
       setPhase("saved");
       setError("That memory could not be deleted. Try again.");
@@ -79,7 +79,7 @@ export function MemorySavedNotice({
   return (
     <div
       ref={containerRef}
-      className={`memory-saved-enter relative mb-0.5 h-6 w-fit max-w-full transition-[height,margin,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+      className={`memory-saved-enter relative -mb-1 h-6 w-fit max-w-full transition-[height,margin,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
         leaving
           ? "pointer-events-none mb-0 h-0 -translate-y-1 opacity-0"
           : "opacity-100"
@@ -98,7 +98,7 @@ export function MemorySavedNotice({
         aria-label={`Memory saved: ${memory.fact}. Open memory options.`}
         aria-haspopup="menu"
         aria-expanded={actionsOpen || confirmationOpen}
-        className="group inline-flex h-6 max-w-full items-center gap-1 rounded-md px-1 text-left text-[0.6875rem] font-medium text-fg-neutral-tertiary transition-[background-color,color,opacity] hover:bg-neutral-100 hover:text-fg-neutral-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:cursor-wait disabled:opacity-60"
+        className="group -ml-1 inline-flex h-6 max-w-full items-center gap-1 rounded-md pl-1 pr-2.5 text-left text-[0.6875rem] font-medium text-fg-neutral-tertiary transition-[background-color,color,opacity] hover:bg-neutral-100 hover:text-fg-neutral-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:cursor-wait disabled:opacity-60"
       >
         <span className="relative flex h-4 w-4 shrink-0 items-center justify-center text-fg-neutral-secondary">
           {deleting ? (
@@ -116,7 +116,7 @@ export function MemorySavedNotice({
             </>
           )}
         </span>
-        <span className="truncate">
+        <span className="whitespace-nowrap">
           {deleting ? "Removing memory..." : "Memory saved"}
         </span>
       </button>

@@ -63,6 +63,23 @@ components:
         - destLabel
       type: object
       additionalProperties: false
+    SavedMemoryDto:
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - learned
+            - remembered
+        fact:
+          type: string
+      required:
+        - id
+        - kind
+        - fact
+      type: object
+      additionalProperties: false
     MessageDto:
       properties:
         id:
@@ -81,6 +98,11 @@ components:
           allOf:
             - $ref: "#/components/schemas/CmuMapsDto"
           nullable: true
+        savedMemory:
+          allOf:
+            - $ref: "#/components/schemas/SavedMemoryDto"
+          nullable: true
+          description: The memory this turn saved, persisted so the chip survives reloads.
         confidence:
           type: number
           format: double

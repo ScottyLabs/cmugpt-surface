@@ -16,6 +16,7 @@ import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
 import { isAllowedOrigin } from "./lib/allowedOrigins.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
+import { registerMessageSavedMemoryRoute } from "./routes/messageSavedMemoryRoute.ts";
 
 const moduleDir = import.meta.dirname;
 if (moduleDir === undefined) {
@@ -114,6 +115,7 @@ app.use("/api/scalar", apiReference({ url: "/api/openapi.json" }));
 // Routes
 RegisterRoutes(app);
 registerChatMessageStreamRoute(app);
+registerMessageSavedMemoryRoute(app);
 app.get("/api", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });

@@ -208,6 +208,12 @@ export interface components {
       dest: string | null;
       destLabel: string | null;
     };
+    SavedMemoryDto: {
+      id: string;
+      /** @enum {string} */
+      kind: "learned" | "remembered";
+      fact: string;
+    };
     MessageDto: {
       id: string;
       /** @enum {string} */
@@ -215,6 +221,8 @@ export interface components {
       content: string;
       createdAt: string;
       cmuMaps?: components["schemas"]["CmuMapsDto"] | null;
+      /** @description The memory this turn saved, persisted so the chip survives reloads. */
+      savedMemory?: components["schemas"]["SavedMemoryDto"] | null;
       /**
        * Format: double
        * @description Agent confidence for the just-generated turn. Not persisted; only set on

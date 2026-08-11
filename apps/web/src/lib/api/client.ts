@@ -3,7 +3,9 @@ import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 import { API_BASE_URL } from "./base.ts";
 
-const fetchClient = createFetchClient<paths>({
+// Exported for imperative calls outside React Query, such as the delayed
+// learned-memory check after a turn completes.
+export const fetchClient = createFetchClient<paths>({
   baseUrl: API_BASE_URL || "/",
   credentials: "include",
 });

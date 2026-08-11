@@ -20,6 +20,7 @@ import type {
   ChatStreamEvent,
   MessageDto,
   PostMessageResultDto,
+  SavedMemoryDto,
 } from "./chatService.types.ts";
 import { userPreferencesService } from "./userPreferencesService.ts";
 
@@ -70,13 +71,34 @@ export const chatService = {
       .where(eq(messages.chatId, chatId))
       .orderBy(asc(messages.createdAt))
       .limit(200);
-    return rows.map((m) => ({
-      id: m.id,
-      role: m.role,
-      content: m.content,
-      createdAt: m.createdAt.toISOString(),
-      cmuMaps: m.cmuMaps ?? null,
-    }));
+    return rows.map(messageRowToDto);
+  },
+
+  /** Attach (or clear, with null) the saved-memory chip on one message.
+   *
+   * Used for self-learned facts, which the agent stores a few seconds after
+   * the turn ends, past the point the streamed answer could carry them, and
+   * to clear the chip when its memory is deleted. Only the chat owner may
+   * write, and the message must belong to that chat.
+   */
+  async setMessageSavedMemory(
+    chatId: string,
+    userSub: string,
+    messageId: string,
+    savedMemory: SavedMemoryDto | null,
+  ): Promise<void> {
+    const chat = await getOwnedChat(chatId, userSub);
+    if (chat === undefined) {
+      throw new NotFoundError("Chat not found");
+    }
+    const [updated] = await db
+      .update(messages)
+      .set({ savedMemory })
+      .where(and(eq(messages.id, messageId), eq(messages.chatId, chatId)))
+      .returning({ id: messages.id });
+    if (updated === undefined) {
+      throw new NotFoundError("Message not found");
+    }
   },
 
   async postMessage(
@@ -131,7 +153,7 @@ export const chatService = {
     yield { type: "user", message: messageRowToDto(userRow) };
 
     const preferredModel = await userPreferencesService.getPreferredModel(userSub);
-    const { result, streamedText, streamedCmuMaps, errored } = yield* runAgentStream(
+    const { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored } = yield* runAgentStream(
       content.trim(),
       messageHistory,
       userSub,
@@ -143,7 +165,7 @@ export const chatService = {
       return;
     }
 
-    yield* finalizeAssistantMessage(chatId, result, streamedText, streamedCmuMaps);
+    yield* finalizeAssistantMessage(chatId, result, streamedText, streamedCmuMaps, streamedSavedMemory);
   },
 
   async patchChat(
