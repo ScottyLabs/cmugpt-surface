@@ -209,7 +209,8 @@ export function MemoryManager({
     setActionMessage(null);
     setDeletingKey(key);
     try {
-      // Exit animation and DELETE round-trip are independent; overlap them.
+      // The exit animation and the DELETE round-trip are independent, so
+      // they run concurrently.
       await Promise.all([
         waitForMotion(DELETE_TRANSITION_MS),
         deleteMemory.mutateAsync({

@@ -120,8 +120,8 @@ function buildAgentHeaders(): Record<string, string> {
 async function readAgentError(res: Response): Promise<string> {
   let msg = `Agent request failed (${res.status})`;
   try {
-    // Agent emits {error, detail}; older versions emitted only {error};
-    // FastAPI defaults emit only {detail}. Try all of them.
+    // The agent emits {error, detail}. Older versions emitted only {error},
+    // and FastAPI defaults emit only {detail}. Try all of them.
     const raw: unknown = await res.json();
     if (typeof raw === "object" && raw !== null) {
       const error = "error" in raw && typeof raw.error === "string" ? raw.error : undefined;
