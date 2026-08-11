@@ -1,47 +1,6 @@
 import { LockOpen } from "lucide-react";
-import { SidebarPanelIcon } from "@/components/icons/index.tsx";
-import { ModelSelector } from "../../ModelSelector.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
-
-function MobileSidebarToggle({ c }: { c: ChatShellController }) {
-  const { setSidebarOpen } = c;
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        setSidebarOpen(true);
-      }}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-200/80 hover:text-neutral-800 md:hidden"
-      aria-label="Open sidebar"
-    >
-      <SidebarPanelIcon />
-    </button>
-  );
-}
-
-function HeaderBrand({ c }: { c: ChatShellController }) {
-  const { sidebarOpen } = c;
-  return (
-    <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
-      <MobileSidebarToggle c={c} />
-      {!sidebarOpen && (
-        <div className="flex min-w-0 items-center gap-1.5">
-          <img
-            src="/sl-logo.svg"
-            alt=""
-            className="h-6 w-6 shrink-0 object-contain"
-            width={24}
-            height={24}
-          />
-          <span className="truncate text-lg font-semibold leading-none tracking-tight">CMUGPT</span>
-        </div>
-      )}
-      <div className="ml-2 hidden sm:block">
-        <ModelSelector />
-      </div>
-    </div>
-  );
-}
+import { SidebarOpenButton } from "./SidebarOpenButton.tsx";
 
 function shareLabel(shareFeedback: "copied" | "shared" | null): string {
   if (shareFeedback === "copied") {
@@ -61,22 +20,18 @@ function ShareButton({ c }: { c: ChatShellController }) {
       onClick={() => {
         void share.shareChat();
       }}
-      disabled={
-        session.chatId === undefined ||
+      disabled={session.chatId === undefined ||
         derived.effectiveChatDetail === undefined ||
-        mutations.patchChat.isPending
-      }
-      className="min-w-[5.5rem] rounded-lg px-2 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+        mutations.patchChat.isPending}
+      className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
       aria-label={shareLabel(share.shareFeedback)}
     >
-      <span className="inline-flex items-center gap-1">
-        <span aria-hidden>↗</span>
-        {share.shareFeedback === "copied"
-          ? "Copied"
-          : share.shareFeedback === "shared"
-            ? "Shared"
-            : "Share"}
-      </span>
+      <span aria-hidden>↗</span>
+      {share.shareFeedback === "copied"
+        ? "Copied"
+        : share.shareFeedback === "shared"
+        ? "Shared"
+        : "Share"}
     </button>
   );
 }
@@ -86,21 +41,23 @@ function HeaderActions({ c }: { c: ChatShellController }) {
   const { chatId } = session;
   const { currentChat } = derived;
   return (
-    <div className="flex shrink-0 items-center gap-2">
-      {derived.showMakePrivate ? (
-        <button
-          type="button"
-          onClick={() => {
-            share.makeChatPrivate();
-          }}
-          disabled={mutations.patchChat.isPending}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
-          title="Anyone signed in can open this link. Click to make the chat private again."
-          aria-label="Make chat private"
-        >
-          <LockOpen className="h-4 w-4" aria-hidden />
-        </button>
-      ) : null}
+    <div className="flex shrink-0 items-center gap-1.5">
+      {derived.showMakePrivate
+        ? (
+          <button
+            type="button"
+            onClick={() => {
+              share.makeChatPrivate();
+            }}
+            disabled={mutations.patchChat.isPending}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+            title="Anyone signed in can open this link. Click to make the chat private again."
+            aria-label="Make chat private"
+          >
+            <LockOpen className="h-4 w-4" aria-hidden />
+          </button>
+        )
+        : null}
       <ShareButton c={c} />
       {Boolean(chatId) && currentChat !== undefined && (
         <button
@@ -108,7 +65,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
           onClick={() => {
             sidebar.toggleStarChat(currentChat.id, !currentChat.starred);
           }}
-          className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100"
+          className="rounded-lg p-2 text-lg leading-none text-neutral-600 hover:bg-neutral-100"
           aria-label={currentChat.starred ? "Unstar" : "Star"}
         >
           {currentChat.starred ? "★" : "☆"}
@@ -118,17 +75,25 @@ function HeaderActions({ c }: { c: ChatShellController }) {
   );
 }
 
+/**
+ * Floating overlay instead of a solid bar: only the corner controls are drawn,
+ * so the conversation scrolls all the way to the top underneath them. The
+ * container is click-through (pointer-events-none) except over the controls.
+ */
 export function ChatHeaderBar({ c }: { c: ChatShellController }) {
-  const { derived, session } = c;
+  const { sidebarOpen } = c;
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-neutral-200 px-3 sm:px-4">
-      <HeaderBrand c={c} />
-      {(derived.shouldShowConversation || session.chatsLoading || session.isNewChatIntent) && (
-        <span className="min-w-0 flex-1 truncate text-center text-black text-lg font-medium leading-relaxed">
-          {derived.currentChat?.title}
-        </span>
-      )}
-      <HeaderActions c={c} />
-    </header>
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
+      <div className="pointer-events-auto">
+        {
+          /* The desktop collapsed rail carries its own open button, so the header
+            only needs one on mobile, where the sidebar is off-screen. */
+        }
+        {!sidebarOpen && <SidebarOpenButton c={c} className="md:hidden" />}
+      </div>
+      <div className="pointer-events-auto">
+        <HeaderActions c={c} />
+      </div>
+    </div>
   );
 }

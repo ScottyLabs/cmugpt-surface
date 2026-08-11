@@ -1,10 +1,15 @@
-import { AboutIcon, LogOutIcon, ScottyLabsIcon, SettingsIcon } from "@/components/icons/index.tsx";
+import {
+  AboutIcon,
+  LogOutIcon,
+  ScottyLabsIcon,
+  SettingsIcon,
+} from "@/components/icons/index.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
 
 function SidebarUserMenu({ c }: { c: ChatShellController }) {
   const { modal, sidebar, auth } = c;
   return (
-    <div className="absolute bottom-full mb-2 flex w-[14.5625rem] px-2 flex-col items-start rounded-xl bg-white shadow-[0_0_5.7px_0_rgba(158,177,194,0.29)] py-2 left-1/2 -translate-x-1/2">
+    <div className="absolute inset-x-4 bottom-full mb-0.5 flex flex-col items-start rounded-xl bg-white px-2 py-2 shadow-[0_2px_12px_0_rgba(158,177,194,0.45)]">
       <button
         type="button"
         onClick={() => {
@@ -55,7 +60,9 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
   const { sidebarOpen, sidebar, derived, auth } = c;
   return (
     <div className="mt-auto p-4 relative">
-      {sidebarOpen && <div className="mb-3 border-b border-fg-disabled-brandneutral" />}
+      {sidebarOpen && (
+        <div className="mb-3 border-b border-fg-disabled-brandneutral" />
+      )}
       {sidebar.userMenuOpen && <SidebarUserMenu c={c} />}
       <button
         type="button"
@@ -63,7 +70,9 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
           e.stopPropagation();
           sidebar.setUserMenuOpen((o) => !o);
         }}
-        className={`flex w-full items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
+        className={`flex w-full items-center px-2 ${
+          sidebarOpen ? "gap-3" : "justify-center"
+        }`}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
           <span>{derived.displayName.slice(0, 1).toUpperCase()}</span>

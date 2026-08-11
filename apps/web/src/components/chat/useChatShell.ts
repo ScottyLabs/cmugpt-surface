@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import { useIsMobile } from "@/lib/useIsMobile.ts";
 import { useAutoSelectFirstChat, useComposerAutoFocus } from "./chatEffects.ts";
@@ -13,7 +13,10 @@ import { useChatSearch } from "./useChatSearch.ts";
 import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
-import { type StreamController, useStreamController } from "./useStreamController.ts";
+import {
+  type StreamController,
+  useStreamController,
+} from "./useStreamController.ts";
 import { useToolToggles } from "./useToolToggles.ts";
 
 function useChatShellEffects(
@@ -64,14 +67,31 @@ function useChatShellCore() {
     messagesLength: session.messages.length,
     streamingTextLength: stream.streamingText.length,
   });
-  return { auth, session, mutations, stream, attachments, optimistic, derived, scroll };
+  return {
+    auth,
+    session,
+    mutations,
+    stream,
+    attachments,
+    optimistic,
+    derived,
+    scroll,
+  };
 }
 
 export function useChatShell() {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
-  const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } =
-    useChatShellCore();
+  const {
+    auth,
+    session,
+    mutations,
+    stream,
+    attachments,
+    optimistic,
+    derived,
+    scroll,
+  } = useChatShellCore();
   const share = useShareController({
     patchChat: mutations.patchChat,
     chatId: session.chatId,
@@ -82,6 +102,17 @@ export function useChatShell() {
     navigate: session.navigate,
   });
   const search = useChatSearch();
+  // Opening a chat (from the sidebar or a result) leaves search, so the
+  // panel is never a dead end. Selecting a result already closes search;
+  // this covers navigating via the sidebar while search is open.
+  const { closeSearch } = search;
+  const prevChatIdRef = useRef(session.chatId);
+  useEffect(() => {
+    if (prevChatIdRef.current !== session.chatId) {
+      prevChatIdRef.current = session.chatId;
+      closeSearch();
+    }
+  }, [session.chatId, closeSearch]);
   const modal = useModalState();
   const tools = useToolToggles();
   const composer = useComposer({

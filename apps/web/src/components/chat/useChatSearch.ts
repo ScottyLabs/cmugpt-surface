@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 
 export function useChatSearch() {
@@ -11,30 +11,34 @@ export function useChatSearch() {
     return q === "" ? undefined : ({ params: { query: { q } } } as const);
   }, [searchQ]);
 
-  const { data: searchChats = [], isLoading: searchChatsLoading } = $api.useQuery(
-    "get",
-    "/chats",
-    searchChatsQueryInit,
-    { enabled: Boolean(searchQ.trim()) },
-  );
+  const { data: searchChats = [], isLoading: searchChatsLoading } = $api
+    .useQuery(
+      "get",
+      "/chats",
+      searchChatsQueryInit,
+      { enabled: Boolean(searchQ.trim()) },
+    );
 
-  function openSearch() {
+  const openSearch = useCallback(() => {
     setSearchMode(true);
     requestAnimationFrame(() => searchInputRef.current?.focus());
-  }
+  }, []);
 
-  function closeSearch() {
+  const closeSearch = useCallback(() => {
     setSearchMode(false);
     setSearchQ("");
-  }
+  }, []);
 
-  function toggleSearch() {
-    if (searchMode) {
-      closeSearch();
-    } else {
-      openSearch();
-    }
-  }
+  const toggleSearch = useCallback(() => {
+    setSearchMode((open) => {
+      if (open) {
+        setSearchQ("");
+        return false;
+      }
+      requestAnimationFrame(() => searchInputRef.current?.focus());
+      return true;
+    });
+  }, []);
 
   return {
     searchMode,
