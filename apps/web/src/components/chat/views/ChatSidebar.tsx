@@ -71,13 +71,19 @@ function SidebarHeader({ c }: { c: ChatShellController }) {
 }
 
 function SidebarChatLists({ c }: { c: ChatShellController }) {
-  const { derived, isMobile, setSidebarOpen } = c;
+  const { derived, isMobile, setSidebarOpen, search } = c;
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto px-2 pt-3 pb-8 mt-1 [mask-image:linear-gradient(to_bottom,transparent,black_12px,black_calc(100%-12px),transparent)]"
       onClick={() => {
         if (isMobile) {
           setSidebarOpen(false);
+        }
+        // Opening any chat exits search, including re-clicking the current
+        // chat (which the chatId-change effect can't catch). Pin clicks
+        // stopPropagation, so they don't land here.
+        if (search.searchMode) {
+          search.closeSearch();
         }
       }}
     >

@@ -21,7 +21,7 @@ function ChatRowLabel(
         onKeyDown={(e) => {
           sidebar.onRenameKeyDown(e, chat.id, chat.title);
         }}
-        className="min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
+        className="my-1.5 ml-2 min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
         aria-label="Chat name"
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -45,7 +45,7 @@ function ChatRowLabel(
         sidebar.setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: chat.id });
       }}
       title="Double-click to rename"
-      className="min-w-0 flex-1 truncate text-left hover:bg-transparent"
+      className="min-w-0 flex-1 truncate py-2 pl-2 text-left hover:bg-transparent"
     >
       {chat.title}
     </button>
@@ -63,8 +63,11 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   // While search is open the main pane shows results, not the chat, so the
   // active-chat highlight would be misleading; search owns the highlight then.
   const isActive = chat.id === session.chatId && !search.searchMode;
+  // The row's padding lives on the label button, not the <li>: padding on the
+  // <li> would be a dead zone that swallows clicks (the old "need to click
+  // twice" bug), since the label only stretches to its own text otherwise.
   const rowClass =
-    `group flex w-full items-center gap-1 rounded-md px-2 py-2 text-sm hover:bg-neutral-200/80 ${
+    `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
       isActive ? "bg-neutral-200" : ""
     }`;
   // The pin sits in its own flex track (not overlaid on the label), so it never
