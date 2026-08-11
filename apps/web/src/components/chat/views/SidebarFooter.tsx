@@ -14,7 +14,7 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
         }}
         className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
       >
-        <Brain className="h-4.5 w-4.5" />
+        <Brain className="h-4 w-4" />
         Memories
       </button>
       <button
