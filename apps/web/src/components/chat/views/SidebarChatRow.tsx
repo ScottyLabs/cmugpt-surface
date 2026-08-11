@@ -1,5 +1,3 @@
-import { UnpinIcon } from "@/components/icons/UnpinIcon.tsx";
-import { PinIcon } from "@/components/icons/index.tsx";
 import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
 
@@ -70,10 +68,10 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
     `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
       isActive ? "bg-neutral-200" : ""
     }`;
-  // The pin sits in its own flex track (not overlaid on the label), so it never
-  // intercepts a click meant to open the chat. When hidden it keeps its width
-  // (no layout shift) but is non-interactive, and it appears without a fade so
-  // sweeping across rows doesn't flash.
+  // The star sits in its own flex track (not overlaid on the label), so it
+  // never intercepts a click meant to open the chat. When hidden it keeps its
+  // width (no layout shift) but is non-interactive, and it appears without a
+  // fade so sweeping across rows doesn't flash.
   return (
     <li className={rowClass}>
       <ChatRowLabel c={c} chat={chat} />
@@ -88,12 +86,15 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
             ? "opacity-100"
             : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
         }`}
-        aria-label={starFilled ? "Unpin chat" : "Pin chat"}
-        title={starFilled ? "Unpin chat" : "Pin chat"}
+        aria-label={starFilled ? "Unstar chat" : "Star chat"}
+        title={starFilled ? "Unstar chat" : "Star chat"}
       >
-        {starFilled
-          ? <UnpinIcon className="h-3.5 w-3.5" />
-          : <PinIcon className="h-3.5 w-3.5" />}
+        {
+          // Same glyphs as the header's star button
+        }
+        <span aria-hidden className="text-sm leading-none">
+          {starFilled ? "★" : "☆"}
+        </span>
       </button>
     </li>
   );
