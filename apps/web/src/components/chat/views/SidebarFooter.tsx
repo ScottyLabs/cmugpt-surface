@@ -7,51 +7,62 @@ import {
 import type { ChatShellController } from "../useChatShell.ts";
 
 function SidebarUserMenu({ c }: { c: ChatShellController }) {
-  const { modal, sidebar, auth } = c;
+  const { modal, sidebar, auth, sidebarOpen } = c;
+
+  const placement = sidebarOpen ? "inset-x-4" : "left-2 w-60";
+  const state = sidebar.userMenuOpen
+    ? "visible grid-rows-[1fr]"
+    : "invisible grid-rows-[0fr]";
   return (
-    <div className="absolute inset-x-4 bottom-full mb-0.5 flex flex-col items-start rounded-xl bg-white px-2 py-2 shadow-[0_2px_12px_0_rgba(158,177,194,0.45)]">
-      <button
-        type="button"
-        onClick={() => {
-          modal.setActiveModal("settings");
-          sidebar.setUserMenuOpen(false);
-        }}
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
-      >
-        <SettingsIcon />
-        Settings
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          modal.setActiveModal("about");
-          sidebar.setUserMenuOpen(false);
-        }}
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
-      >
-        <AboutIcon />
-        About
-      </button>
-      <a
-        href="https://scottylabs.org/"
-        target="_blank"
-        rel="noreferrer"
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
-      >
-        <ScottyLabsIcon />
-        ScottyLabs
-      </a>
-      <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
-      <button
-        type="button"
-        onClick={() => {
-          auth.logout();
-        }}
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
-      >
-        <LogOutIcon />
-        Log out
-      </button>
+    <div
+      className={`absolute bottom-full mb-1.5 grid content-end transition-[grid-template-rows,visibility] duration-200 ease-out ${placement} ${state}`}
+    >
+      <div className="flex min-h-0 flex-col justify-end overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_0_rgba(158,177,194,0.45)]">
+        <div className="flex w-full flex-col items-start px-2 py-2">
+          <button
+            type="button"
+            onClick={() => {
+              modal.setActiveModal("settings");
+              sidebar.setUserMenuOpen(false);
+            }}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+          >
+            <SettingsIcon />
+            Settings
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              modal.setActiveModal("about");
+              sidebar.setUserMenuOpen(false);
+            }}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+          >
+            <AboutIcon />
+            About
+          </button>
+          <a
+            href="https://scottylabs.org/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+          >
+            <ScottyLabsIcon />
+            ScottyLabs
+          </a>
+          <div className="self-center w-[90%] my-3 border-b border-fg-disabled-brandneutral" />
+          <button
+            type="button"
+            onClick={() => {
+              auth.logout();
+            }}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
+          >
+            <LogOutIcon />
+            Log out
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -59,11 +70,8 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
 export function SidebarFooter({ c }: { c: ChatShellController }) {
   const { sidebarOpen, sidebar, derived, auth } = c;
   return (
-    <div className="mt-auto p-4 relative">
-      {sidebarOpen && (
-        <div className="mb-3 border-b border-fg-disabled-brandneutral" />
-      )}
-      {sidebar.userMenuOpen && <SidebarUserMenu c={c} />}
+    <div className="mt-auto p-2.5 relative">
+      <SidebarUserMenu c={c} />
       <button
         type="button"
         onClick={(e) => {

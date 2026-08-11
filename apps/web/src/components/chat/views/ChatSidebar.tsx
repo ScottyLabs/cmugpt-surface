@@ -74,7 +74,7 @@ function SidebarChatLists({ c }: { c: ChatShellController }) {
   const { derived, isMobile, setSidebarOpen, search } = c;
   return (
     <div
-      className="min-h-0 flex-1 overflow-y-auto px-2 pt-3 pb-8 mt-1 [mask-image:linear-gradient(to_bottom,transparent,black_12px,black_calc(100%-12px),transparent)]"
+      className="min-h-0 flex-1 overflow-y-auto px-2 pt-3 pb-2 mt-1 -mb-2 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-12px),transparent)]"
       onClick={() => {
         if (isMobile) {
           setSidebarOpen(false);
@@ -124,6 +124,9 @@ function SidebarNav({ c }: { c: ChatShellController }) {
     if (isMobile) {
       setSidebarOpen(false);
     }
+    // Close search explicitly: the chatId-change effect can't, because
+    // starting a new chat from the new-chat state leaves chatId undefined.
+    search.closeSearch();
     void session.navigate({
       to: "/",
       search: { chat: undefined, newChat: true },
@@ -191,9 +194,9 @@ export function ChatSidebar({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] md:static md:z-auto md:overflow-hidden md:shadow-none md:transition-[width] ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-transparent rounded-tr-[25px] bg-brand-secondary-enabled shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] md:static md:z-20 md:shadow-none md:transition-[width] ${
         sidebarOpen
-          ? "translate-x-0 md:w-72"
+          ? "translate-x-0 md:w-72 md:overflow-hidden"
           : "-translate-x-full md:w-[4.375rem] md:translate-x-0 md:border-r-0"
       }`}
     >

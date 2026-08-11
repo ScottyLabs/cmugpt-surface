@@ -12,13 +12,19 @@ export function ConversationView({ c }: { c: ChatShellController }) {
     <div
       ref={scroll.scrollContainerRef}
       className={`min-h-0 flex-1 overflow-y-auto px-4 flex flex-col ${
-        showWelcome ? "justify-center py-6" : "justify-start pt-6 pb-2"
+        showWelcome ? "justify-center py-6" : "justify-start pt-20 pb-2"
       }`}
       onScroll={scroll.onScroll}
     >
       {showWelcome && <WelcomeScreen c={c} />}
       {derived.showMessagesLoading
-        ? <p className="text-neutral-500 text-sm">Loading messages...</p>
+        ? (
+          <div className="mx-auto w-full max-w-3xl">
+            <p className="text-neutral-500 text-sm transition-opacity delay-300 duration-200 starting:opacity-0">
+              Loading messages...
+            </p>
+          </div>
+        )
         : null}
       {derived.shouldShowConversation && !derived.showMessagesLoading && (
         <MessageList c={c} />
