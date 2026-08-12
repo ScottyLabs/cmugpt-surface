@@ -122,7 +122,7 @@ async function fetchMessageHistoryExcluding(
 
 /** Persist user message, refresh chat title if needed, return rows for agent
  * context. `titledByThisMessage` reports whether this message became the chat
- * title (the title was still the default), so a moderation block can undo it. */
+ * title (the title was still the default) */
 export async function prepareAssistantTurn(
   chatId: string,
   userSub: string,

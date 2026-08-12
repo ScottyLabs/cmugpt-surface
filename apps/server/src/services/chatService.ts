@@ -3,7 +3,6 @@ import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
 import { callAgent } from "../lib/agentClient.ts";
 import { agentUserId } from "../lib/agentUserId.ts";
-import { moderateUserMessage, responseForModeration } from "../lib/moderation.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import {
   chatRowToListDto,
@@ -108,34 +107,25 @@ export const chatService = {
     userSub: string,
     content: string,
   ): Promise<PostMessageResultDto> {
-    // Moderation runs concurrently with persisting the user message, so the
-    // check costs almost no extra latency on the happy path.
-    const [{ userRow, messageHistory, titledByThisMessage }, moderation] = await Promise.all([
-      prepareAssistantTurn(chatId, userSub, content),
-      moderateUserMessage(content.trim()),
-    ]);
+    const { userRow, messageHistory, titledByThisMessage } = await prepareAssistantTurn(
+      chatId,
+      userSub,
+      content,
+    );
 
-    if (moderation.action !== "allow" && titledByThisMessage) {
-      // A blocked message should not become the chat's title.
-      await db.update(chats).set({ title: DEFAULT_CHAT_TITLE }).where(eq(chats.id, chatId));
-    }
-
-    // One-time title upgrade, concurrent with the agent call.
-    const titlePromise =
-      moderation.action === "allow" && titledByThisMessage
-        ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
-        : undefined;
+    // One-time title upgrade, concurrent with the agent call. The agent
+    // moderates the message itself and titles flagged ones "New chat".
+    const titlePromise = titledByThisMessage
+      ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
+      : undefined;
 
     const preferredModel = await userPreferencesService.getPreferredModel(userSub);
-    const agentResult: Awaited<ReturnType<typeof callAgent>> =
-      moderation.action !== "allow"
-        ? { text: responseForModeration(moderation.action) }
-        : await callAgent({
-            query: content.trim(),
-            ...(messageHistory.length > 0 && { messageHistory }),
-            userId: agentUserId(userSub),
-            model: preferredModel,
-          });
+    const agentResult = await callAgent({
+      query: content.trim(),
+      ...(messageHistory.length > 0 && { messageHistory }),
+      userId: agentUserId(userSub),
+      model: preferredModel,
+    });
 
     await titlePromise;
 
@@ -171,30 +161,18 @@ export const chatService = {
     content: string,
     options: { signal?: AbortSignal; disabledTools?: string[] } = {},
   ): AsyncGenerator<ChatStreamEvent, void, undefined> {
-    // Moderation runs concurrently with persisting the user message, so the
-    // check costs almost no extra latency on the happy path.
-    const [{ userRow, messageHistory, titledByThisMessage }, moderation] = await Promise.all([
-      prepareAssistantTurn(chatId, userSub, content),
-      moderateUserMessage(content.trim()),
-    ]);
+    const { userRow, messageHistory, titledByThisMessage } = await prepareAssistantTurn(
+      chatId,
+      userSub,
+      content,
+    );
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
-    if (moderation.action !== "allow") {
-      const categories = moderation.flaggedCategories.join(", ");
-      console.warn(`moderation: blocked chat ${chatId} (${moderation.action}: ${categories})`);
-      if (titledByThisMessage) {
-        // A blocked message should not become the chat's title.
-        await db.update(chats).set({ title: DEFAULT_CHAT_TITLE }).where(eq(chats.id, chatId));
-      }
-      const blockedText = responseForModeration(moderation.action);
-      yield* finalizeAssistantMessage(chatId, { text: blockedText }, "", null, null);
-      return;
-    }
-
     // One-time title upgrade, concurrent with the agent turn: by the time the
     // stream finishes it has almost always resolved, so awaiting it below
-    // adds no meaningful latency before the done event.
+    // adds no meaningful latency before the done event. The agent moderates
+    // the message itself and titles flagged ones "New chat".
     const titlePromise = titledByThisMessage
       ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
       : undefined;

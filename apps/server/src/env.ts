@@ -33,10 +33,6 @@ const envSchema = z.object({
 
   AGENT_API_URL: z.url(),
   AGENT_SHARED_SECRET: z.string().optional(),
-
-  // Used for the free /v1/moderations endpoint that screens user messages.
-  // Optional: without a key, moderation is skipped entirely.
-  OPENAI_API_KEY: z.string().optional(),
 });
 
 // Validate `process.env` against our schema and return the result
