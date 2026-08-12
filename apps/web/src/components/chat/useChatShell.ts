@@ -129,6 +129,9 @@ export function useChatShell() {
     const since = turnStartedAtRef.current;
     const chatAtTurn = chatIdRef.current;
     const anchorId = anchor.id;
+    if (chatAtTurn === undefined) {
+      return;
+    }
     let done = false;
     const timers = LEARNED_NOTICE_CHECK_DELAYS_MS.map((delay) =>
       window.setTimeout(() => {
@@ -174,8 +177,12 @@ export function useChatShell() {
     // its message so it does not reappear on the next load, then refetch.
     onSavedMemoryDeleted: useCallback(
       (messageId: string) => {
+        const chatId = chatIdRef.current;
+        if (chatId === undefined) {
+          return;
+        }
         void (async () => {
-          await putSavedMemory(chatIdRef.current, messageId, null);
+          await putSavedMemory(chatId, messageId, null);
           await refetchMessages();
         })();
       },
