@@ -73,36 +73,27 @@ export async function getReadableChat(
   return row;
 }
 
-async function touchChatAfterUserMessage(
-  chat: ChatRow,
-  chatId: string,
-  trimmed: string,
-): Promise<void> {
-  if (chat.title === DEFAULT_CHAT_TITLE) {
-    await db
-      .update(chats)
-      .set({ title: titleFromFirstMessage(trimmed), updatedAt: new Date() })
-      .where(eq(chats.id, chatId));
-  } else {
-    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
-  }
+async function touchChatAfterUserMessage(chatId: string): Promise<void> {
+  await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
 }
 
-/** Replace the truncated-prompt placeholder title with a model-written one.
+/** Name an as-yet-unnamed chat from its first message.
  *
- * Runs once per chat (the turn that titled it), concurrently with the agent
- * turn. The WHERE clause matches only the placeholder this exact message
- * produced, so a manual rename that lands first is never clobbered, and any
- * failure quietly keeps the placeholder. */
+ * Runs once per chat, concurrently with the agent turn, so the chat shows
+ * "New chat" until the generated title arrives. The truncated message is only
+ * a fallback for when generation fails, and a flagged message comes back as
+ * the default title, which leaves the chat unnamed for the next message to
+ * claim. The WHERE clause matches only the still-default title, so a manual
+ * rename that lands first is never clobbered. */
 export async function upgradeChatTitle(chatId: string, firstMessage: string): Promise<void> {
-  const title = await fetchChatTitle(firstMessage);
-  if (title === null) {
+  const title = (await fetchChatTitle(firstMessage)) ?? titleFromFirstMessage(firstMessage);
+  if (title === DEFAULT_CHAT_TITLE) {
     return;
   }
   await db
     .update(chats)
     .set({ title })
-    .where(and(eq(chats.id, chatId), eq(chats.title, titleFromFirstMessage(firstMessage))));
+    .where(and(eq(chats.id, chatId), eq(chats.title, DEFAULT_CHAT_TITLE)));
 }
 
 async function fetchMessageHistoryExcluding(
@@ -120,9 +111,9 @@ async function fetchMessageHistoryExcluding(
     .map((m) => ({ role: m.role, content: m.content }));
 }
 
-/** Persist user message, refresh chat title if needed, return rows for agent
- * context. `titledByThisMessage` reports whether this message became the chat
- * title (the title was still the default) */
+/** Persist user message, touch the chat, return rows for agent context.
+ * `titledByThisMessage` reports that the chat is still unnamed, which is what
+ * arms the one-time title generation for this message. */
 export async function prepareAssistantTurn(
   chatId: string,
   userSub: string,
@@ -156,7 +147,7 @@ export async function prepareAssistantTurn(
     })
     .returning();
 
-  await touchChatAfterUserMessage(chat, chatId, trimmed);
+  await touchChatAfterUserMessage(chatId);
 
   const messageHistory = await fetchMessageHistoryExcluding(chatId, userRow?.id);
 

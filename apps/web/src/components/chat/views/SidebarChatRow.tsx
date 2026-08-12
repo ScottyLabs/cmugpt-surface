@@ -2,6 +2,7 @@ import { UnpinIcon } from "@/components/icons/UnpinIcon.tsx";
 import { PinIcon } from "@/components/icons/index.tsx";
 import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
+import { AnimatedTitle } from "./AnimatedTitle.tsx";
 
 function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem }) {
   const { sidebar } = c;
@@ -43,9 +44,9 @@ function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem 
         sidebar.setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: chat.id });
       }}
       title="Double-click to rename"
-      className="min-w-0 w-full truncate pr-7 text-left hover:bg-transparent"
+      className="min-w-0 w-full pr-7 text-left hover:bg-transparent"
     >
-      {chat.title}
+      <AnimatedTitle title={chat.title} className="block truncate" />
     </button>
   );
 }

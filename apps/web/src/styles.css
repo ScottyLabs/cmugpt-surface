@@ -65,6 +65,23 @@ code {
   }
 }
 
+/* Wipes a renamed chat title in from the left, so the generated title
+   arriving after "New chat" reads as a deliberate update. */
+@keyframes chat-title-in {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.4;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.chat-title-in {
+  animation: chat-title-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .memory-saved-enter {
   animation: memory-saved-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
@@ -74,6 +91,7 @@ code {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chat-title-in,
   .memory-saved-enter,
   .memory-saved-spark {
     animation: none;

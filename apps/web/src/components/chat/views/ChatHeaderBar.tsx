@@ -1,6 +1,7 @@
 import { LockOpen } from "lucide-react";
 import { ModelSelector } from "../../ModelSelector.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
+import { AnimatedTitle } from "./AnimatedTitle.tsx";
 
 function HeaderBrand({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
@@ -106,9 +107,10 @@ export function ChatHeaderBar({ c }: { c: ChatShellController }) {
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
       <HeaderBrand c={c} />
       {(derived.shouldShowConversation || session.chatsLoading || session.isNewChatIntent) && (
-        <span className="text-black text-lg font-medium leading-relaxed">
-          {derived.currentChat?.title}
-        </span>
+        <AnimatedTitle
+          title={derived.currentChat?.title ?? ""}
+          className="text-black text-lg font-medium leading-relaxed"
+        />
       )}
       <HeaderActions c={c} />
     </header>

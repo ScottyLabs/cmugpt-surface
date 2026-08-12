@@ -257,13 +257,16 @@ export async function fetchChatTitle(firstMessage: string): Promise<string | nul
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
+      console.warn(`title: agent returned ${res.status}, keeping placeholder`);
       return null;
     }
     const data: unknown = await res.json();
     const title =
       typeof data === "object" && data !== null ? (data as { title?: unknown }).title : undefined;
     return typeof title === "string" && title.trim() !== "" ? title.trim() : null;
-  } catch {
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`title: request failed (${msg}), keeping placeholder`);
     return null;
   }
 }
