@@ -244,3 +244,26 @@ export async function* streamAgent(
   }
   yield* readAgentStream(res.body.getReader());
 }
+
+/** Ask the agent for a short chat title from the chat's first user message.
+ *  Returns null on any failure so the caller keeps its placeholder title. */
+export async function fetchChatTitle(firstMessage: string): Promise<string | null> {
+  try {
+    const url = `${env.AGENT_API_URL.replace(/\/$/u, "")}/agent/title`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: buildAgentHeaders(),
+      body: JSON.stringify({ query: firstMessage }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      return null;
+    }
+    const data: unknown = await res.json();
+    const title =
+      typeof data === "object" && data !== null ? (data as { title?: unknown }).title : undefined;
+    return typeof title === "string" && title.trim() !== "" ? title.trim() : null;
+  } catch {
+    return null;
+  }
+}

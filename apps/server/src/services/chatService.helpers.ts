@@ -1,7 +1,7 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { type callAgent, streamAgent } from "../lib/agentClient.ts";
+import { type callAgent, fetchChatTitle, streamAgent } from "../lib/agentClient.ts";
 import { agentUserId } from "../lib/agentUserId.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import type {
@@ -20,7 +20,7 @@ export const DEFAULT_CHAT_TITLE = "New chat";
 // user row, or the chat keeps a message that can never get a reply.
 const MAX_MESSAGE_CHARS = 8_000;
 
-function titleFromFirstMessage(content: string): string {
+export function titleFromFirstMessage(content: string): string {
   const line = content.trim().split("\n")[0]?.trim() ?? "";
   if (!line) {
     return DEFAULT_CHAT_TITLE;
@@ -88,6 +88,23 @@ async function touchChatAfterUserMessage(
   }
 }
 
+/** Replace the truncated-prompt placeholder title with a model-written one.
+ *
+ * Runs once per chat (the turn that titled it), concurrently with the agent
+ * turn. The WHERE clause matches only the placeholder this exact message
+ * produced, so a manual rename that lands first is never clobbered, and any
+ * failure quietly keeps the placeholder. */
+export async function upgradeChatTitle(chatId: string, firstMessage: string): Promise<void> {
+  const title = await fetchChatTitle(firstMessage);
+  if (title === null) {
+    return;
+  }
+  await db
+    .update(chats)
+    .set({ title })
+    .where(and(eq(chats.id, chatId), eq(chats.title, titleFromFirstMessage(firstMessage))));
+}
+
 async function fetchMessageHistoryExcluding(
   chatId: string,
   excludeId: string | undefined,
@@ -103,7 +120,9 @@ async function fetchMessageHistoryExcluding(
     .map((m) => ({ role: m.role, content: m.content }));
 }
 
-/** Persist user message, refresh chat title if needed, return rows for agent context. */
+/** Persist user message, refresh chat title if needed, return rows for agent
+ * context. `titledByThisMessage` reports whether this message became the chat
+ * title (the title was still the default), so a moderation block can undo it. */
 export async function prepareAssistantTurn(
   chatId: string,
   userSub: string,
@@ -111,6 +130,7 @@ export async function prepareAssistantTurn(
 ): Promise<{
   userRow: MessageRow;
   messageHistory: { role: string; content: string }[];
+  titledByThisMessage: boolean;
 }> {
   const trimmed = content.trim();
   if (!trimmed) {
@@ -144,7 +164,7 @@ export async function prepareAssistantTurn(
     throw new Error("Failed to persist user message");
   }
 
-  return { userRow, messageHistory };
+  return { userRow, messageHistory, titledByThisMessage: chat.title === DEFAULT_CHAT_TITLE };
 }
 
 interface StreamCollectResult {
