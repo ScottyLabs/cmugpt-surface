@@ -7,7 +7,11 @@ import type { ConversationScroll } from "./useConversationScroll.ts";
 import type { ChatMutations } from "./useChatMutations.ts";
 import type { ChatSession } from "./useChatSession.ts";
 import type { StreamController } from "./useStreamController.ts";
-import type { ChatStreamEvent, CmuMapsPayload, OptimisticUserMessage } from "./types.ts";
+import type {
+  ChatStreamEvent,
+  CmuMapsPayload,
+  OptimisticUserMessage,
+} from "./types.ts";
 
 export interface SendCtx {
   isStreaming: boolean;
@@ -133,6 +137,11 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
     case "status":
       ctx.setStreamStatus(ev.text);
       return false;
+    case "memory":
+      // The chip is persisted on the assistant message server-side and
+      // appears on the post-`done` message refetch, so nothing is done with
+      // this event on the client.
+      return false;
     case "map":
       ctx.setStreamingCmuMaps(ev.cmuMaps);
       return false;
@@ -211,6 +220,9 @@ function beginSend(ctx: SendCtx, activeChatId: string, content: string): void {
       STICKY_SCROLL_THRESHOLD_PX;
   }
   ctx.resetStreamingBuffer();
+  // The saved-memory notice is deliberately not cleared here: once anchored
+  // to its message it stays visible through later questions. It clears on
+  // chat switch, deletion, or a newer fact replacing it.
   ctx.setStreamStatus("Thinking...");
   ctx.setOptimisticUserMessage({
     chatId: activeChatId,

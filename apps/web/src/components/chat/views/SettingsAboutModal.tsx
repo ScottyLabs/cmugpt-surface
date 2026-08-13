@@ -6,10 +6,20 @@ import { SettingsPanel } from "./SettingsPanel.tsx";
 function AboutPanel() {
   return (
     <>
-      <p className="text-left text-sm text-black pl-4 font-normal">
-        CMUGPT is an AI tool for CMU community ..... made by Scottylabs...........
-      </p>
-      <div className="flex items-center justify-end gap-2 mt-[19rem] mr-4">
+      <div className="space-y-3 px-4 text-left text-sm font-normal leading-relaxed text-black">
+        <p>
+          CMUGPT is an AI assistant made by ScottyLabs for the Carnegie Mellon
+          community. Ask it everyday campus questions, like how to get to class,
+          what&apos;s open for lunch, or which course to take next.
+        </p>
+        <p>
+          It taps into campus knowledge through MCP tools: CMUMaps for
+          directions, CMUCourses for courses, CMUEats for dining, and CMUGuide
+          for student resources. Each can be turned on or off in Settings, and
+          CMUGPT remembers details you share so future chats feel more personal.
+        </p>
+      </div>
+      <div className="mt-8 flex items-center justify-end gap-2 mr-4">
         <p className="text-base font-medium text-black">With love,</p>
         <button
           type="button"
@@ -23,7 +33,9 @@ function AboutPanel() {
             backgroundClip: "padding-box, border-box",
           }}
         >
-          <span className="text-sm font-semibold text-fg-neutral-primary">ScottyLabs</span>
+          <span className="text-sm font-semibold text-fg-neutral-primary">
+            ScottyLabs
+          </span>
         </button>
       </div>
     </>
@@ -47,7 +59,9 @@ function useCloseOnEscape(isOpen: boolean, close: () => void): void {
   }, [isOpen, close]);
 }
 
-function ModalHeader({ isSettings, onClose }: { isSettings: boolean; onClose: () => void }) {
+function ModalHeader(
+  { isSettings, onClose }: { isSettings: boolean; onClose: () => void },
+) {
   return (
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-2xl pt-4 pl-4 font-medium leading-8">
@@ -75,7 +89,7 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     <button
       type="button"
       aria-label="Close modal"
-      className="fixed inset-0 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full px-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           close();
@@ -84,8 +98,8 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     >
       <dialog
         open
-        className={`relative rounded-2xl bg-white p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] w-[45.5625rem] ${
-          isSettings ? "h-[15rem]" : "h-[30rem]"
+        className={`relative w-[45.5625rem] max-w-full max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] ${
+          isSettings ? "sm:h-[15rem]" : ""
         }`}
       >
         <ModalHeader isSettings={isSettings} onClose={close} />

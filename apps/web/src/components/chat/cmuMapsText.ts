@@ -1,9 +1,9 @@
 import type { CmuMapsPayload } from "./types.ts";
 
 /**
- * Matches an answer claiming it could not find a place. The model sometimes
- * says this even when the map lookup did succeed, in which case the text is
- * swapped for `cmuMapsSuccessText` rather than shown beside a working map.
+ * Matches an answer claiming a place lookup failed. When the map actually
+ * resolved, the text is replaced with cmuMapsSuccessText instead of
+ * contradicting a working map.
  */
 export const MAP_FAILURE_CLAIM_RE =
   /\b(wasn'?t able|was not able|couldn'?t|could not|unable|failed|didn'?t find|did not find)\b.{0,240}\b(location|building|map|directions?|path|route|tool|tools|retrieve)\b/isu;

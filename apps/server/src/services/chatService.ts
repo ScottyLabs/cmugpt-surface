@@ -2,23 +2,25 @@ import { and, asc, desc, eq, ilike } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
 import { callAgent } from "../lib/agentClient.ts";
+import { agentUserId } from "../lib/agentUserId.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import {
   chatRowToListDto,
   DEFAULT_CHAT_TITLE,
-  finalizeAssistantMessage,
   getOwnedChat,
   getReadableChat,
   messageRowToDto,
   prepareAssistantTurn,
-  runAgentStream,
+  upgradeChatTitle,
 } from "./chatService.helpers.ts";
+import { finalizeAssistantMessage, runAgentStream } from "./chatService.stream.ts";
 import type {
   ChatDetailDto,
   ChatListItemDto,
   ChatStreamEvent,
   MessageDto,
   PostMessageResultDto,
+  SavedMemoryDto,
 } from "./chatService.types.ts";
 import { userPreferencesService } from "./userPreferencesService.ts";
 
@@ -30,6 +32,34 @@ export type {
   MessageDto,
   PostMessageResultDto,
 } from "./chatService.types.ts";
+
+/** Persist a non-streamed answer and return it as a DTO. */
+async function persistAssistantReply(
+  chatId: string,
+  agentResult: Awaited<ReturnType<typeof callAgent>>,
+): Promise<MessageDto> {
+  const [assistantRow] = await db
+    .insert(messages)
+    .values({
+      chatId,
+      role: "assistant",
+      content: agentResult.text,
+      cmuMaps: agentResult.cmuMaps ?? null,
+    })
+    .returning();
+
+  await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
+
+  if (assistantRow === undefined) {
+    throw new Error("Failed to persist messages");
+  }
+
+  const assistantMessage: MessageDto = messageRowToDto(assistantRow);
+  if (typeof agentResult.confidence === "number") {
+    assistantMessage.confidence = agentResult.confidence;
+  }
+  return assistantMessage;
+}
 
 export const chatService = {
   async listChats(userSub: string, q?: string): Promise<ChatListItemDto[]> {
@@ -69,13 +99,34 @@ export const chatService = {
       .where(eq(messages.chatId, chatId))
       .orderBy(asc(messages.createdAt))
       .limit(200);
-    return rows.map((m) => ({
-      id: m.id,
-      role: m.role,
-      content: m.content,
-      createdAt: m.createdAt.toISOString(),
-      cmuMaps: m.cmuMaps ?? null,
-    }));
+    return rows.map((row) => messageRowToDto(row));
+  },
+
+  /** Attach (or clear, with null) the saved-memory chip on one message.
+   *
+   * Used for self-learned facts, which the agent stores a few seconds after
+   * the turn ends, past the point the streamed answer could carry them, and
+   * to clear the chip when its memory is deleted. Only the chat owner may
+   * write, and the message must belong to that chat.
+   */
+  async setMessageSavedMemory(
+    chatId: string,
+    userSub: string,
+    messageId: string,
+    savedMemory: SavedMemoryDto | null,
+  ): Promise<void> {
+    const chat = await getOwnedChat(chatId, userSub);
+    if (chat === undefined) {
+      throw new NotFoundError("Chat not found");
+    }
+    const [updated] = await db
+      .update(messages)
+      .set({ savedMemory })
+      .where(and(eq(messages.id, messageId), eq(messages.chatId, chatId)))
+      .returning({ id: messages.id });
+    if (updated === undefined) {
+      throw new NotFoundError("Message not found");
+    }
   },
 
   async postMessage(
@@ -83,36 +134,29 @@ export const chatService = {
     userSub: string,
     content: string,
   ): Promise<PostMessageResultDto> {
-    const { userRow, messageHistory } = await prepareAssistantTurn(chatId, userSub, content);
+    const { userRow, messageHistory, titledByThisMessage } = await prepareAssistantTurn(
+      chatId,
+      userSub,
+      content,
+    );
+
+    // One-time title upgrade, concurrent with the agent call. The agent
+    // moderates the message itself and titles flagged ones "New chat".
+    const titlePromise = titledByThisMessage
+      ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
+      : undefined;
 
     const preferredModel = await userPreferencesService.getPreferredModel(userSub);
     const agentResult = await callAgent({
       query: content.trim(),
       ...(messageHistory.length > 0 && { messageHistory }),
-      userId: userSub,
+      userId: agentUserId(userSub),
       model: preferredModel,
     });
 
-    const [assistantRow] = await db
-      .insert(messages)
-      .values({
-        chatId,
-        role: "assistant",
-        content: agentResult.text,
-        cmuMaps: agentResult.cmuMaps ?? null,
-      })
-      .returning();
+    await titlePromise;
 
-    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
-
-    if (assistantRow === undefined) {
-      throw new Error("Failed to persist messages");
-    }
-
-    const assistantMessage: MessageDto = messageRowToDto(assistantRow);
-    if (typeof agentResult.confidence === "number") {
-      assistantMessage.confidence = agentResult.confidence;
-    }
+    const assistantMessage = await persistAssistantReply(chatId, agentResult);
     return {
       userMessage: messageRowToDto(userRow),
       assistantMessage,
@@ -125,12 +169,24 @@ export const chatService = {
     content: string,
     options: { signal?: AbortSignal; disabledTools?: string[] } = {},
   ): AsyncGenerator<ChatStreamEvent, void, undefined> {
-    const { userRow, messageHistory } = await prepareAssistantTurn(chatId, userSub, content);
+    const { userRow, messageHistory, titledByThisMessage } = await prepareAssistantTurn(
+      chatId,
+      userSub,
+      content,
+    );
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
+    // One-time title upgrade, concurrent with the agent turn: by the time the
+    // stream finishes it has almost always resolved, so awaiting it below
+    // adds no meaningful latency before the done event. The agent moderates
+    // the message itself and titles flagged ones "New chat".
+    const titlePromise = titledByThisMessage
+      ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
+      : undefined;
+
     const preferredModel = await userPreferencesService.getPreferredModel(userSub);
-    const { result, streamedText, streamedCmuMaps, errored } = yield* runAgentStream(
+    const { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored } = yield* runAgentStream(
       content.trim(),
       messageHistory,
       userSub,
@@ -142,7 +198,10 @@ export const chatService = {
       return;
     }
 
-    yield* finalizeAssistantMessage(chatId, result, streamedText, streamedCmuMaps);
+    yield* finalizeAssistantMessage(chatId, result, streamedText, streamedCmuMaps, streamedSavedMemory);
+    // Let the title land before the response closes, so the client's
+    // post-stream refetch already sees it.
+    await titlePromise;
   },
 
   async patchChat(

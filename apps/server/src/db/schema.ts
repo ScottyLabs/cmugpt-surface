@@ -132,6 +132,14 @@ export const messages = pgTable("messages", {
     dest: string | null;
     destLabel: string | null;
   } | null>(),
+  // The memory this turn saved, if any, so the "Memory saved" chip persists
+  // with its message across reloads. `id`/`kind` reference the stored fact in
+  // the agent so the chip can delete it.
+  savedMemory: jsonb("saved_memory").$type<{
+    id: string;
+    kind: "learned" | "remembered";
+    fact: string;
+  } | null>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
