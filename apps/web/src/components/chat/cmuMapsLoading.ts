@@ -1,9 +1,8 @@
 import { type RefObject, useEffect, useState } from "react";
 
 /**
- * Cleanup for effect paths that set nothing up. Effects here return their real
- * cleanup on the main path, and returning this from the others keeps every
- * path returning a function, which the lint rules require over a bare return.
+ * No-op cleanup for effect paths that set nothing up, so that every path
+ * returns a function as the lint rules require.
  */
 function noCleanup(): void {
   // Nothing to clean up.
@@ -15,18 +14,16 @@ const SCROLL_QUIET_MS = 180;
 const SCROLL_SETTLE_DEADLINE_MS = 1500;
 
 /**
- * Call `run` once the page has stopped scrolling. Returns a cancel function.
- * Finishing an answer smooth-scrolls the conversation down to show it, and a
- * map revealed partway through that animation is seen sliding up across the
- * screen before it lands.
+ * Invokes `run` once scrolling stops and returns a cancel function. Revealing
+ * a map mid-scroll would show it sliding across the screen.
  */
 function whenScrollSettles(run: () => void): () => void {
   let quietTimer = 0;
   function stopListening() {
     window.clearTimeout(quietTimer);
     window.clearTimeout(deadlineTimer);
-    // Scroll events do not bubble, so a listener on `document` only sees them
-    // during the capture phase. That saves having to know which element scrolls.
+    // Scroll events do not bubble, so the document listener uses the capture
+    // phase and need not know which element scrolls.
     document.removeEventListener("scroll", restartQuietTimer, { capture: true });
   }
   function settle() {
@@ -44,8 +41,8 @@ function whenScrollSettles(run: () => void): () => void {
 }
 
 /**
- * False until the page stops scrolling. Runs alongside the map's download
- * rather than before it, so the download finishes last and this costs nothing.
+ * False until scrolling settles. Runs concurrently with the map download,
+ * which takes longer, so this wait adds no perceptible delay.
  */
 export function useScrollSettled(enabled: boolean): boolean {
   const [settled, setSettled] = useState(false);
@@ -71,12 +68,10 @@ function isNearViewport(el: HTMLElement): boolean {
 }
 
 /**
- * False until the map belonging to `slotRef` may start loading, which is as
- * soon as that space is on screen or close to it. Every embedded map is an
- * entire second web app, so a conversation holding several would otherwise
- * start them all at once. Nothing beyond visibility holds this back: the iframe
- * downloads while fully transparent, so delay here is time spent staring at an
- * empty card.
+ * False until the slot is on or near the viewport, which is when the map may
+ * start loading. Each embed is a full web app, so this prevents a long
+ * conversation from starting every map at once. Visibility is the only gate,
+ * since the iframe downloads while transparent.
  */
 export function useLazyMapMount(
   slotRef: RefObject<HTMLDivElement | null>,
@@ -88,9 +83,8 @@ export function useLazyMapMount(
       return noCleanup;
     }
     const slot = slotRef.current;
-    // Usually the map sits at the end of an answer already on screen. Measuring
-    // directly starts the download now, where an IntersectionObserver reports
-    // the same thing a frame or two later; the observer is for maps further up.
+    // Most maps mount already on screen. A direct measurement starts the
+    // download immediately. The observer covers maps scrolled out of view.
     if (slot === null || typeof IntersectionObserver !== "function" || isNearViewport(slot)) {
       setReady(true);
       return noCleanup;
@@ -123,14 +117,12 @@ function reclaimFocusFromIframe() {
 let focusReclaimCount = 0;
 
 /**
- * Once someone clicks inside an iframe it holds keyboard focus, and their next
- * click back in the page is spent handing focus back rather than doing what
- * they clicked. Taking focus back as the pointer comes down saves that click.
- *
- * One listener covers every map on the page, installed while at least one is
- * present and removed with the last, which is what the counter tracks.
- * `pointerdown` is the cheap choice: a hover event would run on every element
- * the cursor crosses anywhere on the page, once per map on screen.
+ * A click inside an iframe leaves it holding keyboard focus, and the next
+ * click back in the page is spent returning focus. Reclaiming focus on
+ * pointerdown saves that click. One shared listener serves every map: the
+ * counter installs it with the first and removes it with the last.
+ * pointerdown is inexpensive, whereas hover events would fire for every
+ * element the pointer crosses.
  */
 export function useReclaimIframeFocus(enabled: boolean): void {
   useEffect(() => {

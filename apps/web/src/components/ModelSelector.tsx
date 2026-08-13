@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 
@@ -7,7 +7,7 @@ type Model = {
   label: string;
 };
 
-function useCloseOnOutsideOrEscape(
+export function useCloseOnOutsideOrEscape(
   open: boolean,
   setOpen: (open: boolean) => void,
   wrapperRef: React.RefObject<HTMLDivElement | null>,
@@ -48,20 +48,27 @@ function ModelSelectorTrigger({
   setOpen: (updater: (o: boolean) => boolean) => void;
   currentLabel: string;
 }) {
+  // Compact by default: show only the first word of the model name (e.g.
+  // "GPT-5.4"). The full names are visible once the dropdown expands.
+  const shortLabel = currentLabel.split(" ")[0];
   return (
     <button
       type="button"
       onClick={() => {
         setOpen((o) => !o);
       }}
-      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-700 text-xs font-medium hover:border-neutral-300 hover:bg-neutral-50"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-neutral-700 text-sm font-medium transition-colors hover:bg-neutral-100"
       aria-haspopup="listbox"
       aria-expanded={open}
       title="Change the LLM used for new messages"
     >
-      <span className="text-neutral-500">Model:</span>
-      <span>{currentLabel}</span>
-      <ChevronDown className="h-3 w-3 text-neutral-400" aria-hidden />
+      <span className="max-w-[9rem] truncate">{shortLabel}</span>
+      <ChevronDown
+        className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform duration-200 ${
+          open ? "rotate-180" : ""
+        }`}
+        aria-hidden
+      />
     </button>
   );
 }
@@ -83,50 +90,71 @@ function ModelOption({
           onSelect(model.id);
         }}
         aria-pressed={selected}
-        className={`flex w-full items-start px-3 py-2 text-left text-sm hover:bg-neutral-50 ${
-          selected ? "bg-neutral-50" : ""
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100 ${
+          selected ? "bg-neutral-100" : ""
         }`}
       >
-        <span className={`font-medium ${selected ? "text-red-800" : "text-neutral-900"}`}>
+        <span
+          className={`flex-1 truncate font-medium ${
+            selected ? "text-red-800" : "text-neutral-900"
+          }`}
+        >
           {model.label}
         </span>
+        {selected && <Check className="h-4 w-4 shrink-0 text-red-800" aria-hidden />}
       </button>
     </li>
   );
 }
 
 /** Compact "currently using model X" dropdown for the chat input bar. */
-export function ModelSelector() {
+/** Model list plus the user's current pick, with a setter that persists it. */
+function useModelPreference() {
   const { data: modelsData } = $api.useQuery("get", "/me/models");
-  const { data: prefs, refetch: refetchPrefs } = $api.useQuery("get", "/me/preferences");
+  const { data: prefs, refetch: refetchPrefs } = $api.useQuery(
+    "get",
+    "/me/preferences",
+  );
   const updatePreferences = $api.useMutation("patch", "/me/preferences", {
     onSuccess: () => {
       void refetchPrefs();
     },
   });
-
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useCloseOnOutsideOrEscape(open, setOpen, wrapperRef);
-
   const models = modelsData?.models ?? [];
   const currentId = prefs?.preferredModel;
-  const currentLabel = models.find((m) => m.id === currentId)?.label ?? "Loading...";
-
-  function selectModel(id: string) {
-    setOpen(false);
+  const currentLabel = models.find((m) => m.id === currentId)?.label ??
+    "Loading...";
+  function persistModel(id: string) {
     if (id === currentId) {
       return;
     }
     updatePreferences.mutate({ body: { preferredModel: id } });
   }
+  return { models, currentId, currentLabel, persistModel };
+}
+
+export function ModelSelector() {
+  const { models, currentId, currentLabel, persistModel } =
+    useModelPreference();
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useCloseOnOutsideOrEscape(open, setOpen, wrapperRef);
+
+  function selectModel(id: string) {
+    setOpen(false);
+    persistModel(id);
+  }
 
   return (
     <div ref={wrapperRef} className="relative inline-block text-left">
-      <ModelSelectorTrigger open={open} setOpen={setOpen} currentLabel={currentLabel} />
+      <ModelSelectorTrigger
+        open={open}
+        setOpen={setOpen}
+        currentLabel={currentLabel}
+      />
       {open && models.length > 0 && (
-        <ul className="absolute top-full left-0 z-20 mt-1 w-72 max-h-80 overflow-y-auto rounded-md border border-neutral-200 bg-white py-1 shadow-lg">
+        <ul className="absolute bottom-full right-0 z-20 mb-2 max-h-80 w-56 origin-bottom-right overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg transition duration-150 ease-out starting:scale-95 starting:opacity-0">
           {models.map((m) => (
             <ModelOption
               key={m.id}

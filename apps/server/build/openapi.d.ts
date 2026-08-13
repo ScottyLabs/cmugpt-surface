@@ -152,6 +152,41 @@ export interface paths {
     patch: operations["UpdatePreferences"];
     trace?: never;
   };
+  "/me/memories": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Search the authenticated user's learned and explicitly remembered facts. */
+    get: operations["ListMemories"];
+    put?: never;
+    post?: never;
+    /** @description Delete every learned and explicitly remembered fact for the user. */
+    delete: operations["ClearMemories"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me/memories/{kind}/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** @description Delete one learned or explicitly remembered fact. */
+    delete: operations["DeleteMemory"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -173,6 +208,12 @@ export interface components {
       dest: string | null;
       destLabel: string | null;
     };
+    SavedMemoryDto: {
+      id: string;
+      /** @enum {string} */
+      kind: "learned" | "remembered";
+      fact: string;
+    };
     MessageDto: {
       id: string;
       /** @enum {string} */
@@ -180,6 +221,8 @@ export interface components {
       content: string;
       createdAt: string;
       cmuMaps?: components["schemas"]["CmuMapsDto"] | null;
+      /** @description The memory this turn saved, persisted so the chip survives reloads. */
+      savedMemory?: components["schemas"]["SavedMemoryDto"] | null;
       /**
        * Format: double
        * @description Agent confidence for the just-generated turn. Not persisted; only set on
@@ -227,6 +270,25 @@ export interface components {
     PatchUserPreferencesBody: {
       preferredModel?: string;
     };
+    /** @enum {string} */
+    AgentMemoryType: "learned" | "remembered";
+    AgentMemoryItem: {
+      id: string;
+      type: components["schemas"]["AgentMemoryType"];
+      text: string;
+      createdAt: string;
+    };
+    AgentMemoryPage: {
+      items: components["schemas"]["AgentMemoryItem"][];
+      /** Format: double */
+      total: number;
+      /** Format: double */
+      limit: number;
+      /** Format: double */
+      offset: number;
+    };
+    MemoryPageDto: components["schemas"]["AgentMemoryPage"];
+    MemoryTypeDto: components["schemas"]["AgentMemoryType"];
   };
   responses: never;
   parameters: never;
@@ -530,6 +592,79 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UserPreferencesDto"];
+        };
+      };
+    };
+  };
+  ListMemories: {
+    parameters: {
+      query?: {
+        q?: string;
+        kind?: components["schemas"]["MemoryTypeDto"];
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MemoryPageDto"];
+        };
+      };
+    };
+  };
+  ClearMemories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** Format: double */
+            removed: number;
+            /** @enum {string} */
+            status: "cleared";
+          };
+        };
+      };
+    };
+  };
+  DeleteMemory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        kind: components["schemas"]["MemoryTypeDto"];
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @enum {string} */
+            status: "deleted";
+          };
         };
       };
     };

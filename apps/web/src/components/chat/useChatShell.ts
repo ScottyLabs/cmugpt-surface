@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
+import { useIsMobile } from "@/lib/useIsMobile.ts";
+import { useLearnedMemoryChip, useMemoryController } from "./useMemoryChips.ts";
 import { useAutoSelectFirstChat, useComposerAutoFocus } from "./chatEffects.ts";
 import { useAttachments } from "./useAttachments.ts";
 import { type ChatDerived, useChatDerived } from "./useChatDerived.ts";
@@ -12,7 +14,10 @@ import { useChatSearch } from "./useChatSearch.ts";
 import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
-import { type StreamController, useStreamController } from "./useStreamController.ts";
+import {
+  type StreamController,
+  useStreamController,
+} from "./useStreamController.ts";
 import { useToolToggles } from "./useToolToggles.ts";
 
 function useChatShellEffects(
@@ -63,13 +68,53 @@ function useChatShellCore() {
     messagesLength: session.messages.length,
     streamingTextLength: stream.streamingText.length,
   });
-  return { auth, session, mutations, stream, attachments, optimistic, derived, scroll };
+  return {
+    auth,
+    session,
+    mutations,
+    stream,
+    attachments,
+    optimistic,
+    derived,
+    scroll,
+  };
 }
 
-export function useChatShell() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } =
-    useChatShellCore();
+function useShellMemory(session: ChatSession, stream: StreamController) {
+  const { refetchMessages } = session;
+  const chatIdRef = useRef(session.chatId);
+  chatIdRef.current = session.chatId;
+  const messagesRef = useRef(session.messages);
+  messagesRef.current = session.messages;
+  useLearnedMemoryChip(
+    stream.isStreaming,
+    chatIdRef,
+    messagesRef,
+    refetchMessages,
+  );
+  return useMemoryController(chatIdRef, refetchMessages);
+}
+
+// Opening a chat (from the sidebar or a result) leaves search, so the panel
+// is never a dead end. Selecting a result already closes search; this covers
+// navigating via the sidebar while search is open.
+function useSearchExitOnChatChange(
+  chatId: string | undefined,
+  closeSearch: () => void,
+): void {
+  const prevChatIdRef = useRef(chatId);
+  useEffect(() => {
+    if (prevChatIdRef.current !== chatId) {
+      prevChatIdRef.current = chatId;
+      closeSearch();
+    }
+  }, [chatId, closeSearch]);
+}
+
+function useShellPanels(
+  core: ReturnType<typeof useChatShellCore>,
+) {
+  const { session, mutations, derived } = core;
   const share = useShareController({
     patchChat: mutations.patchChat,
     chatId: session.chatId,
@@ -80,8 +125,28 @@ export function useChatShell() {
     navigate: session.navigate,
   });
   const search = useChatSearch();
+  useSearchExitOnChatChange(session.chatId, search.closeSearch);
   const modal = useModalState();
   const tools = useToolToggles();
+  return { share, sidebar, search, modal, tools };
+}
+
+export function useChatShell() {
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
+  const core = useChatShellCore();
+  const {
+    auth,
+    session,
+    mutations,
+    stream,
+    attachments,
+    optimistic,
+    derived,
+    scroll,
+  } = core;
+  const memory = useShellMemory(session, stream);
+  const panels = useShellPanels(core);
   const composer = useComposer({
     session,
     mutations,
@@ -90,13 +155,14 @@ export function useChatShell() {
     scroll,
     canEditChat: derived.canEditChat,
     setOptimisticUserMessage: optimistic.setOptimisticUserMessage,
-    disabledToolIds: tools.disabledToolIds,
+    disabledToolIds: panels.tools.disabledToolIds,
   });
 
   useChatShellEffects(session, stream, derived, composer);
 
   return {
     auth,
+    isMobile,
     sidebarOpen,
     setSidebarOpen,
     session,
@@ -105,13 +171,10 @@ export function useChatShell() {
     attachments,
     optimistic,
     derived,
-    share,
-    sidebar,
-    search,
-    modal,
-    tools,
+    ...panels,
     scroll,
     composer,
+    memory,
   };
 }
 

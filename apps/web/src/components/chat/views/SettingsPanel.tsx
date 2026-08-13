@@ -109,7 +109,7 @@ function ToolToggleButton({
 function ToolToggles({ c }: { c: ChatShellController }) {
   const { tools } = c;
   return (
-    <div className="flex flex-nowrap gap-2">
+    <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
       {CHAT_TOOLS.map((tool) => (
         <ToolToggleButton
           key={tool.id}

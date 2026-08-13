@@ -1,42 +1,45 @@
+import { useMemo } from "react";
 import type { ChatShellController } from "../useChatShell.ts";
 import { Composer } from "./Composer.tsx";
 
-const SUGGESTIONS = [
-  "What time does Hunan close today?",
-  "Plan my Fall 26 schedule",
-  "Navigate me from Tepper to Rotunda Hall",
+// Rotating CMU / ScottyLabs flavored greetings (no em dashes). One is picked at
+// random each time the new-chat screen mounts.
+const NAMED_GREETINGS: ((name: string) => string)[] = [
+  (n) => `Hi ${n}, where are we headed on campus?`,
+  (n) => `Ready when you are, ${n}.`,
+  (n) => `What do you need on campus today, ${n}?`,
+  (n) => `Hey ${n}, ask me anything about CMU.`,
+  (n) => `Lost on campus, ${n}? I've got you.`,
+  (n) => `Let's find your way around CMU, ${n}.`,
+  (n) => `Good to see you, ${n}. What's the plan?`,
 ];
 
+const ANON_GREETINGS: string[] = [
+  "What can I help you find on campus?",
+  "Ask me anything about CMU.",
+  "Where are we headed on campus today?",
+];
+
+function pick<T>(list: T[]): T {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+/** Centered greeting with the composer vertically centered on screen and the
+ *  greeting floating just above it (the conversation footer composer is hidden
+ *  in this state). */
 export function WelcomeScreen({ c }: { c: ChatShellController }) {
-  const { composer } = c;
+  const name = c.derived.displayName;
+  const firstName = name.includes("@") ? "" : name.split(" ")[0];
+  const greeting = useMemo(
+    () => (firstName ? pick(NAMED_GREETINGS)(firstName) : pick(ANON_GREETINGS)),
+    [firstName],
+  );
   return (
-    <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
-      <div className="flex flex-col items-start gap-2">
-        <h1 className="text-left text-[2.81rem] font-medium text-black leading-8">Hi there!</h1>
-        <p className="text-left text-2xl font-medium text-black">Welcome to CMUGPT...</p>
-      </div>
-      <div className="flex flex-col max-w-3xl gap-[0.625rem] rounded-[1.875rem] bg-white px-6 py-4 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-        <Composer
-          c={c}
-          rowClassName="flex items-end gap-2"
-          textareaClassName="min-h-[7.625rem] max-h-40 flex-1 resize-none bg-transparent py-2 text-sm font-normal leading-snug text-neutral-900 outline-none placeholder:text-fg-neutral-secondary placeholder:font-normal disabled:opacity-50"
-        />
-      </div>
-      <div className="flex justify-center items-center gap-3">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => {
-              composer.setDraft(s);
-              composer.draftComposerRef.current?.focus();
-            }}
-            className="whitespace-nowrap flex items-center justify-center gap-2 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-[0.5625rem] text-sm font-semibold text-fg-neutral-primary hover:bg-neutral-200 shadow-sm"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+    <div className="relative mx-auto w-full max-w-[48.25rem] -translate-y-6">
+      <h1 className="absolute inset-x-0 bottom-full mb-8 text-center text-xl font-medium text-black sm:text-2xl">
+        {greeting}
+      </h1>
+      <Composer c={c} />
     </div>
   );
 }

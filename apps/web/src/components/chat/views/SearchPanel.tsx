@@ -20,7 +20,7 @@ function relativeTime(iso: string): string {
 function SearchBox({ search }: { search: ChatShellController["search"] }) {
   const { searchQ, setSearchQ, searchInputRef } = search;
   return (
-    <div className="mt-6 ml-6 flex h-14 shrink-0 items-center justify-start px-4 sm:px-6">
+    <div className="mt-6 ml-0 sm:ml-6 flex h-14 shrink-0 items-center justify-start px-4 sm:px-6">
       <div className="flex w-full max-w-[22.5rem] items-center gap-3 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2.5">
         <SearchIcon className="shrink-0 text-fg-neutral-primary" />
         <input
@@ -61,7 +61,7 @@ function EmptyPrompt() {
 function NoResultsState({ searchQ }: { searchQ: string }) {
   return (
     <>
-      <div className="ml-14 mt-10">
+      <div className="ml-4 mt-10 sm:ml-14">
         <p className="text-base font-medium text-fg-neutral-tertiary">
           Results for: <span className="text-black">{searchQ}</span>
         </p>
@@ -83,11 +83,11 @@ interface ResultsGridProps {
 
 function ResultsGrid({ searchQ, searchChats, onSelectSearchResult, onNewChat }: ResultsGridProps) {
   return (
-    <div className="px-10 pb-6 pt-8">
+    <div className="px-4 sm:px-10 pb-6 pt-8">
       <p className="mb-6 text-base font-medium text-fg-neutral-tertiary">
         Results for: <span className="text-black">{searchQ}</span>
       </p>
-      <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-4">
         {searchChats.map((chat) => (
           <button
             key={chat.id}

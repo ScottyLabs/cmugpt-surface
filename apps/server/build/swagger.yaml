@@ -63,6 +63,23 @@ components:
         - destLabel
       type: object
       additionalProperties: false
+    SavedMemoryDto:
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - learned
+            - remembered
+        fact:
+          type: string
+      required:
+        - id
+        - kind
+        - fact
+      type: object
+      additionalProperties: false
     MessageDto:
       properties:
         id:
@@ -81,6 +98,11 @@ components:
           allOf:
             - $ref: "#/components/schemas/CmuMapsDto"
           nullable: true
+        savedMemory:
+          allOf:
+            - $ref: "#/components/schemas/SavedMemoryDto"
+          nullable: true
+          description: The memory this turn saved, persisted so the chip survives reloads.
         confidence:
           type: number
           format: double
@@ -161,8 +183,7 @@ components:
         Every entry is the current mini / low-cost tier of its provider, and
         every
 
-        entry must support tool calling: the agent binds the CMU MCP tools, so
-        a
+        entry must support tool calling: the agent binds the CMU MCP tools, so a
 
         model without tool support cannot answer campus questions. The first
         entry
@@ -192,6 +213,54 @@ components:
           type: string
       type: object
       additionalProperties: false
+    AgentMemoryType:
+      type: string
+      enum:
+        - learned
+        - remembered
+    AgentMemoryItem:
+      properties:
+        id:
+          type: string
+        type:
+          $ref: "#/components/schemas/AgentMemoryType"
+        text:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - text
+        - createdAt
+      type: object
+      additionalProperties: false
+    AgentMemoryPage:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/AgentMemoryItem"
+          type: array
+        total:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        offset:
+          type: number
+          format: double
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      type: object
+      additionalProperties: false
+    MemoryPageDto:
+      $ref: "#/components/schemas/AgentMemoryPage"
+    MemoryTypeDto:
+      $ref: "#/components/schemas/AgentMemoryType"
   securitySchemes:
     oidc:
       type: openIdConnect
@@ -471,5 +540,100 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/PatchUserPreferencesBody"
+  /me/memories:
+    get:
+      operationId: ListMemories
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryPageDto"
+      description: Search the authenticated user's learned and explicitly remembered facts.
+      security:
+        - oidc: []
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: kind
+          required: false
+          schema:
+            $ref: "#/components/schemas/MemoryTypeDto"
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 200
+            format: double
+            type: number
+        - in: query
+          name: offset
+          required: false
+          schema:
+            default: 0
+            format: double
+            type: number
+    delete:
+      operationId: ClearMemories
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  removed:
+                    type: number
+                    format: double
+                  status:
+                    type: string
+                    enum:
+                      - cleared
+                    nullable: false
+                required:
+                  - removed
+                  - status
+                type: object
+      description: Delete every learned and explicitly remembered fact for the user.
+      security:
+        - oidc: []
+      parameters: []
+  /me/memories/{kind}/{id}:
+    delete:
+      operationId: DeleteMemory
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - deleted
+                    nullable: false
+                required:
+                  - status
+                type: object
+      description: Delete one learned or explicitly remembered fact.
+      security:
+        - oidc: []
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            $ref: "#/components/schemas/MemoryTypeDto"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
 servers:
   - url: /
