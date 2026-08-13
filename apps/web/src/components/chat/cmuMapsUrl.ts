@@ -1,8 +1,8 @@
 /**
- * CMU Maps is a separate web app, hosted at the origin below, that the chat
- * embeds in an iframe when an answer is about a campus building or a walking
- * route. This file covers the URLs that point at it.
+ * URL handling for CMU Maps, the separate web app the chat embeds in an
+ * iframe for building and route answers.
  */
+
 export const CMU_MAPS_ORIGIN = "https://maps.scottylabs.org";
 
 function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
@@ -17,11 +17,11 @@ function isSafeCmuMapsUrl(url: string | null | undefined): url is string {
 }
 
 /**
- * The map URL to embed, or null if it does not point at CMU Maps. Turning away
- * every other origin is what makes it safe to load the result into an iframe
- * with as many permissions as this one gets, so nothing should embed a map URL
- * without passing it through here. The rewrite below translates an older name
- * for the destination parameter.
+ * The map URL to embed, or null when it is not on the CMU Maps origin. The
+ * origin check is what makes the iframe permissions safe, so every embedded
+ * map URL must pass through here. It also renames the legacy `dest` parameter
+ * to `dst`. The agent addresses buildings by code, so waypoints require no
+ * rewriting.
  */
 export function normalizedCmuMapsUrl(url: string | null | undefined): string | null {
   if (!isSafeCmuMapsUrl(url)) {
@@ -39,11 +39,10 @@ export function normalizedCmuMapsUrl(url: string | null | undefined): string | n
 const prefetchedMapUrls = new Set<string>();
 
 /**
- * Ask the browser to download a map page before anything on screen displays it.
- * The server sends the URL partway through writing an answer, but the iframe is
- * not created until the answer is finished, so otherwise the download would not
- * start until then. The `<link>` is deliberately never removed: removing one
- * can cancel a download still in progress.
+ * Prefetch a map page before the iframe exists. The URL arrives while the
+ * answer streams, but the iframe mounts only once streaming completes. The
+ * link element is never removed, since removal can cancel an in-flight
+ * download.
  */
 export function prefetchMapDocument(url: string): void {
   if (prefetchedMapUrls.has(url)) {
