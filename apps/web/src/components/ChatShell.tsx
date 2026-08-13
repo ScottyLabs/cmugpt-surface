@@ -27,8 +27,8 @@ export function ChatShell() {
       <main className="relative flex min-w-0 flex-1 flex-col">
         {c.search.searchMode ? <SearchPanel c={c} /> : (
           <>
-            <ConversationView c={c} />
             <ChatHeaderBar c={c} />
+            <ConversationView c={c} />
             <ComposerFooter c={c} />
           </>
         )}

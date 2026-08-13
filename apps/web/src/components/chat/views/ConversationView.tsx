@@ -12,7 +12,7 @@ export function ConversationView({ c }: { c: ChatShellController }) {
     <div
       ref={scroll.scrollContainerRef}
       className={`min-h-0 flex-1 overflow-y-auto px-4 flex flex-col ${
-        showWelcome ? "justify-center py-6" : "justify-start pt-20 pb-2"
+        showWelcome ? "justify-center py-6" : "justify-start pt-2 pb-2 md:pt-20"
       }`}
       onScroll={scroll.onScroll}
     >
