@@ -76,22 +76,24 @@ function HeaderActions({ c }: { c: ChatShellController }) {
 }
 
 /**
- * Floating overlay instead of a solid bar: only the corner controls are drawn,
- * so the conversation scrolls all the way to the top underneath them. The
- * container is click-through (pointer-events-none) except over the controls.
+ * On desktop this is a floating overlay: only the corner controls are drawn
+ * and the conversation scrolls all the way to the top underneath them, with
+ * the container click-through (pointer-events-none) except over the controls.
+ * On mobile it is a solid white row in normal flow instead, so scrolling
+ * ends at the row and text never passes under the logo.
  */
 export function ChatHeaderBar({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
-      <div className="pointer-events-auto">
+    <div className="z-10 flex items-center justify-between gap-2 bg-white p-3 sm:p-4 md:pointer-events-none md:absolute md:inset-x-0 md:top-0 md:items-start md:bg-transparent">
+      <div className="md:pointer-events-auto">
         {
           /* The desktop collapsed rail carries its own open button, so the header
             only needs one on mobile, where the sidebar is off-screen. */
         }
         {!sidebarOpen && <SidebarOpenButton c={c} className="md:hidden" />}
       </div>
-      <div className="pointer-events-auto">
+      <div className="md:pointer-events-auto">
         <HeaderActions c={c} />
       </div>
     </div>
