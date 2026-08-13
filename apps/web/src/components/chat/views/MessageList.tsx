@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
 import { MemorySavedNotice } from "@/components/MemorySavedNotice.tsx";
 import type { SavedMemory } from "../types.ts";
@@ -73,17 +72,19 @@ export function MessageList({ c }: { c: ChatShellController }) {
       {session.messages.map((m) =>
         m.role === "user"
           ? <UserBubble key={m.id} content={m.content} />
-          : (
-            <Fragment key={m.id}>
-              {m.savedMemory != null && (
-                <MemorySavedNotice
-                  memory={m.savedMemory as SavedMemory}
-                  onDeleted={() => memory.onSavedMemoryDeleted(m.id)}
-                />
-              )}
-              <AssistantMessage m={m} />
-            </Fragment>
+          : m.savedMemory != null
+          ? (
+            <div key={m.id} className="mt-8 first:mt-0">
+              <MemorySavedNotice
+                memory={m.savedMemory as SavedMemory}
+                onDeleted={() => memory.onSavedMemoryDeleted(m.id)}
+              />
+              <div className="mt-2.5">
+                <AssistantMessage m={m} />
+              </div>
+            </div>
           )
+          : <AssistantMessage key={m.id} m={m} />
       )}
       {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null
         ? (
