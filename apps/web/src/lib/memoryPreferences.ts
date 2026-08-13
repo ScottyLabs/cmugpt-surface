@@ -4,9 +4,9 @@ export const SKIP_DELETE_CONFIRMATION_KEY =
 // Scoped per user so the preference cannot leak between accounts on a
 // shared device.
 function storageKey(userSub: string | undefined): string {
-  return userSub
-    ? `${SKIP_DELETE_CONFIRMATION_KEY}.${userSub}`
-    : SKIP_DELETE_CONFIRMATION_KEY;
+  return userSub === undefined || userSub === ""
+    ? SKIP_DELETE_CONFIRMATION_KEY
+    : `${SKIP_DELETE_CONFIRMATION_KEY}.${userSub}`;
 }
 
 export function shouldSkipDeleteConfirmation(userSub?: string): boolean {

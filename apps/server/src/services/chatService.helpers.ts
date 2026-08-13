@@ -1,17 +1,13 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { type callAgent, fetchChatTitle, streamAgent } from "../lib/agentClient.ts";
-import { agentUserId } from "../lib/agentUserId.ts";
+import { fetchChatTitle } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import type {
   ChatListItemDto,
   ChatRow,
-  ChatStreamEvent,
-  CmuMapsDto,
   MessageDto,
   MessageRow,
-  SavedMemoryDto,
 } from "./chatService.types.ts";
 
 export const DEFAULT_CHAT_TITLE = "New chat";
@@ -158,125 +154,3 @@ export async function prepareAssistantTurn(
   return { userRow, messageHistory, titledByThisMessage: chat.title === DEFAULT_CHAT_TITLE };
 }
 
-interface StreamCollectResult {
-  result: Awaited<ReturnType<typeof callAgent>> | undefined;
-  streamedText: string;
-  streamedCmuMaps: CmuMapsDto | null;
-  streamedSavedMemory: SavedMemoryDto | null;
-  errored: boolean;
-}
-
-export async function* runAgentStream(
-  content: string,
-  messageHistory: { role: string; content: string }[],
-  userSub: string,
-  preferredModel: string,
-  disabledTools: string[],
-  signal: AbortSignal | undefined,
-): AsyncGenerator<ChatStreamEvent, StreamCollectResult, undefined> {
-  let result: Awaited<ReturnType<typeof callAgent>> | undefined;
-  let streamedText = "";
-  let streamedCmuMaps: CmuMapsDto | null = null;
-  let streamedSavedMemory: SavedMemoryDto | null = null;
-  try {
-    for await (const ev of streamAgent(
-      {
-        query: content,
-        ...(messageHistory.length > 0 && { messageHistory }),
-        userId: agentUserId(userSub),
-        model: preferredModel,
-        ...(disabledTools.length > 0 && { disabledTools }),
-      },
-      signal,
-    )) {
-      if (ev.type === "status") {
-        yield { type: "status", text: ev.text };
-      } else if (ev.type === "memory") {
-        // An explicit remember carries the fact to persist on this message.
-        // A forget clears any pending chip for the turn.
-        if (ev.op === "add" && ev.id !== undefined && ev.fact !== undefined) {
-          streamedSavedMemory = {
-            id: ev.id,
-            kind: ev.kind ?? "remembered",
-            fact: ev.fact,
-          };
-        } else if (ev.op === "remove") {
-          streamedSavedMemory = null;
-        }
-        yield ev;
-      } else if (ev.type === "map") {
-        streamedCmuMaps = ev.cmuMaps;
-        yield { type: "map", cmuMaps: ev.cmuMaps };
-      } else if (ev.type === "delta") {
-        streamedText += ev.text;
-        yield { type: "delta", text: ev.text };
-      } else if (ev.type === "done") {
-        ({ result } = ev);
-      } else if (ev.type === "error") {
-        yield { type: "error", message: ev.message };
-        return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
-      }
-    }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "Agent request failed";
-    yield { type: "error", message: msg };
-    return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
-  }
-  return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: false };
-}
-
-export async function* finalizeAssistantMessage(
-  chatId: string,
-  result: Awaited<ReturnType<typeof callAgent>> | undefined,
-  streamedText: string,
-  streamedCmuMaps: CmuMapsDto | null,
-  streamedSavedMemory: SavedMemoryDto | null,
-): AsyncGenerator<ChatStreamEvent, void, undefined> {
-  let finalResult = result;
-  if (finalResult === undefined) {
-    if (!streamedText.trim()) {
-      yield {
-        type: "error",
-        message: "Agent stream ended without a response",
-      };
-      return;
-    }
-    // The stream died before the agent's final event. Keep the partial text
-    // but mark it, instead of persisting it as a complete answer.
-    const truncationNote = "\n\n_(This response was cut off before completing.)_";
-    yield { type: "delta", text: truncationNote };
-    finalResult = { text: streamedText + truncationNote };
-  } else if (!streamedText) {
-    yield { type: "delta", text: finalResult.text };
-  }
-
-  let finalCmuMaps = streamedCmuMaps;
-  if (finalResult.cmuMaps && finalCmuMaps === null) {
-    finalCmuMaps = finalResult.cmuMaps;
-    yield { type: "map", cmuMaps: finalResult.cmuMaps };
-  }
-
-  const [assistantRow] = await db
-    .insert(messages)
-    .values({
-      chatId,
-      role: "assistant",
-      content: finalResult.text,
-      cmuMaps: finalResult.cmuMaps ?? finalCmuMaps,
-      savedMemory: streamedSavedMemory,
-    })
-    .returning();
-
-  await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
-
-  if (assistantRow === undefined) {
-    yield { type: "error", message: "Failed to persist assistant message" };
-    return;
-  }
-
-  const finalMessage: MessageDto = messageRowToDto(assistantRow);
-  if (typeof finalResult.confidence === "number") {
-    finalMessage.confidence = finalResult.confidence;
-  }
-  yield { type: "done", message: finalMessage };
-}

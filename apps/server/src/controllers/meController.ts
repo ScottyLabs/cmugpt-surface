@@ -91,7 +91,7 @@ export class MeController {
     // non-integer paging with a 422 that would surface here as a 500.
     const query = q?.trim().slice(0, 200);
     return memoryService.list(authenticatedSub(req), {
-      ...(query && { q: query }),
+      ...(query !== undefined && query !== "" ? { q: query } : {}),
       ...(kind && { kind }),
       limit: Math.min(Math.max(Math.floor(limit), 1), 200),
       offset: Math.max(Math.floor(offset), 0),

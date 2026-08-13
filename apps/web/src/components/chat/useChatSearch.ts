@@ -1,15 +1,19 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 
+function searchQueryInit(searchQ: string) {
+  const q = searchQ.trim();
+  return q === "" ? undefined : ({ params: { query: { q } } } as const);
+}
+
 export function useChatSearch() {
   const [searchMode, setSearchMode] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const searchChatsQueryInit = useMemo(() => {
-    const q = searchQ.trim();
-    return q === "" ? undefined : ({ params: { query: { q } } } as const);
-  }, [searchQ]);
+  const searchChatsQueryInit = useMemo(() => searchQueryInit(searchQ), [
+    searchQ,
+  ]);
 
   const { data: searchChats = [], isLoading: searchChatsLoading } = $api
     .useQuery(

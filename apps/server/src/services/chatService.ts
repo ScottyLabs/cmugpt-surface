@@ -7,14 +7,13 @@ import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import {
   chatRowToListDto,
   DEFAULT_CHAT_TITLE,
-  finalizeAssistantMessage,
   getOwnedChat,
   getReadableChat,
   messageRowToDto,
   prepareAssistantTurn,
-  runAgentStream,
   upgradeChatTitle,
 } from "./chatService.helpers.ts";
+import { finalizeAssistantMessage, runAgentStream } from "./chatService.stream.ts";
 import type {
   ChatDetailDto,
   ChatListItemDto,
@@ -33,6 +32,34 @@ export type {
   MessageDto,
   PostMessageResultDto,
 } from "./chatService.types.ts";
+
+/** Persist a non-streamed answer and return it as a DTO. */
+async function persistAssistantReply(
+  chatId: string,
+  agentResult: Awaited<ReturnType<typeof callAgent>>,
+): Promise<MessageDto> {
+  const [assistantRow] = await db
+    .insert(messages)
+    .values({
+      chatId,
+      role: "assistant",
+      content: agentResult.text,
+      cmuMaps: agentResult.cmuMaps ?? null,
+    })
+    .returning();
+
+  await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
+
+  if (assistantRow === undefined) {
+    throw new Error("Failed to persist messages");
+  }
+
+  const assistantMessage: MessageDto = messageRowToDto(assistantRow);
+  if (typeof agentResult.confidence === "number") {
+    assistantMessage.confidence = agentResult.confidence;
+  }
+  return assistantMessage;
+}
 
 export const chatService = {
   async listChats(userSub: string, q?: string): Promise<ChatListItemDto[]> {
@@ -72,7 +99,7 @@ export const chatService = {
       .where(eq(messages.chatId, chatId))
       .orderBy(asc(messages.createdAt))
       .limit(200);
-    return rows.map(messageRowToDto);
+    return rows.map((row) => messageRowToDto(row));
   },
 
   /** Attach (or clear, with null) the saved-memory chip on one message.
@@ -129,26 +156,7 @@ export const chatService = {
 
     await titlePromise;
 
-    const [assistantRow] = await db
-      .insert(messages)
-      .values({
-        chatId,
-        role: "assistant",
-        content: agentResult.text,
-        cmuMaps: agentResult.cmuMaps ?? null,
-      })
-      .returning();
-
-    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
-
-    if (assistantRow === undefined) {
-      throw new Error("Failed to persist messages");
-    }
-
-    const assistantMessage: MessageDto = messageRowToDto(assistantRow);
-    if (typeof agentResult.confidence === "number") {
-      assistantMessage.confidence = agentResult.confidence;
-    }
+    const assistantMessage = await persistAssistantReply(chatId, agentResult);
     return {
       userMessage: messageRowToDto(userRow),
       assistantMessage,

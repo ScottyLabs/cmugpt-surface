@@ -10,7 +10,7 @@ function AboutPanel() {
         <p>
           CMUGPT is an AI assistant made by ScottyLabs for the Carnegie Mellon
           community. Ask it everyday campus questions, like how to get to class,
-          what's open for lunch, or which course to take next.
+          what&apos;s open for lunch, or which course to take next.
         </p>
         <p>
           It taps into campus knowledge through MCP tools: CMUMaps for

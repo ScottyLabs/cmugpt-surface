@@ -47,7 +47,7 @@ const isProduction = [
 ].some((value) => ["prod", "production"].includes(value?.toLowerCase() ?? ""));
 
 const sharedSecret = env.AGENT_SHARED_SECRET;
-if (isProduction && !sharedSecret?.trim()) {
+if (isProduction && (sharedSecret === undefined || sharedSecret.trim() === "")) {
   throw new Error(
     "AGENT_SHARED_SECRET is required in production so the browser-facing server can authenticate to cmugpt-agent.",
   );

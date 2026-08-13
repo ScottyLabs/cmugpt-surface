@@ -108,7 +108,8 @@ function ModelOption({
 }
 
 /** Compact "currently using model X" dropdown for the chat input bar. */
-export function ModelSelector() {
+/** Model list plus the user's current pick, with a setter that persists it. */
+function useModelPreference() {
   const { data: modelsData } = $api.useQuery("get", "/me/models");
   const { data: prefs, refetch: refetchPrefs } = $api.useQuery(
     "get",
@@ -119,23 +120,30 @@ export function ModelSelector() {
       void refetchPrefs();
     },
   });
+  const models = modelsData?.models ?? [];
+  const currentId = prefs?.preferredModel;
+  const currentLabel = models.find((m) => m.id === currentId)?.label ??
+    "Loading...";
+  function persistModel(id: string) {
+    if (id === currentId) {
+      return;
+    }
+    updatePreferences.mutate({ body: { preferredModel: id } });
+  }
+  return { models, currentId, currentLabel, persistModel };
+}
 
+export function ModelSelector() {
+  const { models, currentId, currentLabel, persistModel } =
+    useModelPreference();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useCloseOnOutsideOrEscape(open, setOpen, wrapperRef);
 
-  const models = modelsData?.models ?? [];
-  const currentId = prefs?.preferredModel;
-  const currentLabel = models.find((m) => m.id === currentId)?.label ??
-    "Loading...";
-
   function selectModel(id: string) {
     setOpen(false);
-    if (id === currentId) {
-      return;
-    }
-    updatePreferences.mutate({ body: { preferredModel: id } });
+    persistModel(id);
   }
 
   return (

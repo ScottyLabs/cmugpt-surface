@@ -108,16 +108,12 @@ function MapSlot({
   );
 }
 
-function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
-  const rawUrl = cmuMaps?.url;
-  const mapUrl = useMemo(() => normalizedCmuMapsUrl(rawUrl), [rawUrl]);
+/** Load and reload lifecycle for the map iframe, including recovery from
+ *  in-map navigations the card cannot show. */
+function useMapFrameLifecycle(mapUrl: string | null) {
   const [loaded, setLoaded] = useState(false);
   const [reloading, setReloading] = useState(false);
-  const slotRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
-  const showIframe = useLazyMapMount(slotRef, mapUrl !== null);
-  const settled = useScrollSettled(showIframe);
-  useReclaimIframeFocus(showIframe);
   // True while a load this card requested is pending. The frame also fires
   // load for its own navigations, whose cross-origin URL cannot be read, so
   // this flag is what distinguishes the two. Assigning src is the only way
@@ -155,6 +151,19 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
     setLoaded(false);
     reloadMap();
   }
+
+  return { loaded, reloading, frameRef, reloadMap, handleFrameLoad };
+}
+
+function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
+  const rawUrl = cmuMaps?.url;
+  const mapUrl = useMemo(() => normalizedCmuMapsUrl(rawUrl), [rawUrl]);
+  const slotRef = useRef<HTMLDivElement>(null);
+  const showIframe = useLazyMapMount(slotRef, mapUrl !== null);
+  const settled = useScrollSettled(showIframe);
+  useReclaimIframeFocus(showIframe);
+  const { loaded, reloading, frameRef, reloadMap, handleFrameLoad } =
+    useMapFrameLifecycle(mapUrl);
 
   if (!cmuMaps || mapUrl === null) {
     return null;

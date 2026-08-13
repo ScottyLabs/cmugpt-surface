@@ -167,7 +167,7 @@ async function agentFetch(path: string, method: "GET" | "DELETE" = "GET"): Promi
 
 function normalizeMemoryItem(value: unknown): AgentMemoryItem | null {
   if (typeof value !== "object" || value === null) return null;
-  const item = value as Record<string, unknown>;
+  const item: Record<string, unknown> = { ...value };
   if (
     typeof item["id"] !== "string" ||
     (item["type"] !== "learned" && item["type"] !== "remembered") ||
@@ -194,12 +194,14 @@ export async function listAgentMemories(
   } = {},
 ): Promise<AgentMemoryPage> {
   const params = new URLSearchParams();
-  if (options.q) params.set("q", options.q);
-  if (options.kind) params.set("kind", options.kind);
+  if (options.q !== undefined && options.q !== "") params.set("q", options.q);
+  if (options.kind !== undefined) params.set("kind", options.kind);
   params.set("limit", String(options.limit ?? 200));
   params.set("offset", String(options.offset ?? 0));
   const res = await agentFetch(`/memory/${encodeURIComponent(userId)}?${params.toString()}`);
-  const body = (await res.json()) as Record<string, unknown>;
+  const parsed: unknown = await res.json();
+  const body: Record<string, unknown> =
+    typeof parsed === "object" && parsed !== null ? { ...parsed } : {};
   const rawItems = Array.isArray(body.items) ? body.items : [];
   return {
     items: rawItems
@@ -224,8 +226,12 @@ export async function deleteAgentMemory(
 
 export async function clearAgentMemory(userId: string): Promise<number> {
   const res = await agentFetch(`/memory/${encodeURIComponent(userId)}`, "DELETE");
-  const body = (await res.json()) as { removed?: unknown };
-  return typeof body.removed === "number" ? body.removed : 0;
+  const parsed: unknown = await res.json();
+  const removed =
+    typeof parsed === "object" && parsed !== null && "removed" in parsed
+      ? parsed.removed
+      : undefined;
+  return typeof removed === "number" ? removed : 0;
 }
 
 export async function callAgent(request: AgentRequest, signal?: AbortSignal): Promise<AgentResult> {

@@ -40,7 +40,7 @@ async function handleSetSavedMemory(
 ): Promise<void> {
   const chatId = pathParam(req, "id");
   const messageId = pathParam(req, "messageId");
-  if (!chatId || !messageId) {
+  if (chatId === undefined || chatId === "" || messageId === undefined || messageId === "") {
     throw new BadRequestError("Chat id and message id are required");
   }
   const userSub = req.user?.sub;

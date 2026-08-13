@@ -11,7 +11,7 @@ function normalizeMemoryEvent(data: unknown): AgentStreamEvent | null {
   if (typeof data !== "object" || data === null) {
     return null;
   }
-  const body = data as Record<string, unknown>;
+  const body: Record<string, unknown> = { ...data };
   const op = body.op;
   const text = body.text;
   if ((op !== "add" && op !== "remove") || typeof text !== "string") {
@@ -177,22 +177,23 @@ function normalizeAgentStreamEvent(parsed: {
 // no cancel path in the UI.
 const STREAM_IDLE_TIMEOUT_MS = 90_000;
 
+type StreamReadResult = Awaited<
+  ReturnType<ReadableStreamDefaultReader<Uint8Array>["read"]>
+>;
+
 async function readWithIdleTimeout(
   reader: ReadableStreamDefaultReader<Uint8Array>,
-): Promise<ReadableStreamReadResult<Uint8Array>> {
+): Promise<StreamReadResult> {
   let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  const stalled = new Promise<StreamReadResult>((_, reject) => {
+    idleTimer = setTimeout(() => {
+      reject(new InternalServerError("Agent stream stalled"));
+    }, STREAM_IDLE_TIMEOUT_MS);
+  });
   try {
-    return await Promise.race([
-      reader.read(),
-      new Promise<never>((_, reject) => {
-        idleTimer = setTimeout(
-          () => reject(new InternalServerError("Agent stream stalled")),
-          STREAM_IDLE_TIMEOUT_MS,
-        );
-      }),
-    ]);
+    return await Promise.race([reader.read(), stalled]);
   } catch (e) {
-    await reader.cancel().catch(() => undefined);
+    await reader.cancel().catch(() => {});
     throw e;
   } finally {
     clearTimeout(idleTimer);

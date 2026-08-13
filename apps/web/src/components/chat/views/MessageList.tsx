@@ -1,6 +1,5 @@
 import ReactMarkdown from "react-markdown";
 import { MemorySavedNotice } from "@/components/MemorySavedNotice.tsx";
-import type { SavedMemory } from "../types.ts";
 import { CmuMapsEmbed, CmuMapsPrefetch } from "../cmuMaps.tsx";
 import {
   assistantDisplayContent,
@@ -60,32 +59,78 @@ function AssistantMessage({ m }: { m: MessageItem }) {
   );
 }
 
+// The saved-memory chip is persisted on the message it belongs to, so it
+// renders directly above that message and survives later questions, reloads,
+// and leaving the chat. Explicit remembers are persisted with the answer and
+// self-learned facts are attached a few seconds later.
+function MessageTurn(
+  { m, onSavedMemoryDeleted }: {
+    m: MessageItem;
+    onSavedMemoryDeleted: (messageId: string) => void;
+  },
+) {
+  if (m.role === "user") {
+    return <UserBubble content={m.content} />;
+  }
+  if (m.savedMemory === null || m.savedMemory === undefined) {
+    return <AssistantMessage m={m} />;
+  }
+  return (
+    <div className="mt-8 first:mt-0">
+      <MemorySavedNotice
+        memory={m.savedMemory}
+        onDeleted={() => {
+          onSavedMemoryDeleted(m.id);
+        }}
+      />
+      <div className="mt-2.5">
+        <AssistantMessage m={m} />
+      </div>
+    </div>
+  );
+}
+
+function StreamingTail({ stream }: { stream: ChatShellController["stream"] }) {
+  return (
+    <div className={`mt-8 ${markdownClass}`}>
+      {stream.streamingText === ""
+        ? <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
+        : (
+          <ReactMarkdown
+            remarkPlugins={remarkMarkdownPlugins}
+            rehypePlugins={rehypeMarkdownPlugins}
+            components={markdownComponents}
+          >
+            {markdownForReactComponent(stream.streamingText, {
+              streaming: true,
+            })}
+          </ReactMarkdown>
+        )}
+      {
+        /* No map is shown while the answer is still being written. This block
+          and the finished message above it are separate places in the
+          component tree, so anything put here is thrown away and rebuilt the
+          instant the answer completes, making the map load twice. It is
+          rendered once, by the finished message. Downloading it, on the other
+          hand, can start right now, which is what this does. */
+      }
+      <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
+    </div>
+  );
+}
+
 export function MessageList({ c }: { c: ChatShellController }) {
   const { session, stream, optimistic, scroll, memory } = c;
   const optimisticMessage = optimistic.optimisticUserMessage;
-  // The saved-memory chip is persisted on the message it belongs to, so it
-  // renders directly above that message and survives later questions,
-  // reloads, and leaving the chat. Explicit remembers are persisted with the
-  // answer; self-learned facts are attached a few seconds later.
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col">
-      {session.messages.map((m) =>
-        m.role === "user"
-          ? <UserBubble key={m.id} content={m.content} />
-          : m.savedMemory != null
-          ? (
-            <div key={m.id} className="mt-8 first:mt-0">
-              <MemorySavedNotice
-                memory={m.savedMemory as SavedMemory}
-                onDeleted={() => memory.onSavedMemoryDeleted(m.id)}
-              />
-              <div className="mt-2.5">
-                <AssistantMessage m={m} />
-              </div>
-            </div>
-          )
-          : <AssistantMessage key={m.id} m={m} />
-      )}
+      {session.messages.map((m) => (
+        <MessageTurn
+          key={m.id}
+          m={m}
+          onSavedMemoryDeleted={memory.onSavedMemoryDeleted}
+        />
+      ))}
       {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null
         ? (
           <UserBubble
@@ -94,32 +139,7 @@ export function MessageList({ c }: { c: ChatShellController }) {
           />
         )
         : null}
-      {stream.isStreaming && (
-        <div className={`mt-8 ${markdownClass}`}>
-          {stream.streamingText === ""
-            ? <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
-            : (
-              <ReactMarkdown
-                remarkPlugins={remarkMarkdownPlugins}
-                rehypePlugins={rehypeMarkdownPlugins}
-                components={markdownComponents}
-              >
-                {markdownForReactComponent(stream.streamingText, {
-                  streaming: true,
-                })}
-              </ReactMarkdown>
-            )}
-          {
-            /* No map is shown while the answer is still being written. This
-              block and the finished message above it are separate places in the
-              component tree, so anything put here is thrown away and rebuilt
-              the instant the answer completes, making the map load twice. It is
-              rendered once, by the finished message. Downloading it, on the
-              other hand, can start right now, which is what this does. */
-          }
-          <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
-        </div>
-      )}
+      {stream.isStreaming && <StreamingTail stream={stream} />}
       {
         /* Spacer doubles as the auto-scroll anchor: scrolling it into view
           parks the last message above the floating composer, not behind it. */

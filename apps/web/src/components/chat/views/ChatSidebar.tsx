@@ -9,7 +9,7 @@ import { SidebarFooter } from "./SidebarFooter.tsx";
 import { SidebarOpenButton } from "./SidebarOpenButton.tsx";
 
 function SidebarHeader({ c }: { c: ChatShellController }) {
-  const { sidebarOpen, setSidebarOpen, search } = c;
+  const { sidebarOpen } = c;
   if (!sidebarOpen) {
     // Collapsed rail: a single brand button that opens the sidebar, showing the
     // dog logo and morphing to the menu icon on hover. The key differs from the
@@ -24,7 +24,12 @@ function SidebarHeader({ c }: { c: ChatShellController }) {
       </div>
     );
   }
-  // Brand on the left; search and collapse controls grouped on the right.
+  return <OpenSidebarHeader c={c} />;
+}
+
+// Brand on the left; search and collapse controls grouped on the right.
+function OpenSidebarHeader({ c }: { c: ChatShellController }) {
+  const { setSidebarOpen, search } = c;
   return (
     <div
       key="open-header"
@@ -74,6 +79,7 @@ function SidebarChatLists({ c }: { c: ChatShellController }) {
   const { derived, isMobile, setSidebarOpen, search } = c;
   return (
     <div
+      role="presentation"
       className="min-h-0 flex-1 overflow-y-auto px-2 pt-3 pb-2 mt-1 -mb-2 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-12px),transparent)]"
       onClick={() => {
         if (isMobile) {
@@ -132,46 +138,8 @@ function SidebarNav({ c }: { c: ChatShellController }) {
       search: { chat: undefined, newChat: true },
     });
   }
-  // Collapsed rail: compact, centered icon buttons whose hover highlight hugs
-  // the icon rather than spanning the whole rail. Search lives in the header
-  // when open, so it only needs an entry point here in the rail.
   if (!sidebarOpen) {
-    return (
-      <nav
-        key="rail-nav"
-        className="flex flex-col items-center gap-4 px-3 pt-6"
-      >
-        {
-          /* The white circle stays white; the hover highlight lands on the
-            square zone behind it, matching the search button below. */
-        }
-        <button
-          type="button"
-          onClick={startNewChat}
-          className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80"
-          aria-label="New chat"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
-            <PlusIcon />
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (isMobile) {
-              setSidebarOpen(false);
-            }
-            search.toggleSearch();
-          }}
-          className={`-mt-1 flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80 ${
-            search.searchMode ? "bg-neutral-200" : ""
-          }`}
-          aria-label="Search chats"
-        >
-          <SearchIcon className="h-6 w-6" />
-        </button>
-      </nav>
-    );
+    return <RailNav c={c} startNewChat={startNewChat} />;
   }
   // px-2 aligns the New Chat row with the chat list below it (same left inset).
   return (
@@ -185,6 +153,51 @@ function SidebarNav({ c }: { c: ChatShellController }) {
           <PlusIcon />
         </span>
         <span>New Chat</span>
+      </button>
+    </nav>
+  );
+}
+
+// Collapsed rail: compact, centered icon buttons whose hover highlight hugs
+// the icon rather than spanning the whole rail. Search lives in the header
+// when open, so it only needs an entry point here in the rail.
+function RailNav(
+  { c, startNewChat }: { c: ChatShellController; startNewChat: () => void },
+) {
+  const { search, isMobile, setSidebarOpen } = c;
+  return (
+    <nav
+      key="rail-nav"
+      className="flex flex-col items-center gap-4 px-3 pt-6"
+    >
+      {
+        /* The white circle stays white; the hover highlight lands on the
+          square zone behind it, matching the search button below. */
+      }
+      <button
+        type="button"
+        onClick={startNewChat}
+        className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80"
+        aria-label="New chat"
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+          <PlusIcon />
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (isMobile) {
+            setSidebarOpen(false);
+          }
+          search.toggleSearch();
+        }}
+        className={`-mt-1 flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80 ${
+          search.searchMode ? "bg-neutral-200" : ""
+        }`}
+        aria-label="Search chats"
+      >
+        <SearchIcon className="h-6 w-6" />
       </button>
     </nav>
   );
