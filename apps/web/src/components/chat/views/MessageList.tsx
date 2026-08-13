@@ -1,4 +1,7 @@
+import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
+import { MemorySavedNotice } from "@/components/MemorySavedNotice.tsx";
+import type { SavedMemory } from "../types.ts";
 import { CmuMapsEmbed, CmuMapsPrefetch } from "../cmuMaps.tsx";
 import {
   assistantDisplayContent,
@@ -59,14 +62,28 @@ function AssistantMessage({ m }: { m: MessageItem }) {
 }
 
 export function MessageList({ c }: { c: ChatShellController }) {
-  const { session, stream, optimistic, scroll } = c;
+  const { session, stream, optimistic, scroll, memory } = c;
   const optimisticMessage = optimistic.optimisticUserMessage;
+  // The saved-memory chip is persisted on the message it belongs to, so it
+  // renders directly above that message and survives later questions,
+  // reloads, and leaving the chat. Explicit remembers are persisted with the
+  // answer; self-learned facts are attached a few seconds later.
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col">
       {session.messages.map((m) =>
         m.role === "user"
           ? <UserBubble key={m.id} content={m.content} />
-          : <AssistantMessage key={m.id} m={m} />
+          : (
+            <Fragment key={m.id}>
+              {m.savedMemory != null && (
+                <MemorySavedNotice
+                  memory={m.savedMemory as SavedMemory}
+                  onDeleted={() => memory.onSavedMemoryDeleted(m.id)}
+                />
+              )}
+              <AssistantMessage m={m} />
+            </Fragment>
+          )
       )}
       {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null
         ? (

@@ -4,6 +4,7 @@ export type CmuMapsPayload = components["schemas"]["CmuMapsDto"];
 export type ChatListItem = components["schemas"]["ChatListItemDto"];
 export type MessageItem = components["schemas"]["MessageDto"];
 export type ChatDetail = components["schemas"]["ChatDetailDto"];
+export type SavedMemory = components["schemas"]["SavedMemoryDto"];
 
 export interface OptimisticUserMessage {
   chatId: string;
@@ -14,6 +15,14 @@ export interface OptimisticUserMessage {
 export type ChatStreamEvent =
   | { type: "user"; message: unknown }
   | { type: "status"; text: string }
+  | {
+      type: "memory";
+      op: "add" | "remove";
+      text: string;
+      id?: string;
+      kind?: "learned" | "remembered";
+      fact?: string;
+    }
   | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; message: unknown }

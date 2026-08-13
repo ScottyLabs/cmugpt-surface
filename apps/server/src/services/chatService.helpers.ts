@@ -1,7 +1,8 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
-import { type callAgent, streamAgent } from "../lib/agentClient.ts";
+import { type callAgent, fetchChatTitle, streamAgent } from "../lib/agentClient.ts";
+import { agentUserId } from "../lib/agentUserId.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
 import type {
   ChatListItemDto,
@@ -10,11 +11,16 @@ import type {
   CmuMapsDto,
   MessageDto,
   MessageRow,
+  SavedMemoryDto,
 } from "./chatService.types.ts";
 
 export const DEFAULT_CHAT_TITLE = "New chat";
 
-function titleFromFirstMessage(content: string): string {
+// The agent rejects longer queries with a 400. Fail before persisting the
+// user row, or the chat keeps a message that can never get a reply.
+const MAX_MESSAGE_CHARS = 8_000;
+
+export function titleFromFirstMessage(content: string): string {
   const line = content.trim().split("\n")[0]?.trim() ?? "";
   if (!line) {
     return DEFAULT_CHAT_TITLE;
@@ -32,6 +38,7 @@ export function messageRowToDto(row: MessageRow): MessageDto {
     content: row.content,
     createdAt: row.createdAt.toISOString(),
     cmuMaps: row.cmuMaps ?? null,
+    savedMemory: row.savedMemory ?? null,
   };
 }
 
@@ -66,19 +73,27 @@ export async function getReadableChat(
   return row;
 }
 
-async function touchChatAfterUserMessage(
-  chat: ChatRow,
-  chatId: string,
-  trimmed: string,
-): Promise<void> {
-  if (chat.title === DEFAULT_CHAT_TITLE) {
-    await db
-      .update(chats)
-      .set({ title: titleFromFirstMessage(trimmed), updatedAt: new Date() })
-      .where(eq(chats.id, chatId));
-  } else {
-    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
+async function touchChatAfterUserMessage(chatId: string): Promise<void> {
+  await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
+}
+
+/** Name an as-yet-unnamed chat from its first message.
+ *
+ * Runs once per chat, concurrently with the agent turn, so the chat shows
+ * "New chat" until the generated title arrives. The truncated message is only
+ * a fallback for when generation fails, and a flagged message comes back as
+ * the default title, which leaves the chat unnamed for the next message to
+ * claim. The WHERE clause matches only the still-default title, so a manual
+ * rename that lands first is never clobbered. */
+export async function upgradeChatTitle(chatId: string, firstMessage: string): Promise<void> {
+  const title = (await fetchChatTitle(firstMessage)) ?? titleFromFirstMessage(firstMessage);
+  if (title === DEFAULT_CHAT_TITLE) {
+    return;
   }
+  await db
+    .update(chats)
+    .set({ title })
+    .where(and(eq(chats.id, chatId), eq(chats.title, DEFAULT_CHAT_TITLE)));
 }
 
 async function fetchMessageHistoryExcluding(
@@ -96,7 +111,9 @@ async function fetchMessageHistoryExcluding(
     .map((m) => ({ role: m.role, content: m.content }));
 }
 
-/** Persist user message, refresh chat title if needed, return rows for agent context. */
+/** Persist user message, touch the chat, return rows for agent context.
+ * `titledByThisMessage` reports that the chat is still unnamed, which is what
+ * arms the one-time title generation for this message. */
 export async function prepareAssistantTurn(
   chatId: string,
   userSub: string,
@@ -104,10 +121,16 @@ export async function prepareAssistantTurn(
 ): Promise<{
   userRow: MessageRow;
   messageHistory: { role: string; content: string }[];
+  titledByThisMessage: boolean;
 }> {
   const trimmed = content.trim();
   if (!trimmed) {
     throw new BadRequestError("Message content is required");
+  }
+  if (trimmed.length > MAX_MESSAGE_CHARS) {
+    throw new BadRequestError(
+      `Message is too long (max ${MAX_MESSAGE_CHARS.toLocaleString("en-US")} characters)`,
+    );
   }
 
   const chat = await getOwnedChat(chatId, userSub);
@@ -124,7 +147,7 @@ export async function prepareAssistantTurn(
     })
     .returning();
 
-  await touchChatAfterUserMessage(chat, chatId, trimmed);
+  await touchChatAfterUserMessage(chatId);
 
   const messageHistory = await fetchMessageHistoryExcluding(chatId, userRow?.id);
 
@@ -132,13 +155,14 @@ export async function prepareAssistantTurn(
     throw new Error("Failed to persist user message");
   }
 
-  return { userRow, messageHistory };
+  return { userRow, messageHistory, titledByThisMessage: chat.title === DEFAULT_CHAT_TITLE };
 }
 
 interface StreamCollectResult {
   result: Awaited<ReturnType<typeof callAgent>> | undefined;
   streamedText: string;
   streamedCmuMaps: CmuMapsDto | null;
+  streamedSavedMemory: SavedMemoryDto | null;
   errored: boolean;
 }
 
@@ -153,12 +177,13 @@ export async function* runAgentStream(
   let result: Awaited<ReturnType<typeof callAgent>> | undefined;
   let streamedText = "";
   let streamedCmuMaps: CmuMapsDto | null = null;
+  let streamedSavedMemory: SavedMemoryDto | null = null;
   try {
     for await (const ev of streamAgent(
       {
         query: content,
         ...(messageHistory.length > 0 && { messageHistory }),
-        userId: userSub,
+        userId: agentUserId(userSub),
         model: preferredModel,
         ...(disabledTools.length > 0 && { disabledTools }),
       },
@@ -166,6 +191,19 @@ export async function* runAgentStream(
     )) {
       if (ev.type === "status") {
         yield { type: "status", text: ev.text };
+      } else if (ev.type === "memory") {
+        // An explicit remember carries the fact to persist on this message.
+        // A forget clears any pending chip for the turn.
+        if (ev.op === "add" && ev.id !== undefined && ev.fact !== undefined) {
+          streamedSavedMemory = {
+            id: ev.id,
+            kind: ev.kind ?? "remembered",
+            fact: ev.fact,
+          };
+        } else if (ev.op === "remove") {
+          streamedSavedMemory = null;
+        }
+        yield ev;
       } else if (ev.type === "map") {
         streamedCmuMaps = ev.cmuMaps;
         yield { type: "map", cmuMaps: ev.cmuMaps };
@@ -176,15 +214,15 @@ export async function* runAgentStream(
         ({ result } = ev);
       } else if (ev.type === "error") {
         yield { type: "error", message: ev.message };
-        return { result, streamedText, streamedCmuMaps, errored: true };
+        return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
       }
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Agent request failed";
     yield { type: "error", message: msg };
-    return { result, streamedText, streamedCmuMaps, errored: true };
+    return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
   }
-  return { result, streamedText, streamedCmuMaps, errored: false };
+  return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: false };
 }
 
 export async function* finalizeAssistantMessage(
@@ -192,6 +230,7 @@ export async function* finalizeAssistantMessage(
   result: Awaited<ReturnType<typeof callAgent>> | undefined,
   streamedText: string,
   streamedCmuMaps: CmuMapsDto | null,
+  streamedSavedMemory: SavedMemoryDto | null,
 ): AsyncGenerator<ChatStreamEvent, void, undefined> {
   let finalResult = result;
   if (finalResult === undefined) {
@@ -202,7 +241,11 @@ export async function* finalizeAssistantMessage(
       };
       return;
     }
-    finalResult = { text: streamedText };
+    // The stream died before the agent's final event. Keep the partial text
+    // but mark it, instead of persisting it as a complete answer.
+    const truncationNote = "\n\n_(This response was cut off before completing.)_";
+    yield { type: "delta", text: truncationNote };
+    finalResult = { text: streamedText + truncationNote };
   } else if (!streamedText) {
     yield { type: "delta", text: finalResult.text };
   }
@@ -220,6 +263,7 @@ export async function* finalizeAssistantMessage(
       role: "assistant",
       content: finalResult.text,
       cmuMaps: finalResult.cmuMaps ?? finalCmuMaps,
+      savedMemory: streamedSavedMemory,
     })
     .returning();
 

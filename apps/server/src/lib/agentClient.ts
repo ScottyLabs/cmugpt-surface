@@ -51,8 +51,32 @@ export interface AgentResult {
   cmuMaps?: CmuMapsPayload | null;
 }
 
+export type AgentMemoryType = "learned" | "remembered";
+
+export interface AgentMemoryItem {
+  id: string;
+  type: AgentMemoryType;
+  text: string;
+  createdAt: string;
+}
+
+export interface AgentMemoryPage {
+  items: AgentMemoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export type AgentStreamEvent =
   | { type: "status"; text: string }
+  | {
+      type: "memory";
+      op: "add" | "remove";
+      text: string;
+      id?: string;
+      kind?: AgentMemoryType;
+      fact?: string;
+    }
   | { type: "map"; cmuMaps: CmuMapsPayload }
   | { type: "delta"; text: string }
   | { type: "done"; result: AgentResult }
@@ -96,8 +120,8 @@ function buildAgentHeaders(): Record<string, string> {
 async function readAgentError(res: Response): Promise<string> {
   let msg = `Agent request failed (${res.status})`;
   try {
-    // Agent emits {error, detail}; older versions emitted only {error};
-    // FastAPI defaults emit only {detail}. Try all of them.
+    // The agent emits {error, detail}. Older versions emitted only {error},
+    // and FastAPI defaults emit only {detail}. Try all of them.
     const raw: unknown = await res.json();
     if (typeof raw === "object" && raw !== null) {
       const error = "error" in raw && typeof raw.error === "string" ? raw.error : undefined;
@@ -131,6 +155,79 @@ async function postToAgent(
   return res;
 }
 
+/** Fetch an agent path with shared-secret headers, throwing on non-2xx. */
+async function agentFetch(path: string, method: "GET" | "DELETE" = "GET"): Promise<Response> {
+  const url = `${env.AGENT_API_URL.replace(/\/$/u, "")}${path}`;
+  const res = await fetch(url, { method, headers: buildAgentHeaders() });
+  if (!res.ok) {
+    throw new InternalServerError(await readAgentError(res));
+  }
+  return res;
+}
+
+function normalizeMemoryItem(value: unknown): AgentMemoryItem | null {
+  if (typeof value !== "object" || value === null) return null;
+  const item = value as Record<string, unknown>;
+  if (
+    typeof item["id"] !== "string" ||
+    (item["type"] !== "learned" && item["type"] !== "remembered") ||
+    typeof item["text"] !== "string" ||
+    typeof item["created_at"] !== "string"
+  ) {
+    return null;
+  }
+  return {
+    id: item["id"],
+    type: item["type"],
+    text: item["text"],
+    createdAt: item["created_at"],
+  };
+}
+
+export async function listAgentMemories(
+  userId: string,
+  options: {
+    q?: string;
+    kind?: AgentMemoryType;
+    limit?: number;
+    offset?: number;
+  } = {},
+): Promise<AgentMemoryPage> {
+  const params = new URLSearchParams();
+  if (options.q) params.set("q", options.q);
+  if (options.kind) params.set("kind", options.kind);
+  params.set("limit", String(options.limit ?? 200));
+  params.set("offset", String(options.offset ?? 0));
+  const res = await agentFetch(`/memory/${encodeURIComponent(userId)}?${params.toString()}`);
+  const body = (await res.json()) as Record<string, unknown>;
+  const rawItems = Array.isArray(body.items) ? body.items : [];
+  return {
+    items: rawItems
+      .map((item) => normalizeMemoryItem(item))
+      .filter((item): item is AgentMemoryItem => item !== null),
+    total: typeof body.total === "number" ? body.total : 0,
+    limit: typeof body.limit === "number" ? body.limit : (options.limit ?? 200),
+    offset: typeof body.offset === "number" ? body.offset : (options.offset ?? 0),
+  };
+}
+
+export async function deleteAgentMemory(
+  userId: string,
+  kind: AgentMemoryType,
+  itemId: string,
+): Promise<void> {
+  await agentFetch(
+    `/memory/${encodeURIComponent(userId)}/items/${kind}/${encodeURIComponent(itemId)}`,
+    "DELETE",
+  );
+}
+
+export async function clearAgentMemory(userId: string): Promise<number> {
+  const res = await agentFetch(`/memory/${encodeURIComponent(userId)}`, "DELETE");
+  const body = (await res.json()) as { removed?: unknown };
+  return typeof body.removed === "number" ? body.removed : 0;
+}
+
 export async function callAgent(request: AgentRequest, signal?: AbortSignal): Promise<AgentResult> {
   const res = await postToAgent("/agent/respond", request, signal);
   const raw: unknown = await res.json();
@@ -146,4 +243,30 @@ export async function* streamAgent(
     throw new InternalServerError("Agent stream response had no body");
   }
   yield* readAgentStream(res.body.getReader());
+}
+
+/** Ask the agent for a short chat title from the chat's first user message.
+ *  Returns null on any failure so the caller keeps its placeholder title. */
+export async function fetchChatTitle(firstMessage: string): Promise<string | null> {
+  try {
+    const url = `${env.AGENT_API_URL.replace(/\/$/u, "")}/agent/title`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: buildAgentHeaders(),
+      body: JSON.stringify({ query: firstMessage }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      console.warn(`title: agent returned ${res.status}, keeping placeholder`);
+      return null;
+    }
+    const data: unknown = await res.json();
+    const title =
+      typeof data === "object" && data !== null ? (data as { title?: unknown }).title : undefined;
+    return typeof title === "string" && title.trim() !== "" ? title.trim() : null;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`title: request failed (${msg}), keeping placeholder`);
+    return null;
+  }
 }

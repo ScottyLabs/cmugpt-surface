@@ -1,5 +1,6 @@
 import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
+import { AnimatedTitle } from "./AnimatedTitle.tsx";
 
 function ChatRowLabel(
   { c, chat }: { c: ChatShellController; chat: ChatListItem },
@@ -43,9 +44,9 @@ function ChatRowLabel(
         sidebar.setSidebarMenu({ x: e.clientX, y: e.clientY, chatId: chat.id });
       }}
       title="Double-click to rename"
-      className="min-w-0 flex-1 truncate py-2 pl-2 text-left hover:bg-transparent"
+      className="min-w-0 flex-1 py-2 pl-2 text-left hover:bg-transparent"
     >
-      {chat.title}
+      <AnimatedTitle title={chat.title} className="block truncate" />
     </button>
   );
 }

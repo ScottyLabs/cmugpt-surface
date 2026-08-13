@@ -1,3 +1,4 @@
+import { MemoryManager } from "./MemoryManager.tsx";
 import { useChatShell } from "./chat/useChatShell.ts";
 import { ChatHeaderBar } from "./chat/views/ChatHeaderBar.tsx";
 import { ChatSidebar } from "./chat/views/ChatSidebar.tsx";
@@ -33,6 +34,11 @@ export function ChatShell() {
         )}
         <SettingsAboutModal c={c} />
       </main>
+      <MemoryManager
+        open={c.memory.managerOpen}
+        onClose={c.memory.closeManager}
+        returnFocusRef={c.memory.userMenuTriggerRef}
+      />
     </div>
   );
 }

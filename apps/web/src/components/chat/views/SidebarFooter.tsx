@@ -1,3 +1,4 @@
+import { Brain } from "lucide-react";
 import {
   AboutIcon,
   LogOutIcon,
@@ -7,7 +8,7 @@ import {
 import type { ChatShellController } from "../useChatShell.ts";
 
 function SidebarUserMenu({ c }: { c: ChatShellController }) {
-  const { modal, sidebar, auth, sidebarOpen } = c;
+  const { modal, sidebar, auth, sidebarOpen, memory } = c;
 
   const placement = sidebarOpen ? "inset-x-4" : "left-2 w-60";
   const state = sidebar.userMenuOpen
@@ -19,6 +20,17 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
     >
       <div className="flex min-h-0 flex-col justify-end overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_0_rgba(158,177,194,0.45)]">
         <div className="flex w-full flex-col items-start px-2 py-2">
+          <button
+            type="button"
+            onClick={() => {
+              memory.openManager();
+              sidebar.setUserMenuOpen(false);
+            }}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50"
+          >
+            <Brain className="h-4 w-4" />
+            Memories
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -73,6 +85,7 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
     <div className="mt-auto p-2.5 relative">
       <SidebarUserMenu c={c} />
       <button
+        ref={c.memory.userMenuTriggerRef}
         type="button"
         onClick={(e) => {
           e.stopPropagation();

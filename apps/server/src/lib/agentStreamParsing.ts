@@ -7,6 +7,33 @@ import type {
   CmuMapsPayload,
 } from "./agentClient.ts";
 
+function normalizeMemoryEvent(data: unknown): AgentStreamEvent | null {
+  if (typeof data !== "object" || data === null) {
+    return null;
+  }
+  const body = data as Record<string, unknown>;
+  const op = body.op;
+  const text = body.text;
+  if ((op !== "add" && op !== "remove") || typeof text !== "string") {
+    return null;
+  }
+  const event: Extract<AgentStreamEvent, { type: "memory" }> = {
+    type: "memory",
+    op,
+    text,
+  };
+  if (typeof body.id === "string") {
+    event.id = body.id;
+  }
+  if (body.kind === "learned" || body.kind === "remembered") {
+    event.kind = body.kind;
+  }
+  if (typeof body.fact === "string") {
+    event.fact = body.fact;
+  }
+  return event;
+}
+
 export function isAgentResponseBody(value: unknown): value is AgentResponseBody {
   return (
     typeof value === "object" &&
@@ -112,6 +139,10 @@ function normalizeAgentStreamEvent(parsed: {
     return cmuMaps ? { type: "map", cmuMaps } : null;
   }
 
+  if (parsed.event === "memory") {
+    return normalizeMemoryEvent(parsed.data);
+  }
+
   if (parsed.event === "delta") {
     const text = extractTextField(parsed.data);
     return text === null ? null : { type: "delta", text };
@@ -119,7 +150,13 @@ function normalizeAgentStreamEvent(parsed: {
 
   if (parsed.event === "done" && typeof parsed.data === "object" && parsed.data !== null) {
     const body = isAgentResponseBody(parsed.data) ? parsed.data : { response_text: "" };
-    return { type: "done", result: agentBodyToResult(body) };
+    try {
+      return { type: "done", result: agentBodyToResult(body) };
+    } catch {
+      // A malformed done payload must not throw away already-streamed text.
+      // Dropping the event lets the caller fall back to what was streamed.
+      return null;
+    }
   }
 
   if (parsed.event === "error" && typeof parsed.data === "object" && parsed.data !== null) {
@@ -136,6 +173,32 @@ function normalizeAgentStreamEvent(parsed: {
   return null;
 }
 
+// A hung agent connection would otherwise block reader.read() forever with
+// no cancel path in the UI.
+const STREAM_IDLE_TIMEOUT_MS = 90_000;
+
+async function readWithIdleTimeout(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      reader.read(),
+      new Promise<never>((_, reject) => {
+        idleTimer = setTimeout(
+          () => reject(new InternalServerError("Agent stream stalled")),
+          STREAM_IDLE_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  } catch (e) {
+    await reader.cancel().catch(() => undefined);
+    throw e;
+  } finally {
+    clearTimeout(idleTimer);
+  }
+}
+
 export async function* readAgentStream(
   reader: ReadableStreamDefaultReader<Uint8Array>,
 ): AsyncGenerator<AgentStreamEvent, void, undefined> {
@@ -144,7 +207,7 @@ export async function* readAgentStream(
 
   while (true) {
     // oxlint-disable-next-line no-await-in-loop -- each read depends on stream position from the previous one
-    const { done, value } = await reader.read();
+    const { done, value } = await readWithIdleTimeout(reader);
     if (done) {
       break;
     }
