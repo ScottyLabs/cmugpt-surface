@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { $api } from "@/lib/api/client.ts";
 
@@ -101,9 +101,7 @@ function ModelOption({
         >
           {model.label}
         </span>
-        {selected && (
-          <span className="shrink-0 text-red-800" aria-hidden>✓</span>
-        )}
+        {selected && <Check className="h-4 w-4 shrink-0 text-red-800" aria-hidden />}
       </button>
     </li>
   );
