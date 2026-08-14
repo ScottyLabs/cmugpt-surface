@@ -82,6 +82,23 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  SavedMemoryDto: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      kind: {
+        dataType: "union",
+        subSchemas: [
+          { dataType: "enum", enums: ["learned"] },
+          { dataType: "enum", enums: ["remembered"] },
+        ],
+        required: true,
+      },
+      fact: { dataType: "string", required: true },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   MessageDto: {
     dataType: "refObject",
     properties: {
@@ -100,6 +117,10 @@ const models: TsoaRoute.Models = {
       cmuMaps: {
         dataType: "union",
         subSchemas: [{ ref: "CmuMapsDto" }, { dataType: "enum", enums: [null] }],
+      },
+      savedMemory: {
+        dataType: "union",
+        subSchemas: [{ ref: "SavedMemoryDto" }, { dataType: "enum", enums: [null] }],
       },
       confidence: { dataType: "double" },
     },
