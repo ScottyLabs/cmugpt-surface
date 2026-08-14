@@ -1,8 +1,5 @@
 import { Brain, LoaderCircle, Search, Trash2, X } from "lucide-react";
-import type {
-  MemoryItem,
-  MemoryManagerController,
-} from "./useMemoryManager.ts";
+import type { MemoryItem, MemoryManagerController } from "./useMemoryManager.ts";
 import { FILTERS } from "./useMemoryManager.ts";
 
 export function ManagerHeader({ onClose }: { onClose: () => void }) {
@@ -11,10 +8,7 @@ export function ManagerHeader({ onClose }: { onClose: () => void }) {
       <div className="min-w-0">
         <div className="flex items-center gap-2.5">
           <Brain className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <h2
-            id="memory-manager-title"
-            className="text-xl font-medium leading-8 sm:text-2xl"
-          >
+          <h2 id="memory-manager-title" className="text-xl font-medium leading-8 sm:text-2xl">
             Memories
           </h2>
         </div>
@@ -88,9 +82,7 @@ export function ManagerFilterRow({ mm }: { mm: MemoryManagerController }) {
         onClick={(event) => {
           mm.ops.requestClearAll(event.currentTarget);
         }}
-        disabled={mm.clearPending ||
-          mm.action.deletingKey !== null ||
-          mm.total === 0}
+        disabled={mm.clearPending || mm.action.deletingKey !== null || mm.total === 0}
         className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {mm.clearPending ? "Clearing..." : "Clear all"}
@@ -114,9 +106,7 @@ function ListLoading() {
 function ListError({ mm }: { mm: MemoryManagerController }) {
   return (
     <div className="flex h-40 flex-col items-center justify-center gap-3 text-center">
-      <p className="text-sm font-normal text-fg-neutral-secondary">
-        Memories could not be loaded.
-      </p>
+      <p className="text-sm font-normal text-fg-neutral-secondary">Memories could not be loaded.</p>
       <button
         type="button"
         onClick={() => void mm.memories.refetch()}
@@ -143,20 +133,14 @@ function ListEmpty({ mm }: { mm: MemoryManagerController }) {
   );
 }
 
-function MemoryRow(
-  { item, mm }: { item: MemoryItem; mm: MemoryManagerController },
-) {
+function MemoryRow({ item, mm }: { item: MemoryItem; mm: MemoryManagerController }) {
   const key = `${item.type}:${item.id}`;
   const deleting = mm.action.deletingKey === key;
-  const typeLabel = item.type === "learned"
-    ? "Learned from chats"
-    : "Asked to remember";
+  const typeLabel = item.type === "learned" ? "Learned from chats" : "Asked to remember";
   return (
     <li
       className={`group flex items-start gap-3 rounded-xl px-3 py-3 transition-[opacity,transform,background-color] duration-200 ease-in motion-reduce:transition-none ${
-        deleting
-          ? "pointer-events-none translate-x-2 opacity-0"
-          : "hover:bg-neutral-50"
+        deleting ? "pointer-events-none translate-x-2 opacity-0" : "hover:bg-neutral-50"
       }`}
     >
       <span
@@ -234,19 +218,13 @@ export function ManagerStatus({ mm }: { mm: MemoryManagerController }) {
         </p>
       )}
       <div aria-live="polite" aria-atomic="true" className="min-h-5">
-        {actionError === null
-          ? (
-            actionMessage === null ? null : (
-              <p className="pt-2 text-xs font-normal text-fg-neutral-secondary">
-                {actionMessage}
-              </p>
-            )
+        {actionError === null ? (
+          actionMessage === null ? null : (
+            <p className="pt-2 text-xs font-normal text-fg-neutral-secondary">{actionMessage}</p>
           )
-          : (
-            <p className="pt-2 text-xs font-normal text-red-700">
-              {actionError}
-            </p>
-          )}
+        ) : (
+          <p className="pt-2 text-xs font-normal text-red-700">{actionError}</p>
+        )}
       </div>
     </>
   );

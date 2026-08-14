@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 // Maintenance switch for the API
 // Remember to also toggle web maintenance variable
 
-export const MAINTENANCE_MODE = true;
+export const MAINTENANCE_MODE = false;
 
 const EXEMPT_PATHS = new Set(["/api/health"]);
 

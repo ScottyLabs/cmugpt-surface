@@ -56,17 +56,12 @@ export function Composer({ c }: { c: ChatShellController }) {
   const streaming = c.stream.isStreaming;
   const lockedForChat = Boolean(chatId) && !c.derived.canEditChat;
   const nothingToSend = draft.trim() === "";
-  const { multiline, mirrorRef, controlsRef } = useMultilineComposer(
-    draft,
-    draftComposerRef,
-  );
+  const { multiline, mirrorRef, controlsRef } = useMultilineComposer(draft, draftComposerRef);
 
   return (
     <div className="relative mx-auto flex w-full max-w-[48.25rem] flex-col rounded-[1.75rem] border border-neutral-300/70 bg-white py-2.5 pl-2 pr-4.5 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
-      {
-        /* Hidden mirror used only to measure the draft's natural width. Must
-          match the textarea's text styles. */
-      }
+      {/* Hidden mirror used only to measure the draft's natural width. Must
+          match the textarea's text styles. */}
       <span
         ref={mirrorRef}
         aria-hidden
@@ -79,18 +74,15 @@ export function Composer({ c }: { c: ChatShellController }) {
         multiline={multiline}
         controlsRef={controlsRef}
         send={send}
-        sendDisabled={streaming ||
-          c.mutations.createChat.isPending ||
-          lockedForChat ||
-          nothingToSend}
+        sendDisabled={
+          streaming || c.mutations.createChat.isPending || lockedForChat || nothingToSend
+        }
       />
     </div>
   );
 }
 
-function ComposerTextarea(
-  { c, disabled }: { c: ChatShellController; disabled: boolean },
-) {
+function ComposerTextarea({ c, disabled }: { c: ChatShellController; disabled: boolean }) {
   const { draft, setDraft, draftComposerRef, send } = c.composer;
   return (
     <textarea
@@ -115,24 +107,24 @@ function ComposerTextarea(
 
 /* Row is click-through so the textarea stays clickable beneath it in the
    single-line state; only the controls themselves catch clicks. */
-function ComposerControls(
-  { multiline, controlsRef, send, sendDisabled }: {
-    multiline: boolean;
-    controlsRef: React.RefObject<HTMLDivElement | null>;
-    send: () => Promise<void> | void;
-    sendDisabled: boolean;
-  },
-) {
+function ComposerControls({
+  multiline,
+  controlsRef,
+  send,
+  sendDisabled,
+}: {
+  multiline: boolean;
+  controlsRef: React.RefObject<HTMLDivElement | null>;
+  send: () => Promise<void> | void;
+  sendDisabled: boolean;
+}) {
   return (
     <div
       className={`pointer-events-none flex justify-end transition-[margin] duration-200 ease-out ${
         multiline ? "mt-1.5" : "-mt-9"
       }`}
     >
-      <div
-        ref={controlsRef}
-        className="pointer-events-auto flex items-center"
-      >
+      <div ref={controlsRef} className="pointer-events-auto flex items-center">
         <ModelSelector />
         <button
           type="button"

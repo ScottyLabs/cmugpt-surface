@@ -1,13 +1,6 @@
-import {
-  rememberDeleteConfirmationPreference,
-} from "@/lib/memoryPreferences.ts";
+import { rememberDeleteConfirmationPreference } from "@/lib/memoryPreferences.ts";
 import { waitForMotion } from "@/lib/reducedMotion.ts";
-import type {
-  ActionState,
-  Memories,
-  MemoryItem,
-  MemoryRefs,
-} from "./useMemoryManager.ts";
+import type { ActionState, Memories, MemoryItem, MemoryRefs } from "./useMemoryManager.ts";
 
 const DELETE_TRANSITION_MS = 180;
 
@@ -29,10 +22,7 @@ async function removeItemOp(item: MemoryItem, deps: OpsDeps): Promise<void> {
   try {
     // The exit animation and the DELETE round-trip are independent, so
     // they run concurrently.
-    await Promise.all([
-      waitForMotion(DELETE_TRANSITION_MS),
-      deps.deleteCall(item),
-    ]);
+    await Promise.all([waitForMotion(DELETE_TRANSITION_MS), deps.deleteCall(item)]);
     await memories.refetch();
     action.setActionMessage("Memory deleted.");
   } catch {
@@ -110,4 +100,3 @@ export function buildOps(deps: OpsDeps) {
     },
   };
 }
-

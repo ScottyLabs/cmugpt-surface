@@ -9,8 +9,6 @@ import { createHash } from "node:crypto";
  * characters allowed by the agent. The raw identity never reaches the agent.
  */
 export function agentUserId(userSub: string): string {
-  const digest = createHash("sha256")
-    .update(`oidc:${userSub}`, "utf8")
-    .digest("hex");
+  const digest = createHash("sha256").update(`oidc:${userSub}`, "utf8").digest("hex");
   return `oidc:${digest}`;
 }

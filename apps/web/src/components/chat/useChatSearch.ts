@@ -11,17 +11,14 @@ export function useChatSearch() {
   const [searchQ, setSearchQ] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const searchChatsQueryInit = useMemo(() => searchQueryInit(searchQ), [
-    searchQ,
-  ]);
+  const searchChatsQueryInit = useMemo(() => searchQueryInit(searchQ), [searchQ]);
 
-  const { data: searchChats = [], isLoading: searchChatsLoading } = $api
-    .useQuery(
-      "get",
-      "/chats",
-      searchChatsQueryInit,
-      { enabled: Boolean(searchQ.trim()) },
-    );
+  const { data: searchChats = [], isLoading: searchChatsLoading } = $api.useQuery(
+    "get",
+    "/chats",
+    searchChatsQueryInit,
+    { enabled: Boolean(searchQ.trim()) },
+  );
 
   const openSearch = useCallback(() => {
     setSearchMode(true);
