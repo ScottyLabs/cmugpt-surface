@@ -97,3 +97,14 @@ code {
     animation: none;
   }
 }
+
+.signin-backdrop {
+  background:
+    radial-gradient(40rem 28rem at 8% 12%, rgba(231, 245, 250, 0.9), transparent 62%),
+    radial-gradient(36rem 26rem at 32% 30%, rgba(251, 231, 238, 0.65), transparent 62%),
+    radial-gradient(38rem 26rem at 78% 12%, rgba(231, 245, 250, 0.65), transparent 62%),
+    radial-gradient(34rem 26rem at 94% 38%, rgba(251, 231, 238, 0.7), transparent 60%),
+    radial-gradient(40rem 28rem at 14% 82%, rgba(251, 231, 238, 0.65), transparent 62%),
+    radial-gradient(36rem 26rem at 46% 96%, rgba(231, 245, 250, 0.7), transparent 60%),
+    radial-gradient(38rem 28rem at 86% 88%, rgba(240, 244, 248, 0.85), transparent 62%);
+}

@@ -164,20 +164,27 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
   const decoder = new TextDecoder();
   let buf = "";
   let shouldRefresh = false;
-  for await (const value of res.body) {
-    buf += decoder.decode(value, { stream: true });
-    const lines = buf.split("\n");
-    buf = lines.pop() ?? "";
-    for (const line of lines) {
-      if (line.trim() === "") {
-        continue;
-      }
-      const ev = parseStreamEvent(line);
-      if (ev !== null && applyStreamEvent(ev, ctx)) {
-        shouldRefresh = true;
-      }
-    }
-  }
+  // Consumed via pipeTo rather than `for await`: WebKit (every browser on
+  // iOS) never shipped async iteration of ReadableStream, and the for-await
+  // form threw the moment a message was sent on any iPhone.
+  await res.body.pipeTo(
+    new WritableStream({
+      write(value) {
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (line.trim() === "") {
+            continue;
+          }
+          const ev = parseStreamEvent(line);
+          if (ev !== null && applyStreamEvent(ev, ctx)) {
+            shouldRefresh = true;
+          }
+        }
+      },
+    }),
+  );
   await ctx.waitForStreamingFlush();
   if (shouldRefresh) {
     // Load the saved copy of the answer first, so it is on screen ready to
@@ -259,8 +266,10 @@ export async function runSend(ctx: SendCtx): Promise<void> {
     }
     ctx.clearComposer();
     await consumeChatStream(res, ctx);
-  } catch {
-    ctx.setStreamError("Network error");
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    console.error("send stream failed:", e);
+    ctx.setStreamError(`Network error (${detail})`);
     void ctx.refetchMessages();
   } finally {
     ctx.setIsStreaming(false);

@@ -107,30 +107,44 @@ function ModelOption({
   );
 }
 
-/** Compact "currently using model X" dropdown for the chat input bar. */
-/** Model list plus the user's current pick, with a setter that persists it. */
+/** Model list plus the user's current pick, with a setter that persists it.
+ *
+ * The pick renders optimistically: the label flips the moment a model is
+ *  chosen, while the PATCH and refetch settle in the background. On failure
+ *  the optimistic pick clears and the label falls back to the server truth. */
 function useModelPreference() {
   const { data: modelsData } = $api.useQuery("get", "/me/models");
-  const { data: prefs, refetch: refetchPrefs } = $api.useQuery("get", "/me/preferences");
+  const { data: prefs, refetch: refetchPrefs } = $api.useQuery(
+    "get",
+    "/me/preferences",
+  );
+  const [pendingModel, setPendingModel] = useState<string | null>(null);
   const updatePreferences = $api.useMutation("patch", "/me/preferences", {
-    onSuccess: () => {
-      void refetchPrefs();
+    onSuccess: async () => {
+      await refetchPrefs();
+      setPendingModel(null);
+    },
+    onError: () => {
+      setPendingModel(null);
     },
   });
   const models = modelsData?.models ?? [];
-  const currentId = prefs?.preferredModel;
-  const currentLabel = models.find((m) => m.id === currentId)?.label ?? "Loading...";
+  const currentId = pendingModel ?? prefs?.preferredModel;
+  const currentLabel = models.find((m) => m.id === currentId)?.label ??
+    "Loading...";
   function persistModel(id: string) {
     if (id === currentId) {
       return;
     }
+    setPendingModel(id);
     updatePreferences.mutate({ body: { preferredModel: id } });
   }
   return { models, currentId, currentLabel, persistModel };
 }
 
 export function ModelSelector() {
-  const { models, currentId, currentLabel, persistModel } = useModelPreference();
+  const { models, currentId, currentLabel, persistModel } =
+    useModelPreference();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -143,7 +157,11 @@ export function ModelSelector() {
 
   return (
     <div ref={wrapperRef} className="relative inline-block text-left">
-      <ModelSelectorTrigger open={open} setOpen={setOpen} currentLabel={currentLabel} />
+      <ModelSelectorTrigger
+        open={open}
+        setOpen={setOpen}
+        currentLabel={currentLabel}
+      />
       {open && models.length > 0 && (
         <ul className="absolute bottom-full right-0 z-20 mb-2 max-h-80 w-56 origin-bottom-right overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg transition duration-150 ease-out starting:scale-95 starting:opacity-0">
           {models.map((m) => (
