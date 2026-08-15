@@ -65,7 +65,7 @@ export function Composer({ c }: { c: ChatShellController }) {
       <span
         ref={mirrorRef}
         aria-hidden
-        className="invisible absolute left-0 top-0 whitespace-pre text-sm leading-relaxed"
+        className="invisible absolute left-0 top-0 whitespace-pre text-base leading-relaxed sm:text-sm"
       >
         {draft}
       </span>
@@ -100,7 +100,7 @@ function ComposerTextarea({ c, disabled }: { c: ChatShellController; disabled: b
           void send();
         }
       }}
-      className="field-sizing-content max-h-40 w-full resize-none bg-transparent py-1.5 pl-2.5 pr-1.5 text-sm leading-relaxed text-neutral-900 outline-none placeholder:text-fg-neutral-secondary disabled:opacity-50"
+      className="field-sizing-content max-h-40 w-full resize-none bg-transparent py-1.5 pl-2.5 pr-1.5 text-base leading-relaxed text-neutral-900 outline-none placeholder:text-fg-neutral-secondary disabled:opacity-50 sm:text-sm"
     />
   );
 }

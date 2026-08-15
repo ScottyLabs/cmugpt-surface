@@ -48,7 +48,7 @@ export function ManagerSearch({ mm }: { mm: MemoryManagerController }) {
           mm.setSearch(event.target.value);
         }}
         placeholder="Search memories"
-        className="h-11 w-full rounded-xl border border-stroke-neutral-1 bg-white pl-10 pr-4 text-sm font-normal outline-none transition-shadow placeholder:text-fg-neutral-tertiary focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200"
+        className="h-11 w-full rounded-xl border border-stroke-neutral-1 bg-white pl-10 pr-4 text-base font-normal outline-none transition-shadow placeholder:text-fg-neutral-tertiary focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 sm:text-sm"
       />
     </label>
   );
