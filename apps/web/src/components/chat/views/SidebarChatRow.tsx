@@ -18,7 +18,7 @@ function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem 
         onKeyDown={(e) => {
           sidebar.onRenameKeyDown(e, chat.id, chat.title);
         }}
-        className="my-1.5 ml-2 min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-sm outline-none focus:border-neutral-400"
+        className="my-1.5 ml-2 min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-base outline-none focus:border-neutral-400 sm:text-sm"
         aria-label="Chat name"
         onPointerDown={(e) => {
           e.stopPropagation();
