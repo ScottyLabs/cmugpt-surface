@@ -16,10 +16,7 @@ import type { AgentModelOption } from "../lib/models.ts";
 import { AGENT_MODELS } from "../lib/models.ts";
 import { userIsOidcAdmin } from "../lib/oidcAdmin.ts";
 import { AuthenticationError } from "../middlewares/errorHandler.ts";
-import type {
-  MemoryPageDto,
-  MemoryTypeDto,
-} from "../services/memoryService.ts";
+import type { MemoryPageDto, MemoryTypeDto } from "../services/memoryService.ts";
 import { memoryService } from "../services/memoryService.ts";
 import type { UserPreferencesDto } from "../services/userPreferencesService.ts";
 import { userPreferencesService } from "../services/userPreferencesService.ts";

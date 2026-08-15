@@ -225,8 +225,7 @@ export interface components {
       savedMemory?: components["schemas"]["SavedMemoryDto"] | null;
       /**
        * Format: double
-       * @description Agent confidence for the just-generated turn. Not persisted; only set on
-       *     fresh assistant messages, undefined when re-reading history.
+       * @description Agent confidence for the just-generated turn. Not persisted; only set on #magic___^_^___line fresh assistant messages, undefined when re-reading history.
        */
       confidence?: number;
     };
@@ -254,11 +253,10 @@ export interface components {
      * @description Curated list of LLM models the user can pick from. The `id` is the
      *     OpenRouter model slug forwarded to the agent's `/agent/respond` endpoint.
      *     Surface UX assumes 4-6 options.
-     *
-     *     Every entry is the current mini / low-cost tier of its provider, and every
-     *     entry must support tool calling: the agent binds the CMU MCP tools, so a
-     *     model without tool support cannot answer campus questions. The first entry
-     *     is the default for new users.
+     *     Every entry is the current best price-to-performance pick of its provider,
+     *     and every entry must support tool calling: the agent binds the CMU MCP
+     *     tools, so a model without tool support cannot answer campus questions. The
+     *     first entry is the default for new users.
      */
     AgentModelOption: {
       id: string;

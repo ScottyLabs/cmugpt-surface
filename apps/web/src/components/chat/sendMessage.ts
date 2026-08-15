@@ -7,11 +7,7 @@ import type { ConversationScroll } from "./useConversationScroll.ts";
 import type { ChatMutations } from "./useChatMutations.ts";
 import type { ChatSession } from "./useChatSession.ts";
 import type { StreamController } from "./useStreamController.ts";
-import type {
-  ChatStreamEvent,
-  CmuMapsPayload,
-  OptimisticUserMessage,
-} from "./types.ts";
+import type { ChatStreamEvent, CmuMapsPayload, OptimisticUserMessage } from "./types.ts";
 
 export interface SendCtx {
   isStreaming: boolean;

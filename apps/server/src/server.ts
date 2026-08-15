@@ -14,6 +14,7 @@ import { env } from "./env.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
 import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
 import { isAllowedOrigin } from "./lib/allowedOrigins.ts";
+import { maintenanceGate } from "./maintenance.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 import { registerMessageSavedMemoryRoute } from "./routes/messageSavedMemoryRoute.ts";
@@ -89,6 +90,9 @@ const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Debug-Middleware", "X-Debug-Token-Length"],
 };
 app.use(cors(corsOptions));
+
+// Maintenance gate
+app.use(maintenanceGate);
 
 // Server-side auth (BFF). authRouter serves /api/auth/login|callback|logout|me
 // (openid-client + ricochet); attachBearerFromSession relays the session's

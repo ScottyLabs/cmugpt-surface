@@ -15,11 +15,7 @@ interface MemoryManagerProps {
   returnFocusRef?: RefObject<HTMLButtonElement | null>;
 }
 
-export function MemoryManager({
-  open,
-  onClose,
-  returnFocusRef,
-}: MemoryManagerProps) {
+export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerProps) {
   const mm = useMemoryManager(open, onClose, returnFocusRef);
   if (!open) return null;
   return (

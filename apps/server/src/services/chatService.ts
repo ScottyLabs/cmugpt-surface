@@ -186,19 +186,26 @@ export const chatService = {
       : undefined;
 
     const preferredModel = await userPreferencesService.getPreferredModel(userSub);
-    const { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored } = yield* runAgentStream(
-      content.trim(),
-      messageHistory,
-      userSub,
-      preferredModel,
-      options.disabledTools ?? [],
-      options.signal,
-    );
+    const { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored } =
+      yield* runAgentStream(
+        content.trim(),
+        messageHistory,
+        userSub,
+        preferredModel,
+        options.disabledTools ?? [],
+        options.signal,
+      );
     if (errored) {
       return;
     }
 
-    yield* finalizeAssistantMessage(chatId, result, streamedText, streamedCmuMaps, streamedSavedMemory);
+    yield* finalizeAssistantMessage(
+      chatId,
+      result,
+      streamedText,
+      streamedCmuMaps,
+      streamedSavedMemory,
+    );
     // Let the title land before the response closes, so the client's
     // post-stream refetch already sees it.
     await titlePromise;

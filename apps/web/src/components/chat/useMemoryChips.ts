@@ -15,22 +15,17 @@ async function putSavedMemory(
   messageId: string,
   savedMemory: SavedMemory | null,
 ): Promise<void> {
-  await fetch(
-    `${API_BASE_URL}/chats/${chatId}/messages/${messageId}/saved-memory`,
-    {
-      method: "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(savedMemory),
-    },
-  );
+  await fetch(`${API_BASE_URL}/chats/${chatId}/messages/${messageId}/saved-memory`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(savedMemory),
+  });
 }
 
 /** Finds the newest non-user message, written as a loop because findLast and
  *  toReversed are newer than the linter's type library. */
-function newestAssistantMessage(
-  messages: readonly MessageItem[],
-): MessageItem | undefined {
+function newestAssistantMessage(messages: readonly MessageItem[]): MessageItem | undefined {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const candidate = messages[i];
     if (candidate !== undefined && candidate.role !== "user") {
@@ -57,9 +52,7 @@ function scheduleLearnedChecks(
         const { data } = await fetchClient.GET("/me/memories", {
           params: { query: { kind: "learned", limit: 5, offset: 0 } },
         });
-        const fresh = data?.items.find(
-          (item) => new Date(item.createdAt).getTime() >= since,
-        );
+        const fresh = data?.items.find((item) => new Date(item.createdAt).getTime() >= since);
         if (done || fresh === undefined || chatIdRef.current !== chatAtTurn) {
           return;
         }
@@ -71,7 +64,7 @@ function scheduleLearnedChecks(
         });
         await refetchMessages();
       })();
-    }, delay)
+    }, delay),
   );
   return () => {
     for (const timer of timers) {

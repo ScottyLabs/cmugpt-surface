@@ -108,9 +108,7 @@ function confirmChipDeletion(chip: ChipState): void {
 
 type ChipDeletion = ChipState;
 
-function ChipButton(
-  { memory, chip }: { memory: SavedMemory; chip: ChipDeletion },
-) {
+function ChipButton({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion }) {
   const deleting = chip.phase === "deleting";
   return (
     <button
@@ -144,16 +142,12 @@ function ChipButton(
           </>
         )}
       </span>
-      <span className="whitespace-nowrap">
-        {deleting ? "Removing memory..." : "Memory saved"}
-      </span>
+      <span className="whitespace-nowrap">{deleting ? "Removing memory..." : "Memory saved"}</span>
     </button>
   );
 }
 
-function ChipMenu(
-  { memory, chip }: { memory: SavedMemory; chip: ChipDeletion },
-) {
+function ChipMenu({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion }) {
   return (
     <div
       role="menu"
@@ -216,9 +210,7 @@ function ChipConfirmControls({ chip }: { chip: ChipDeletion }) {
   );
 }
 
-function ChipConfirmDialog(
-  { memory, chip }: { memory: SavedMemory; chip: ChipDeletion },
-) {
+function ChipConfirmDialog({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion }) {
   return (
     <section
       role="alertdialog"
@@ -254,32 +246,29 @@ function ChipConfirmDialog(
   );
 }
 
-export function MemorySavedNotice({
-  memory,
-  onDeleted,
-}: MemorySavedNoticeProps) {
+export function MemorySavedNotice({ memory, onDeleted }: MemorySavedNoticeProps) {
   const chip = useChipDeletion(memory, onDeleted);
   const containerRef = useRef<HTMLDivElement>(null);
-  useCloseOnOutsideOrEscape(chip.actionsOpen || chip.confirmationOpen, () => {
-    chip.setActionsOpen(false);
-    chip.setConfirmationOpen(false);
-  }, containerRef);
+  useCloseOnOutsideOrEscape(
+    chip.actionsOpen || chip.confirmationOpen,
+    () => {
+      chip.setActionsOpen(false);
+      chip.setConfirmationOpen(false);
+    },
+    containerRef,
+  );
 
   const leaving = chip.phase === "deleted";
   return (
     <div
       ref={containerRef}
       className={`memory-saved-enter relative -mb-1 h-6 w-fit max-w-full transition-[height,margin,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
-        leaving
-          ? "pointer-events-none mb-0 h-0 -translate-y-1 opacity-0"
-          : "opacity-100"
+        leaving ? "pointer-events-none mb-0 h-0 -translate-y-1 opacity-0" : "opacity-100"
       }`}
     >
       <ChipButton memory={memory} chip={chip} />
       {chip.actionsOpen ? <ChipMenu memory={memory} chip={chip} /> : null}
-      {chip.confirmationOpen
-        ? <ChipConfirmDialog memory={memory} chip={chip} />
-        : null}
+      {chip.confirmationOpen ? <ChipConfirmDialog memory={memory} chip={chip} /> : null}
       {chip.error === null || chip.error === "" ? null : (
         <p
           className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg border border-red-100 bg-white px-2 py-1.5 text-xs text-red-700 shadow-sm"

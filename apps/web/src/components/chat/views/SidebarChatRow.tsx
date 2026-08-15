@@ -2,9 +2,7 @@ import type { ChatListItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
 import { AnimatedTitle } from "./AnimatedTitle.tsx";
 
-function ChatRowLabel(
-  { c, chat }: { c: ChatShellController; chat: ChatListItem },
-) {
+function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem }) {
   const { sidebar } = c;
   if (sidebar.renamingChatId === chat.id) {
     return (
@@ -65,10 +63,9 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   // The row's padding lives on the label button, not the <li>: padding on the
   // <li> would be a dead zone that swallows clicks (the old "need to click
   // twice" bug), since the label only stretches to its own text otherwise.
-  const rowClass =
-    `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
-      isActive ? "bg-neutral-200" : ""
-    }`;
+  const rowClass = `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
+    isActive ? "bg-neutral-200" : ""
+  }`;
   // The star sits in its own flex track (not overlaid on the label), so it
   // never intercepts a click meant to open the chat. When hidden it keeps its
   // width (no layout shift) but is non-interactive, and it appears without a

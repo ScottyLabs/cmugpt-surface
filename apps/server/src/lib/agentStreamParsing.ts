@@ -177,9 +177,7 @@ function normalizeAgentStreamEvent(parsed: {
 // no cancel path in the UI.
 const STREAM_IDLE_TIMEOUT_MS = 90_000;
 
-type StreamReadResult = Awaited<
-  ReturnType<ReadableStreamDefaultReader<Uint8Array>["read"]>
->;
+type StreamReadResult = Awaited<ReturnType<ReadableStreamDefaultReader<Uint8Array>["read"]>>;
 
 async function readWithIdleTimeout(
   reader: ReadableStreamDefaultReader<Uint8Array>,

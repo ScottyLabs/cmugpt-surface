@@ -3,12 +3,7 @@ import { db } from "../db/index.ts";
 import { chats, messages } from "../db/schema.ts";
 import { fetchChatTitle } from "../lib/agentClient.ts";
 import { BadRequestError, NotFoundError } from "../middlewares/errorHandler.ts";
-import type {
-  ChatListItemDto,
-  ChatRow,
-  MessageDto,
-  MessageRow,
-} from "./chatService.types.ts";
+import type { ChatListItemDto, ChatRow, MessageDto, MessageRow } from "./chatService.types.ts";
 
 export const DEFAULT_CHAT_TITLE = "New chat";
 
@@ -153,4 +148,3 @@ export async function prepareAssistantTurn(
 
   return { userRow, messageHistory, titledByThisMessage: chat.title === DEFAULT_CHAT_TITLE };
 }
-

@@ -1,5 +1,4 @@
-export const SKIP_DELETE_CONFIRMATION_KEY =
-  "cmugpt.memory.skip-delete-confirmation";
+export const SKIP_DELETE_CONFIRMATION_KEY = "cmugpt.memory.skip-delete-confirmation";
 
 // Scoped per user so the preference cannot leak between accounts on a
 // shared device.
