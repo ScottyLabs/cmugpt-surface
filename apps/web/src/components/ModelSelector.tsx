@@ -107,27 +107,36 @@ function ModelOption({
   );
 }
 
-/** Compact "currently using model X" dropdown for the chat input bar. */
-/** Model list plus the user's current pick, with a setter that persists it. */
+/** Model list plus the user's current pick, with a setter that persists it.
+ *
+ * The pick renders optimistically: the label flips the moment a model is
+ *  chosen, while the PATCH and refetch settle in the background. On failure
+ *  the optimistic pick clears and the label falls back to the server truth. */
 function useModelPreference() {
   const { data: modelsData } = $api.useQuery("get", "/me/models");
   const { data: prefs, refetch: refetchPrefs } = $api.useQuery(
     "get",
     "/me/preferences",
   );
+  const [pendingModel, setPendingModel] = useState<string | null>(null);
   const updatePreferences = $api.useMutation("patch", "/me/preferences", {
-    onSuccess: () => {
-      void refetchPrefs();
+    onSuccess: async () => {
+      await refetchPrefs();
+      setPendingModel(null);
+    },
+    onError: () => {
+      setPendingModel(null);
     },
   });
   const models = modelsData?.models ?? [];
-  const currentId = prefs?.preferredModel;
+  const currentId = pendingModel ?? prefs?.preferredModel;
   const currentLabel = models.find((m) => m.id === currentId)?.label ??
     "Loading...";
   function persistModel(id: string) {
     if (id === currentId) {
       return;
     }
+    setPendingModel(id);
     updatePreferences.mutate({ body: { preferredModel: id } });
   }
   return { models, currentId, currentLabel, persistModel };
