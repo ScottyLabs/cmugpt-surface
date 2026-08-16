@@ -22,7 +22,7 @@ function SidebarHeader({ c }: { c: ChatShellController }) {
 
 // Brand on the left; search and collapse controls grouped on the right.
 function OpenSidebarHeader({ c }: { c: ChatShellController }) {
-  const { setSidebarOpen, search } = c;
+  const { setSidebarOpen, search, isMobile } = c;
   return (
     <div key="open-header" className="flex h-16 items-center justify-between gap-2 px-4">
       <div className="flex min-w-0 items-center gap-1.5">
@@ -39,6 +39,14 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
         <button
           type="button"
           onClick={() => {
+            // On mobile the sidebar overlays the screen, so it has to close
+            // for the search panel underneath to become visible. Open (not
+            // toggle) so tapping search always lands on the search screen.
+            if (isMobile) {
+              setSidebarOpen(false);
+              search.openSearch();
+              return;
+            }
             search.toggleSearch();
           }}
           className={`flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800 ${

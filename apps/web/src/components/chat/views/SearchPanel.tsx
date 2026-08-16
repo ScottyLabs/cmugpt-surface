@@ -1,5 +1,6 @@
 import { FrownIcon } from "@/components/icons/FrownIcon.tsx";
 import { CloseIcon, PlusIcon, SearchIcon } from "@/components/icons/index.tsx";
+import { Menu } from "lucide-react";
 import type { ChatShellController } from "../useChatShell.ts";
 
 function relativeTime(iso: string): string {
@@ -17,10 +18,26 @@ function relativeTime(iso: string): string {
   return `${years} year${years === 1 ? "" : "s"} ago`;
 }
 
-function SearchBox({ search }: { search: ChatShellController["search"] }) {
+function SearchBox({ c }: { c: ChatShellController }) {
+  const { search, sidebarOpen } = c;
   const { searchQ, setSearchQ, searchInputRef } = search;
   return (
-    <div className="mt-6 ml-0 sm:ml-6 flex h-14 shrink-0 items-center justify-start px-4 sm:px-6">
+    <div className="mt-6 ml-0 sm:ml-6 flex h-14 shrink-0 items-center justify-start gap-2 px-4 sm:px-6">
+      {/* On mobile the header bar is replaced by this panel and the sidebar is
+          off-screen, so the search page needs its own way back in. The desktop
+          rail is always visible, hence md:hidden. */}
+      {!sidebarOpen && (
+        <button
+          type="button"
+          onClick={() => {
+            c.setSidebarOpen(true);
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-200/80 md:hidden"
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-6 w-6" aria-hidden />
+        </button>
+      )}
       <div className="flex w-full max-w-[22.5rem] items-center gap-3 rounded-[6.25rem] bg-neutral-secondary-enabled px-4 py-2.5">
         <SearchIcon className="shrink-0 text-fg-neutral-primary" />
         <input
@@ -168,7 +185,7 @@ export function SearchPanel({ c }: { c: ChatShellController }) {
 
   return (
     <div className="flex h-full flex-col">
-      <SearchBox search={search} />
+      <SearchBox c={c} />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <SearchResults
           search={search}
