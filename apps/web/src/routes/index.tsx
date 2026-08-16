@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import { ChatShell } from "@/components/ChatShell.tsx";
 
@@ -52,6 +52,15 @@ function SignInPage() {
             Sign in with CMU credentials
           </button>
         </div>
+        <p className="mt-4 text-center text-xs text-neutral-500">
+          By using CMU GPT, you agree to{" "}
+          <Link
+            to="/terms"
+            className="underline underline-offset-2 hover:text-neutral-700"
+          >
+            Terms of Use
+          </Link>
+        </p>
       </section>
     </div>
   );
