@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ChatShellController } from "../useChatShell.ts";
 import { Composer } from "./Composer.tsx";
 
@@ -28,6 +29,13 @@ export function ComposerFooter({ c }: { c: ChatShellController }) {
           <div className="-mt-7 bg-white px-4 pb-4 pt-7">
             <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-3">
               CMUGPT is AI and can make mistakes. Please double-check responses.
+              By using CMU GPT, you agree to{" "}
+              <Link
+                to="/terms"
+                className="pointer-events-auto underline underline-offset-2 hover:text-fg-neutral-primary"
+              >
+                Terms of Use
+              </Link>
             </p>
             {stream.streamError !== null && stream.streamError !== "" && (
               <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
