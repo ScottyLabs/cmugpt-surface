@@ -31,13 +31,13 @@ function SignInPage() {
           id="signin-title"
           className="text-2xl font-bold text-neutral-900"
         >
-          Welcome to CMUGPT
+          Welcome to Bark
         </h1>
         <p className="mt-2 font-medium text-neutral-800">
           Please sign in with your CMU credentials to continue.
         </p>
         <p className="mt-4 text-sm leading-relaxed text-neutral-700">
-          CMUGPT is available exclusively to the Carnegie Mellon community,
+          Bark is available exclusively to the Carnegie Mellon community,
           providing access to real-time campus information and
           community-driven knowledge.
         </p>
@@ -53,7 +53,7 @@ function SignInPage() {
           </button>
         </div>
         <p className="mt-4 text-center text-xs text-neutral-500">
-          By using CMU GPT, you agree to{" "}
+          By using Bark, you agree to{" "}
           <Link
             to="/terms"
             className="underline underline-offset-2 hover:text-neutral-700"

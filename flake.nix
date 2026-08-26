@@ -1,5 +1,5 @@
 {
-  description = "CMUGPT Surface";
+  description = "Bark Surface";
 
   nixConfig = {
     extra-substituters = [ "https://scottylabs.cachix.org" ];

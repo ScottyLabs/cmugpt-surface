@@ -239,7 +239,7 @@ function ChipConfirmDialog({ memory, chip }: { memory: SavedMemory; chip: ChipDe
         id="inline-memory-delete-description"
         className="mt-1.5 text-sm font-normal leading-5 text-fg-neutral-secondary"
       >
-        CMUGPT will stop using &quot;{memory.fact}&quot; in future replies.
+        Bark will stop using &quot;{memory.fact}&quot; in future replies.
       </p>
       <ChipConfirmControls chip={chip} />
     </section>

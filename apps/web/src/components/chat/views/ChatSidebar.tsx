@@ -33,7 +33,7 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
           width={24}
           height={24}
         />
-        <span className="truncate text-lg font-semibold leading-none tracking-tight">CMUGPT</span>
+        <span className="truncate text-lg font-semibold leading-none tracking-tight">Bark</span>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <button

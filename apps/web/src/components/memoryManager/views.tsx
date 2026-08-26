@@ -16,7 +16,7 @@ export function ManagerHeader({ onClose }: { onClose: () => void }) {
           id="memory-manager-description"
           className="mt-1 text-sm font-normal text-fg-neutral-secondary"
         >
-          Facts CMUGPT learned from chats and details you asked it to remember.
+          Facts Bark learned from chats and details you asked it to remember.
         </p>
       </div>
       <button
@@ -127,7 +127,7 @@ function ListEmpty({ mm }: { mm: MemoryManagerController }) {
       <p className="mt-1 max-w-sm text-xs font-normal text-fg-neutral-tertiary">
         {mm.deferredSearch
           ? "Try a different word or memory type."
-          : "CMUGPT can learn durable details from chats, or you can ask it to remember one."}
+          : "Bark can learn durable details from chats, or you can ask it to remember one."}
       </p>
     </div>
   );

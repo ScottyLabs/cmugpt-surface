@@ -28,8 +28,8 @@ export function ComposerFooter({ c }: { c: ChatShellController }) {
               notches or around the disclaimer. */}
           <div className="-mt-7 bg-white px-4 pb-4 pt-7">
             <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-3">
-              CMUGPT is AI and can make mistakes. Please double-check responses.
-              By using CMU GPT, you agree to{" "}
+              Bark is AI and can make mistakes. Please double-check responses.
+              By using Bark, you agree to{" "}
               <Link
                 to="/terms"
                 className="pointer-events-auto underline underline-offset-2 hover:text-fg-neutral-primary"

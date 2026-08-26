@@ -14,6 +14,6 @@ export function maintenanceGate(req: Request, res: Response, next: NextFunction)
     return;
   }
 
-  const detail = "CMUGPT is temporarily unavailable for maintenance.";
+  const detail = "Bark is temporarily unavailable for maintenance.";
   res.status(503).set("Cache-Control", "no-store").json({ error: detail, detail });
 }
