@@ -131,7 +131,7 @@ export function SettingsPanel({ c }: { c: ChatShellController }) {
         <div className="flex flex-col gap-1">
           <p className="text-left text-sm font-medium text-black">Tools</p>
           <p className="text-left text-xs font-normal text-fg-neutral-secondary">
-            Click a tool to switch it off. While it is off, CMUGPT cannot use it to answer you.
+            Click a tool to switch it off. While it is off, Bark cannot use it to answer you.
           </p>
         </div>
         <ToolToggles c={c} />

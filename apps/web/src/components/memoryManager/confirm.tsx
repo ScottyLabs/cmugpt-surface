@@ -45,8 +45,8 @@ export function ConfirmOverlay({ mm }: { mm: MemoryManagerController }) {
   const title = pending.kind === "all" ? "Clear all memories?" : "Delete this memory?";
   const description =
     pending.kind === "all"
-      ? "This removes every learned and remembered fact CMUGPT uses to personalize replies."
-      : "CMUGPT will stop using this fact to personalize future replies.";
+      ? "This removes every learned and remembered fact Bark uses to personalize replies."
+      : "Bark will stop using this fact to personalize future replies.";
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/15 px-4 py-6 backdrop-blur-[1px]">
       <section
