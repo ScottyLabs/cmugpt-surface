@@ -29,7 +29,7 @@
     kennel = {
       sites.web = {
         spa = true;
-        customDomain = "cmugpt.com";
+        # customDomain = "cmugpt.com";
       };
       services.api.customDomain = "api.cmugpt.com";
     };
