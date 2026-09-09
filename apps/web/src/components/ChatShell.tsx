@@ -25,7 +25,9 @@ export function ChatShell() {
       <ChatSidebar c={c} />
       <SidebarContextMenu c={c} />
       <main className="relative flex min-w-0 flex-1 flex-col">
-        {c.search.searchMode ? <SearchPanel c={c} /> : (
+        {c.search.searchMode ? (
+          <SearchPanel c={c} />
+        ) : (
           <>
             <ChatHeaderBar c={c} />
             <ConversationView c={c} />

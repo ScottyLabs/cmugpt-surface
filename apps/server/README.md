@@ -2,7 +2,7 @@
 
 See [Backend Documentation](https://github.com/ScottyLabs/ScottyStack/wiki/Backend).
 
-## CMUGPT agent connection
+## Bark agent connection
 
 Set `AGENT_API_URL` to the agent service and set `AGENT_SHARED_SECRET` to the
 same random 32+ character value configured on that service. The secret is an
@@ -20,4 +20,4 @@ Clerk subjects are deterministically hashed before being sent to the agent, so
 the browser cannot select or enumerate another user's memory namespace.
 
 The memory manager exposes only durable learned facts and facts the user
-explicitly asked CMUGPT to remember. It never returns raw chat turns.
+explicitly asked Bark to remember. It never returns raw chat turns.

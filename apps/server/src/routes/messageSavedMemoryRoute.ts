@@ -1,10 +1,7 @@
 import type { Request, Response, Router } from "express";
 import { requireOidcAuth } from "../lib/authentication.ts";
 import { asyncHandler } from "../lib/asyncHandler.ts";
-import {
-  AuthenticationError,
-  BadRequestError,
-} from "../middlewares/errorHandler.ts";
+import { AuthenticationError, BadRequestError } from "../middlewares/errorHandler.ts";
 import { chatService } from "../services/chatService.ts";
 import type { SavedMemoryDto } from "../services/chatService.types.ts";
 
@@ -34,10 +31,7 @@ function parseSavedMemory(body: unknown): SavedMemoryDto | null {
   return null;
 }
 
-async function handleSetSavedMemory(
-  req: Request,
-  res: Response,
-): Promise<void> {
+async function handleSetSavedMemory(req: Request, res: Response): Promise<void> {
   const chatId = pathParam(req, "id");
   const messageId = pathParam(req, "messageId");
   if (chatId === undefined || chatId === "" || messageId === undefined || messageId === "") {
@@ -47,12 +41,7 @@ async function handleSetSavedMemory(
   if (userSub === undefined || userSub === "") {
     throw new AuthenticationError("req.user.sub missing after requireOidcAuth");
   }
-  await chatService.setMessageSavedMemory(
-    chatId,
-    userSub,
-    messageId,
-    parseSavedMemory(req.body),
-  );
+  await chatService.setMessageSavedMemory(chatId, userSub, messageId, parseSavedMemory(req.body));
   res.status(204).end();
 }
 

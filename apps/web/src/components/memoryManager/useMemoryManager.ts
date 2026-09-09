@@ -10,9 +10,7 @@ export type MemoryType = components["schemas"]["AgentMemoryType"];
 export type MemoryFilter = "all" | MemoryType;
 export type MemoryItem = components["schemas"]["AgentMemoryItem"];
 
-export type PendingAction =
-  | { kind: "item"; item: MemoryItem }
-  | { kind: "all" };
+export type PendingAction = { kind: "item"; item: MemoryItem } | { kind: "all" };
 
 export const FILTERS: { value: MemoryFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -20,11 +18,7 @@ export const FILTERS: { value: MemoryFilter; label: string }[] = [
   { value: "remembered", label: "Remembered" },
 ];
 
-function useMemoryQuery(
-  open: boolean,
-  deferredSearch: string,
-  filter: MemoryFilter,
-) {
+function useMemoryQuery(open: boolean, deferredSearch: string, filter: MemoryFilter) {
   return $api.useInfiniteQuery(
     "get",
     "/me/memories",
@@ -92,19 +86,14 @@ function trapTabKey(event: KeyboardEvent, focusRoot: HTMLElement): void {
 
 /** While a confirmation is up, the manager behind it goes inert and focus
  *  jumps to the safe Cancel action. */
-function useConfirmInert(
-  pendingAction: PendingAction | null,
-  refs: MemoryRefs,
-): void {
+function useConfirmInert(pendingAction: PendingAction | null, refs: MemoryRefs): void {
   useEffect(() => {
     refs.pendingActionRef.current = pendingAction;
     if (refs.dialogContentRef.current) {
       refs.dialogContentRef.current.inert = pendingAction !== null;
     }
     if (pendingAction === null) return () => {};
-    const frame = requestAnimationFrame(() =>
-      refs.cancelButtonRef.current?.focus()
-    );
+    const frame = requestAnimationFrame(() => refs.cancelButtonRef.current?.focus());
     return () => {
       cancelAnimationFrame(frame);
     };
@@ -125,9 +114,7 @@ function useDialogKeyboard(
     const previouslyFocused = document.activeElement;
     // Read once here: the ref must not be dereferenced inside cleanup.
     const returnFocusTarget = returnFocusRef?.current;
-    const frame = requestAnimationFrame(() =>
-      refs.searchInputRef.current?.focus()
-    );
+    const frame = requestAnimationFrame(() => refs.searchInputRef.current?.focus());
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -139,9 +126,10 @@ function useDialogKeyboard(
         return;
       }
       if (event.key !== "Tab") return;
-      const focusRoot = refs.pendingActionRef.current === null
-        ? refs.dialogRef.current
-        : refs.confirmDialogRef.current;
+      const focusRoot =
+        refs.pendingActionRef.current === null
+          ? refs.dialogRef.current
+          : refs.confirmDialogRef.current;
       if (!focusRoot) return;
       trapTabKey(event, focusRoot);
     }
@@ -166,12 +154,10 @@ function useActionState(userSub: string | undefined) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(
-    null,
-  );
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [skipDeleteConfirmation, setSkipDeleteConfirmation] = useState(() =>
-    shouldSkipDeleteConfirmation(userSub)
+    shouldSkipDeleteConfirmation(userSub),
   );
   return {
     actionError,

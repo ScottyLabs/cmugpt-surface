@@ -45,9 +45,7 @@ function AssistantMessage({ m }: { m: MessageItem }) {
         rehypePlugins={rehypeMarkdownPlugins}
         components={markdownComponents}
       >
-        {markdownForReactComponent(
-          assistantDisplayContent(m.content, m.cmuMaps),
-        )}
+        {markdownForReactComponent(assistantDisplayContent(m.content, m.cmuMaps))}
       </ReactMarkdown>
       {typeof m.confidence === "number" && m.confidence < 0.5 && (
         <p className="mt-2 text-xs text-amber-700">
@@ -63,12 +61,13 @@ function AssistantMessage({ m }: { m: MessageItem }) {
 // renders directly above that message and survives later questions, reloads,
 // and leaving the chat. Explicit remembers are persisted with the answer and
 // self-learned facts are attached a few seconds later.
-function MessageTurn(
-  { m, onSavedMemoryDeleted }: {
-    m: MessageItem;
-    onSavedMemoryDeleted: (messageId: string) => void;
-  },
-) {
+function MessageTurn({
+  m,
+  onSavedMemoryDeleted,
+}: {
+  m: MessageItem;
+  onSavedMemoryDeleted: (messageId: string) => void;
+}) {
   if (m.role === "user") {
     return <UserBubble content={m.content} />;
   }
@@ -93,27 +92,25 @@ function MessageTurn(
 function StreamingTail({ stream }: { stream: ChatShellController["stream"] }) {
   return (
     <div className={`mt-8 ${markdownClass}`}>
-      {stream.streamingText === ""
-        ? <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
-        : (
-          <ReactMarkdown
-            remarkPlugins={remarkMarkdownPlugins}
-            rehypePlugins={rehypeMarkdownPlugins}
-            components={markdownComponents}
-          >
-            {markdownForReactComponent(stream.streamingText, {
-              streaming: true,
-            })}
-          </ReactMarkdown>
-        )}
-      {
-        /* No map is shown while the answer is still being written. This block
+      {stream.streamingText === "" ? (
+        <StreamingStatus text={stream.streamStatus ?? "Thinking..."} />
+      ) : (
+        <ReactMarkdown
+          remarkPlugins={remarkMarkdownPlugins}
+          rehypePlugins={rehypeMarkdownPlugins}
+          components={markdownComponents}
+        >
+          {markdownForReactComponent(stream.streamingText, {
+            streaming: true,
+          })}
+        </ReactMarkdown>
+      )}
+      {/* No map is shown while the answer is still being written. This block
           and the finished message above it are separate places in the
           component tree, so anything put here is thrown away and rebuilt the
           instant the answer completes, making the map load twice. It is
           rendered once, by the finished message. Downloading it, on the other
-          hand, can start right now, which is what this does. */
-      }
+          hand, can start right now, which is what this does. */}
       <CmuMapsPrefetch cmuMaps={stream.streamingCmuMaps} />
     </div>
   );
@@ -125,25 +122,14 @@ export function MessageList({ c }: { c: ChatShellController }) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col">
       {session.messages.map((m) => (
-        <MessageTurn
-          key={m.id}
-          m={m}
-          onSavedMemoryDeleted={memory.onSavedMemoryDeleted}
-        />
+        <MessageTurn key={m.id} m={m} onSavedMemoryDeleted={memory.onSavedMemoryDeleted} />
       ))}
-      {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null
-        ? (
-          <UserBubble
-            key="optimistic-user-message"
-            content={optimisticMessage.content}
-          />
-        )
-        : null}
+      {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null ? (
+        <UserBubble key="optimistic-user-message" content={optimisticMessage.content} />
+      ) : null}
       {stream.isStreaming && <StreamingTail stream={stream} />}
-      {
-        /* Spacer doubles as the auto-scroll anchor: scrolling it into view
-          parks the last message above the floating composer, not behind it. */
-      }
+      {/* Spacer doubles as the auto-scroll anchor: scrolling it into view
+          parks the last message above the floating composer, not behind it. */}
       <div ref={scroll.bottomRef} className="h-36 shrink-0" />
     </div>
   );

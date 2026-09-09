@@ -1,9 +1,5 @@
 import type { AgentMemoryPage, AgentMemoryType } from "../lib/agentClient.ts";
-import {
-  clearAgentMemory,
-  deleteAgentMemory,
-  listAgentMemories,
-} from "../lib/agentClient.ts";
+import { clearAgentMemory, deleteAgentMemory, listAgentMemories } from "../lib/agentClient.ts";
 import { agentUserId } from "../lib/agentUserId.ts";
 
 export type MemoryTypeDto = AgentMemoryType;
@@ -31,9 +27,7 @@ export const memoryService = {
     return { status: "deleted" };
   },
 
-  async clear(
-    userSub: string,
-  ): Promise<{ status: "cleared"; removed: number }> {
+  async clear(userSub: string): Promise<{ status: "cleared"; removed: number }> {
     const removed = await clearAgentMemory(agentUserId(userSub));
     return { status: "cleared", removed };
   },

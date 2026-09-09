@@ -20,9 +20,11 @@ function ShareButton({ c }: { c: ChatShellController }) {
       onClick={() => {
         void share.shareChat();
       }}
-      disabled={session.chatId === undefined ||
+      disabled={
+        session.chatId === undefined ||
         derived.effectiveChatDetail === undefined ||
-        mutations.patchChat.isPending}
+        mutations.patchChat.isPending
+      }
       className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
       aria-label={shareLabel(share.shareFeedback)}
     >
@@ -30,8 +32,8 @@ function ShareButton({ c }: { c: ChatShellController }) {
       {share.shareFeedback === "copied"
         ? "Copied"
         : share.shareFeedback === "shared"
-        ? "Shared"
-        : "Share"}
+          ? "Shared"
+          : "Share"}
     </button>
   );
 }
@@ -42,22 +44,20 @@ function HeaderActions({ c }: { c: ChatShellController }) {
   const { currentChat } = derived;
   return (
     <div className="flex shrink-0 items-center gap-1.5">
-      {derived.showMakePrivate
-        ? (
-          <button
-            type="button"
-            onClick={() => {
-              share.makeChatPrivate();
-            }}
-            disabled={mutations.patchChat.isPending}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
-            title="Anyone signed in can open this link. Click to make the chat private again."
-            aria-label="Make chat private"
-          >
-            <LockOpen className="h-4 w-4" aria-hidden />
-          </button>
-        )
-        : null}
+      {derived.showMakePrivate ? (
+        <button
+          type="button"
+          onClick={() => {
+            share.makeChatPrivate();
+          }}
+          disabled={mutations.patchChat.isPending}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+          title="Anyone signed in can open this link. Click to make the chat private again."
+          aria-label="Make chat private"
+        >
+          <LockOpen className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
       <ShareButton c={c} />
       {Boolean(chatId) && currentChat !== undefined && (
         <button
@@ -87,10 +87,8 @@ export function ChatHeaderBar({ c }: { c: ChatShellController }) {
   return (
     <div className="z-10 flex items-center justify-between gap-2 bg-white p-3 sm:p-4 md:pointer-events-none md:absolute md:inset-x-0 md:top-0 md:items-start md:bg-transparent">
       <div className="md:pointer-events-auto">
-        {
-          /* The desktop collapsed rail carries its own open button, so the header
-            only needs one on mobile, where the sidebar is off-screen. */
-        }
+        {/* The desktop collapsed rail carries its own open button, so the header
+            only needs one on mobile, where the sidebar is off-screen. */}
         {!sidebarOpen && <SidebarOpenButton c={c} className="md:hidden" />}
       </div>
       <div className="md:pointer-events-auto">

@@ -162,8 +162,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   const showIframe = useLazyMapMount(slotRef, mapUrl !== null);
   const settled = useScrollSettled(showIframe);
   useReclaimIframeFocus(showIframe);
-  const { loaded, reloading, frameRef, reloadMap, handleFrameLoad } =
-    useMapFrameLifecycle(mapUrl);
+  const { loaded, reloading, frameRef, reloadMap, handleFrameLoad } = useMapFrameLifecycle(mapUrl);
 
   if (!cmuMaps || mapUrl === null) {
     return null;

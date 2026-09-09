@@ -27,7 +27,7 @@ const envSchema = z.object({
   // Shared ricochet OAuth relay callback. Login uses it as the IdP
   // redirect_uri and puts our real callback in the OAuth `state` (return_to),
   // so preview hosts authenticate without registering a redirect URI.
-  OAUTH_RELAY_URL: z.url(),
+  OAUTH_RELAY_URL: z.url().optional(),
 
   DATABASE_URL: z.url(),
 
@@ -53,14 +53,10 @@ if (isProduction && (sharedSecret === undefined || sharedSecret.trim() === "")) 
   );
 }
 if (isProduction && sharedSecret !== sharedSecret?.trim()) {
-  throw new Error(
-    "AGENT_SHARED_SECRET cannot have leading or trailing whitespace.",
-  );
+  throw new Error("AGENT_SHARED_SECRET cannot have leading or trailing whitespace.");
 }
 if (isProduction && (sharedSecret?.length ?? 0) < 32) {
-  throw new Error(
-    "AGENT_SHARED_SECRET must be at least 32 characters in production.",
-  );
+  throw new Error("AGENT_SHARED_SECRET must be at least 32 characters in production.");
 }
 
 // Export the result so we can use it in the project

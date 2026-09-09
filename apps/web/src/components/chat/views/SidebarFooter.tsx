@@ -1,10 +1,5 @@
 import { Brain } from "lucide-react";
-import {
-  AboutIcon,
-  LogOutIcon,
-  ScottyLabsIcon,
-  SettingsIcon,
-} from "@/components/icons/index.tsx";
+import { AboutIcon, LogOutIcon, ScottyLabsIcon, SettingsIcon } from "@/components/icons/index.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
 
 const MENU_ROW_CLASS = "flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50";
@@ -55,12 +50,7 @@ function SidebarMenuItems({ c }: { c: ChatShellController }) {
           {entry.label}
         </button>
       ))}
-      <a
-        href="https://scottylabs.org/"
-        target="_blank"
-        rel="noreferrer"
-        className={MENU_ROW_CLASS}
-      >
+      <a href="https://scottylabs.org/" target="_blank" rel="noreferrer" className={MENU_ROW_CLASS}>
         <ScottyLabsIcon />
         ScottyLabs
       </a>
@@ -82,9 +72,7 @@ function SidebarMenuItems({ c }: { c: ChatShellController }) {
 function SidebarUserMenu({ c }: { c: ChatShellController }) {
   const { sidebar, sidebarOpen } = c;
   const placement = sidebarOpen ? "inset-x-4" : "left-2 w-60";
-  const state = sidebar.userMenuOpen
-    ? "visible grid-rows-[1fr]"
-    : "invisible grid-rows-[0fr]";
+  const state = sidebar.userMenuOpen ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]";
   return (
     <div
       className={`absolute bottom-full mb-1.5 grid content-end transition-[grid-template-rows,visibility] duration-200 ease-out ${placement} ${state}`}
@@ -108,9 +96,7 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
           e.stopPropagation();
           sidebar.setUserMenuOpen((o) => !o);
         }}
-        className={`flex w-full items-center px-2 ${
-          sidebarOpen ? "gap-3" : "justify-center"
-        }`}
+        className={`flex w-full items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
           <span>{derived.displayName.slice(0, 1).toUpperCase()}</span>

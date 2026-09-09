@@ -8,15 +8,15 @@ function AboutPanel() {
     <>
       <div className="space-y-3 px-4 text-left text-sm font-normal leading-relaxed text-black">
         <p>
-          CMUGPT is an AI assistant made by ScottyLabs for the Carnegie Mellon
-          community. Ask it everyday campus questions, like how to get to class,
-          what&apos;s open for lunch, or which course to take next.
+          Bark is an AI assistant made by ScottyLabs for the Carnegie Mellon community. Ask it
+          everyday campus questions, like how to get to class, what&apos;s open for lunch, or which
+          course to take next.
         </p>
         <p>
-          It taps into campus knowledge through MCP tools: CMUMaps for
-          directions, CMUCourses for courses, CMUEats for dining, and CMUGuide
-          for student resources. Each can be turned on or off in Settings, and
-          CMUGPT remembers details you share so future chats feel more personal.
+          It taps into campus knowledge through MCP tools: CMUMaps for directions, CMUCourses for
+          courses, CMUEats for dining, and CMUGuide for student resources. Each can be turned on or
+          off in Settings, and Bark remembers details you share so future chats feel more
+          personal.
         </p>
       </div>
       <div className="mt-8 flex items-center justify-end gap-2 mr-4">
@@ -33,9 +33,7 @@ function AboutPanel() {
             backgroundClip: "padding-box, border-box",
           }}
         >
-          <span className="text-sm font-semibold text-fg-neutral-primary">
-            ScottyLabs
-          </span>
+          <span className="text-sm font-semibold text-fg-neutral-primary">ScottyLabs</span>
         </button>
       </div>
     </>
@@ -59,13 +57,11 @@ function useCloseOnEscape(isOpen: boolean, close: () => void): void {
   }, [isOpen, close]);
 }
 
-function ModalHeader(
-  { isSettings, onClose }: { isSettings: boolean; onClose: () => void },
-) {
+function ModalHeader({ isSettings, onClose }: { isSettings: boolean; onClose: () => void }) {
   return (
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-2xl pt-4 pl-4 font-medium leading-8">
-        {isSettings ? "Settings" : "About CMUGPT"}
+        {isSettings ? "Settings" : "About Bark"}
       </h2>
       <button type="button" onClick={onClose}>
         <CloseIcon />

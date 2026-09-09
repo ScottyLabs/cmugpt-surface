@@ -4,9 +4,13 @@ import type { ChatShellController } from "../useChatShell.ts";
 /** Opens the sidebar. Shows the ScottyLabs dog logo; on hover the dog slides
  *  up out of the (clipped) button while the menu icon slides in from below.
  *  No fade: both icons stay opaque, the masked slide does the swap. */
-export function SidebarOpenButton(
-  { c, className = "" }: { c: ChatShellController; className?: string },
-) {
+export function SidebarOpenButton({
+  c,
+  className = "",
+}: {
+  c: ChatShellController;
+  className?: string;
+}) {
   return (
     <button
       type="button"

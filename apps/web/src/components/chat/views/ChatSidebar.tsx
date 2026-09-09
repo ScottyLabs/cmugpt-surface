@@ -1,8 +1,4 @@
-import {
-  PlusIcon,
-  SearchIcon,
-  SidebarPanelIcon,
-} from "@/components/icons/index.tsx";
+import { PlusIcon, SearchIcon, SidebarPanelIcon } from "@/components/icons/index.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
 import { SidebarChatRow } from "./SidebarChatRow.tsx";
 import { SidebarFooter } from "./SidebarFooter.tsx";
@@ -16,10 +12,7 @@ function SidebarHeader({ c }: { c: ChatShellController }) {
     // open header so React remounts on toggle instead of reusing (and
     // animating) the same nodes across states.
     return (
-      <div
-        key="rail-header"
-        className="flex h-16 items-center justify-center px-4"
-      >
+      <div key="rail-header" className="flex h-16 items-center justify-center px-4">
         <SidebarOpenButton c={c} />
       </div>
     );
@@ -29,12 +22,9 @@ function SidebarHeader({ c }: { c: ChatShellController }) {
 
 // Brand on the left; search and collapse controls grouped on the right.
 function OpenSidebarHeader({ c }: { c: ChatShellController }) {
-  const { setSidebarOpen, search } = c;
+  const { setSidebarOpen, search, isMobile } = c;
   return (
-    <div
-      key="open-header"
-      className="flex h-16 items-center justify-between gap-2 px-4"
-    >
+    <div key="open-header" className="flex h-16 items-center justify-between gap-2 px-4">
       <div className="flex min-w-0 items-center gap-1.5">
         <img
           src="/sl-logo.svg"
@@ -43,14 +33,20 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
           width={24}
           height={24}
         />
-        <span className="truncate text-lg font-semibold leading-none tracking-tight">
-          CMUGPT
-        </span>
+        <span className="truncate text-lg font-semibold leading-none tracking-tight">Bark</span>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <button
           type="button"
           onClick={() => {
+            // On mobile the sidebar overlays the screen, so it has to close
+            // for the search panel underneath to become visible. Open (not
+            // toggle) so tapping search always lands on the search screen.
+            if (isMobile) {
+              setSidebarOpen(false);
+              search.openSearch();
+              return;
+            }
             search.toggleSearch();
           }}
           className={`flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800 ${
@@ -95,9 +91,7 @@ function SidebarChatLists({ c }: { c: ChatShellController }) {
     >
       {derived.starred.length > 0 && (
         <div className="mb-4">
-          <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">
-            Starred
-          </p>
+          <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">Starred</p>
           <ul className="space-y-1">
             {derived.starred.map((chat) => (
               <SidebarChatRow key={chat.id} c={c} chat={chat} starFilled />
@@ -106,17 +100,10 @@ function SidebarChatLists({ c }: { c: ChatShellController }) {
         </div>
       )}
       <div>
-        <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">
-          Recents
-        </p>
+        <p className="px-2 pb-1 font-medium text-fg-neutral-tertiary">Recents</p>
         <ul className="space-y-1">
           {derived.unstarred.map((chat) => (
-            <SidebarChatRow
-              key={chat.id}
-              c={c}
-              chat={chat}
-              starFilled={false}
-            />
+            <SidebarChatRow key={chat.id} c={c} chat={chat} starFilled={false} />
           ))}
         </ul>
       </div>
@@ -161,19 +148,12 @@ function SidebarNav({ c }: { c: ChatShellController }) {
 // Collapsed rail: compact, centered icon buttons whose hover highlight hugs
 // the icon rather than spanning the whole rail. Search lives in the header
 // when open, so it only needs an entry point here in the rail.
-function RailNav(
-  { c, startNewChat }: { c: ChatShellController; startNewChat: () => void },
-) {
+function RailNav({ c, startNewChat }: { c: ChatShellController; startNewChat: () => void }) {
   const { search, isMobile, setSidebarOpen } = c;
   return (
-    <nav
-      key="rail-nav"
-      className="flex flex-col items-center gap-4 px-3 pt-6"
-    >
-      {
-        /* The white circle stays white; the hover highlight lands on the
-          square zone behind it, matching the search button below. */
-      }
+    <nav key="rail-nav" className="flex flex-col items-center gap-4 px-3 pt-6">
+      {/* The white circle stays white; the hover highlight lands on the
+          square zone behind it, matching the search button below. */}
       <button
         type="button"
         onClick={startNewChat}

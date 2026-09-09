@@ -14,10 +14,7 @@ import { useChatSearch } from "./useChatSearch.ts";
 import { useOptimisticMessage } from "./useOptimisticMessage.ts";
 import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
-import {
-  type StreamController,
-  useStreamController,
-} from "./useStreamController.ts";
+import { type StreamController, useStreamController } from "./useStreamController.ts";
 import { useToolToggles } from "./useToolToggles.ts";
 
 function useChatShellEffects(
@@ -86,22 +83,14 @@ function useShellMemory(session: ChatSession, stream: StreamController) {
   chatIdRef.current = session.chatId;
   const messagesRef = useRef(session.messages);
   messagesRef.current = session.messages;
-  useLearnedMemoryChip(
-    stream.isStreaming,
-    chatIdRef,
-    messagesRef,
-    refetchMessages,
-  );
+  useLearnedMemoryChip(stream.isStreaming, chatIdRef, messagesRef, refetchMessages);
   return useMemoryController(chatIdRef, refetchMessages);
 }
 
 // Opening a chat (from the sidebar or a result) leaves search, so the panel
 // is never a dead end. Selecting a result already closes search; this covers
 // navigating via the sidebar while search is open.
-function useSearchExitOnChatChange(
-  chatId: string | undefined,
-  closeSearch: () => void,
-): void {
+function useSearchExitOnChatChange(chatId: string | undefined, closeSearch: () => void): void {
   const prevChatIdRef = useRef(chatId);
   useEffect(() => {
     if (prevChatIdRef.current !== chatId) {
@@ -111,9 +100,7 @@ function useSearchExitOnChatChange(
   }, [chatId, closeSearch]);
 }
 
-function useShellPanels(
-  core: ReturnType<typeof useChatShellCore>,
-) {
+function useShellPanels(core: ReturnType<typeof useChatShellCore>) {
   const { session, mutations, derived } = core;
   const share = useShareController({
     patchChat: mutations.patchChat,
@@ -135,16 +122,7 @@ export function useChatShell() {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
   const core = useChatShellCore();
-  const {
-    auth,
-    session,
-    mutations,
-    stream,
-    attachments,
-    optimistic,
-    derived,
-    scroll,
-  } = core;
+  const { auth, session, mutations, stream, attachments, optimistic, derived, scroll } = core;
   const memory = useShellMemory(session, stream);
   const panels = useShellPanels(core);
   const composer = useComposer({
