@@ -11,7 +11,7 @@ test("signed-out users see the login surface", async ({ page }: { page: Page }) 
 
   await page.goto("/");
 
-  await expect(page.getByText("Sign in to use cmuGPT.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Bark" })).toBeVisible();
 
   await page.route("**/api/auth/login**", async (route: Route) => {
     await route.fulfill({

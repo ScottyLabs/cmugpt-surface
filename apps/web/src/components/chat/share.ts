@@ -24,8 +24,8 @@ async function tryNativeShare(shareUrl: string): Promise<"shared" | "aborted" | 
   }
   try {
     await navigator.share({
-      title: "cmuGPT",
-      text: "Chat on cmuGPT",
+      title: "Bark",
+      text: "Chat on Bark",
       url: shareUrl,
     });
     return "shared";
@@ -49,7 +49,7 @@ async function ensureChatPublic(ctx: ShareCtx, targetId: string, alreadyPublic: 
     return true;
   }
   const ok = globalThis.confirm(
-    "Anyone signed in to cmuGPT can open this chat with the link. Make this chat public and continue sharing?",
+    "Anyone signed in to Bark can open this chat with the link. Make this chat public and continue sharing?",
   );
   if (!ok) {
     return false;

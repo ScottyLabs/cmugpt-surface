@@ -17,16 +17,16 @@ const SECTIONS: TermsSectionData[] = [
   {
     heading: "About This Service",
     paragraphs: [
-      "CMU GPT is a student-built project developed by ScottyLabs, an " +
+      "Bark is a student-built project developed by ScottyLabs, an " +
       "independent student organization at Carnegie Mellon University. " +
-      "CMU GPT is not an official CMU service, and is not endorsed by, " +
+      "Bark is not an official CMU service, and is not endorsed by, " +
       "operated by, or affiliated with the CMU administration.",
     ],
   },
   {
     heading: "No Warranty",
     paragraphs: [
-      'CMU GPT is provided "as is" and "as available," with no guarantees ' +
+      'Bark is provided "as is" and "as available," with no guarantees ' +
       "of any kind. We make no promises regarding:",
     ],
     bullets: [
@@ -36,7 +36,7 @@ const SECTIONS: TermsSectionData[] = [
     ],
     trailing: [
       "AI-generated responses may be incorrect, outdated, or misleading. " +
-      "Do not rely on CMU GPT as a substitute for official CMU resources " +
+      "Do not rely on Bark as a substitute for official CMU resources " +
       "(registrar, academic advisors, course catalogs, etc.) for decisions " +
       "that matter.",
     ],
@@ -52,7 +52,7 @@ const SECTIONS: TermsSectionData[] = [
   },
   {
     heading: "Acceptable Use",
-    paragraphs: ["You agree not to use CMU GPT to:"],
+    paragraphs: ["You agree not to use Bark to:"],
     bullets: [
       "Violate any CMU policy or applicable law",
       "Attempt to disrupt, exploit, or gain unauthorized access to the service",
@@ -64,14 +64,14 @@ const SECTIONS: TermsSectionData[] = [
     paragraphs: [
       "To the maximum extent permitted by law, ScottyLabs and its members " +
       "are not liable for any damages, losses, or issues arising from use " +
-      "of CMU GPT.",
+      "of Bark.",
     ],
   },
   {
     heading: "Changes",
     paragraphs: [
       "These terms may be updated at any time without prior notice. " +
-      "Continued use of CMU GPT constitutes acceptance of the current terms.",
+      "Continued use of Bark constitutes acceptance of the current terms.",
     ],
   },
 ];
@@ -114,10 +114,10 @@ function TermsPage() {
           search={{ chat: undefined, newChat: false }}
           className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
         >
-          &larr; Back to CMUGPT
+          &larr; Back to Bark
         </Link>
         <h1 className="mt-4 text-2xl font-bold text-neutral-900">
-          Terms of Use &mdash; CMU GPT
+          Terms of Use &mdash; Bark
         </h1>
         <p className="mt-1 text-sm text-neutral-500">
           Last updated: {LAST_UPDATED}

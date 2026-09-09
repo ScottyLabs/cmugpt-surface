@@ -88,7 +88,7 @@ function ComposerTextarea({ c, disabled }: { c: ChatShellController; disabled: b
     <textarea
       ref={draftComposerRef}
       rows={1}
-      placeholder="Message CMUGPT"
+      placeholder="Message Bark"
       value={draft}
       disabled={disabled}
       onChange={(e) => {

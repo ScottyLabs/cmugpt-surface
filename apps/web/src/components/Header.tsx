@@ -6,7 +6,7 @@ export function Header() {
 
   return (
     <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
-      <h1 className="text-xl font-semibold">CMU GPT</h1>
+      <h1 className="text-xl font-semibold">Bark</h1>
 
       <div className="flex items-center gap-4">
         {auth.isAuthenticated ? (
