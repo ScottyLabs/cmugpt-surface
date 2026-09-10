@@ -48,7 +48,7 @@
             # types only via ../server/build/openapi.d.ts), which isn't in this src, so the
             # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
             frozen = false;
-            env.VITE_API_URL = "https://api.cmugpt.com";
+            env.VITE_API_URL = "https://api.bark.scottylabs.org";
           };
 
           api = buildDenoTask {

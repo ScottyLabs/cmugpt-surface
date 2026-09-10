@@ -31,7 +31,7 @@
         spa = true;
         customDomain = "bark.scottylabs.org";
       };
-      services.api.customDomain = "api.cmugpt.com";
+      services.api.customDomain = "api.bark.scottylabs.org";
     };
   };
 
