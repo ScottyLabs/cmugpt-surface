@@ -26,7 +26,7 @@ export function ComposerFooter({ c }: { c: ChatShellController }) {
               it (the pill paints on top) so scrolling text is fully gone by
               the pill's bottom edge, with nothing showing through the corner
               notches or around the disclaimer. */}
-          <div className="-mt-7 bg-white px-4 pb-4 pt-7">
+          <div className="-mt-7 bg-surface px-4 pb-4 pt-7">
             <p className="text-xs text-center font-medium text-fg-neutral-tertiary pt-3">
               Bark is AI and can make mistakes. Please double-check responses.
               By using Bark, you agree to{" "}
@@ -38,7 +38,7 @@ export function ComposerFooter({ c }: { c: ChatShellController }) {
               </Link>
             </p>
             {stream.streamError !== null && stream.streamError !== "" && (
-              <p className="mx-auto mt-2 max-w-3xl text-center text-red-600 text-xs">
+              <p className="mx-auto mt-2 max-w-3xl text-center text-danger text-xs">
                 {stream.streamError}
               </p>
             )}

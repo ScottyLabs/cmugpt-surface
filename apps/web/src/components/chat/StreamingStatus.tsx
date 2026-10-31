@@ -4,7 +4,7 @@ export function StreamingStatus({ text }: { text: string }) {
     <output
       aria-live="polite"
       aria-label={text}
-      className="-mt-1 block font-normal text-neutral-400 text-sm leading-relaxed motion-safe:animate-pulse"
+      className="-mt-1 block font-normal text-fg-neutral-tertiary text-sm leading-relaxed motion-safe:animate-pulse"
     >
       {label}
     </output>

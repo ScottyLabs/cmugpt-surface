@@ -124,7 +124,7 @@ function ChipButton({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion 
       aria-label={`Memory saved: ${memory.fact}. Open memory options.`}
       aria-haspopup="menu"
       aria-expanded={chip.actionsOpen || chip.confirmationOpen}
-      className="group -ml-1 inline-flex h-6 max-w-full items-center gap-1 rounded-md pl-1 pr-2.5 text-left text-[0.6875rem] font-medium text-fg-neutral-tertiary transition-[background-color,color,opacity] hover:bg-neutral-100 hover:text-fg-neutral-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:cursor-wait disabled:opacity-60"
+      className="group -ml-1 inline-flex h-6 max-w-full items-center gap-1 rounded-md pl-1 pr-2.5 text-left text-[0.6875rem] font-medium text-fg-neutral-tertiary transition-[background-color,color,opacity] hover:bg-surface-hover hover:text-fg-neutral-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-wait disabled:opacity-60"
     >
       <span className="relative flex h-4 w-4 shrink-0 items-center justify-center text-fg-neutral-secondary">
         {deleting ? (
@@ -136,7 +136,7 @@ function ChipButton({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion 
           <>
             <Brain className="h-3.5 w-3.5" aria-hidden="true" />
             <Sparkles
-              className="memory-saved-spark absolute -right-0.5 -top-1 h-2 w-2 text-sky-600"
+              className="memory-saved-spark absolute -right-0.5 -top-1 h-2 w-2 text-info"
               aria-hidden="true"
             />
           </>
@@ -152,7 +152,7 @@ function ChipMenu({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion })
     <div
       role="menu"
       aria-label="Memory options"
-      className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-xl border border-stroke-neutral-1 bg-white p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+      className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-xl border border-stroke-neutral-1 bg-surface p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
     >
       <p className="px-2 py-1 text-xs font-normal leading-4 text-fg-neutral-secondary">
         {memory.fact}
@@ -163,7 +163,7 @@ function ChipMenu({ memory, chip }: { memory: SavedMemory; chip: ChipDeletion })
         onClick={() => {
           requestChipDeletion(chip);
         }}
-        className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium text-danger transition-colors hover:bg-danger-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
       >
         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         Delete memory
@@ -182,7 +182,7 @@ function ChipConfirmControls({ chip }: { chip: ChipDeletion }) {
           onChange={(event) => {
             chip.setDontShowAgain(event.target.checked);
           }}
-          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         />
         <span>Don&apos;t show this confirmation again on this device</span>
       </label>
@@ -192,7 +192,7 @@ function ChipConfirmControls({ chip }: { chip: ChipDeletion }) {
           onClick={() => {
             chip.setConfirmationOpen(false);
           }}
-          className="rounded-lg border border-stroke-neutral-1 px-3 py-1.5 text-xs font-medium text-fg-neutral-primary transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+          className="rounded-lg border border-stroke-neutral-1 px-3 py-1.5 text-xs font-medium text-fg-neutral-primary transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           Cancel
         </button>
@@ -217,14 +217,14 @@ function ChipConfirmDialog({ memory, chip }: { memory: SavedMemory; chip: ChipDe
       aria-modal="true"
       aria-labelledby="inline-memory-delete-title"
       aria-describedby="inline-memory-delete-description"
-      className="absolute bottom-full left-0 z-30 mb-1 w-[min(20rem,calc(100vw-3rem))] rounded-xl border border-stroke-neutral-1 bg-white p-4 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+      className="absolute bottom-full left-0 z-30 mb-1 w-[min(20rem,calc(100vw-3rem))] rounded-xl border border-stroke-neutral-1 bg-surface p-4 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
     >
       <button
         type="button"
         onClick={() => {
           chip.setConfirmationOpen(false);
         }}
-        className="absolute right-2.5 top-2.5 rounded-lg p-1 text-fg-neutral-tertiary transition-colors hover:bg-neutral-100 hover:text-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+        className="absolute right-2.5 top-2.5 rounded-lg p-1 text-fg-neutral-tertiary transition-colors hover:bg-surface-hover hover:text-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         aria-label="Close memory deletion confirmation"
       >
         <X className="h-4 w-4" aria-hidden="true" />
@@ -271,7 +271,7 @@ export function MemorySavedNotice({ memory, onDeleted }: MemorySavedNoticeProps)
       {chip.confirmationOpen ? <ChipConfirmDialog memory={memory} chip={chip} /> : null}
       {chip.error === null || chip.error === "" ? null : (
         <p
-          className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg border border-red-100 bg-white px-2 py-1.5 text-xs text-red-700 shadow-sm"
+          className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg border border-danger bg-surface px-2 py-1.5 text-xs text-danger shadow-sm"
           aria-live="polite"
         >
           {chip.error}

@@ -79,25 +79,25 @@ const SECTIONS: TermsSectionData[] = [
 function TermsSection({ section }: { section: TermsSectionData }) {
   return (
     <section className="mt-6">
-      <h2 className="text-base font-semibold text-neutral-900">
+      <h2 className="text-base font-semibold text-fg-neutral-primary">
         {section.heading}
       </h2>
       {section.paragraphs.map((text) => (
-        <p key={text} className="mt-2 text-sm leading-relaxed text-neutral-700">
+        <p key={text} className="mt-2 text-sm leading-relaxed text-fg-neutral-secondary">
           {text}
         </p>
       ))}
       {section.bullets !== undefined && (
         <ul className="mt-2 list-disc space-y-1 pl-6">
           {section.bullets.map((item) => (
-            <li key={item} className="text-sm leading-relaxed text-neutral-700">
+            <li key={item} className="text-sm leading-relaxed text-fg-neutral-secondary">
               {item}
             </li>
           ))}
         </ul>
       )}
       {section.trailing?.map((text) => (
-        <p key={text} className="mt-2 text-sm leading-relaxed text-neutral-700">
+        <p key={text} className="mt-2 text-sm leading-relaxed text-fg-neutral-secondary">
           {text}
         </p>
       ))}
@@ -107,31 +107,31 @@ function TermsSection({ section }: { section: TermsSectionData }) {
 
 function TermsPage() {
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-surface">
       <main className="mx-auto w-full max-w-2xl px-6 py-10 sm:py-14">
         <Link
           to="/"
           search={{ chat: undefined, newChat: false }}
-          className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
+          className="text-sm font-medium text-fg-neutral-secondary hover:text-fg-neutral-primary"
         >
           &larr; Back to Bark
         </Link>
-        <h1 className="mt-4 text-2xl font-bold text-neutral-900">
+        <h1 className="mt-4 text-2xl font-bold text-fg-neutral-primary">
           Terms of Use &mdash; Bark
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-fg-neutral-secondary">
           Last updated: {LAST_UPDATED}
         </p>
         {SECTIONS.map((section) => (
           <TermsSection key={section.heading} section={section} />
         ))}
         <section className="mt-6">
-          <h2 className="text-base font-semibold text-neutral-900">Contact</h2>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-700">
+          <h2 className="text-base font-semibold text-fg-neutral-primary">Contact</h2>
+          <p className="mt-2 text-sm leading-relaxed text-fg-neutral-secondary">
             Questions or concerns:{" "}
             <a
               href="mailto:ops@scottylabs.org"
-              className="underline hover:text-neutral-900"
+              className="underline hover:text-fg-neutral-primary"
             >
               ops@scottylabs.org
             </a>

@@ -17,7 +17,7 @@ export function SidebarOpenButton({
       onClick={() => {
         c.setSidebarOpen(true);
       }}
-      className={`group relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg transition-colors hover:bg-neutral-200/80 ${className}`}
+      className={`group relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg transition-colors hover:bg-surface-selected/80 ${className}`}
       aria-label="Open sidebar"
     >
       <img

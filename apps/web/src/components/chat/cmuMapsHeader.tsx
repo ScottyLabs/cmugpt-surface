@@ -7,14 +7,14 @@ import type { CmuMapsPayload } from "./types.ts";
 
 /** Shared appearance for the small header buttons. */
 const MAP_CHIP_CLASS =
-  "inline-flex items-center gap-1 rounded border border-neutral-200 bg-white px-1.5 py-0.5";
-const MAP_RELOAD_CLASS = `${MAP_CHIP_CLASS} text-neutral-600 hover:bg-neutral-100`;
+  "inline-flex items-center gap-1 rounded border border-stroke-neutral-1 bg-surface px-1.5 py-0.5";
+const MAP_RELOAD_CLASS = `${MAP_CHIP_CLASS} text-fg-neutral-secondary hover:bg-surface-hover`;
 /**
  * Red link text matching answer links. The markdown container styles links
  * with descendant selectors that override plain utilities, so each property
  * they set requires an important marker. Background and border require none.
  */
-const MAP_LINK_CLASS = `${MAP_CHIP_CLASS} hover:bg-red-50 gap-1! text-red-800! no-underline!`;
+const MAP_LINK_CLASS = `${MAP_CHIP_CLASS} hover:bg-danger-subtle gap-1! text-danger! no-underline!`;
 
 /**
  * Facts the header states. A route names both ends, a single-place answer
@@ -84,7 +84,7 @@ export function MapHeader({
   onReload: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-neutral-200 border-b bg-neutral-50 px-3 py-2 text-neutral-500 text-xs">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-stroke-neutral-1 border-b bg-surface-subtle px-3 py-2 text-fg-neutral-secondary text-xs">
       {mapHeaderFacts(cmuMaps).map((fact) => (
         <span key={fact.label}>
           {fact.label}: {fact.value}

@@ -6,7 +6,7 @@ import { SettingsPanel } from "./SettingsPanel.tsx";
 function AboutPanel() {
   return (
     <>
-      <div className="space-y-3 px-4 text-left text-sm font-normal leading-relaxed text-black">
+      <div className="space-y-3 px-4 text-left text-sm font-normal leading-relaxed text-fg-neutral-primary">
         <p>
           Bark is an AI assistant made by ScottyLabs for the Carnegie Mellon community. Ask it
           everyday campus questions, like how to get to class, what&apos;s open for lunch, or which
@@ -20,15 +20,15 @@ function AboutPanel() {
         </p>
       </div>
       <div className="mt-8 flex items-center justify-end gap-2 mr-4">
-        <p className="text-base font-medium text-black">With love,</p>
+        <p className="text-base font-medium text-fg-neutral-primary">With love,</p>
         <button
           type="button"
           className="rounded-[6.25rem] px-3.5 py-1"
           style={{
-            background: "white",
+            background: "var(--color-surface)",
             border: "2px solid transparent",
             backgroundImage:
-              "linear-gradient(white, white), linear-gradient(to bottom, #2B0D77, #29DAFA, #29DAFA, #FC1833)",
+              "linear-gradient(var(--color-surface), var(--color-surface)), linear-gradient(to bottom, light-dark(#2B0D77, var(--color-brand-dark)), light-dark(#29DAFA, var(--color-brand-dark)), light-dark(#29DAFA, var(--color-brand-dark)), light-dark(#FC1833, var(--color-brand-dark)))",
             backgroundOrigin: "border-box",
             backgroundClip: "padding-box, border-box",
           }}
@@ -85,7 +85,7 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     <button
       type="button"
       aria-label="Close modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px] w-full px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-backdrop backdrop-blur-[3.55px] w-full px-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           close();
@@ -94,8 +94,8 @@ export function SettingsAboutModal({ c }: { c: ChatShellController }) {
     >
       <dialog
         open
-        className={`relative w-[45.5625rem] max-w-full max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] ${
-          isSettings ? "sm:h-[15rem]" : ""
+        className={`relative w-[45.5625rem] max-w-full max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-4 sm:p-6 shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] ${
+          isSettings ? "sm:min-h-[15rem]" : ""
         }`}
       >
         <ModalHeader isSettings={isSettings} onClose={close} />

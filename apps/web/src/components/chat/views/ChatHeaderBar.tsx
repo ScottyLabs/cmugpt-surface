@@ -25,7 +25,7 @@ function ShareButton({ c }: { c: ChatShellController }) {
         derived.effectiveChatDetail === undefined ||
         mutations.patchChat.isPending
       }
-      className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
+      className="inline-flex items-center gap-1 rounded-lg border border-stroke-neutral-1 bg-surface px-3 py-1.5 text-sm font-medium text-fg-neutral-secondary hover:bg-surface-subtle disabled:opacity-40"
       aria-label={shareLabel(share.shareFeedback)}
     >
       <span aria-hidden>↗</span>
@@ -51,7 +51,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
             share.makeChatPrivate();
           }}
           disabled={mutations.patchChat.isPending}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-fg-neutral-secondary hover:bg-surface-hover disabled:opacity-40"
           title="Anyone signed in can open this link. Click to make the chat private again."
           aria-label="Make chat private"
         >
@@ -65,7 +65,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
           onClick={() => {
             sidebar.toggleStarChat(currentChat.id, !currentChat.starred);
           }}
-          className="rounded-lg p-2 text-lg leading-none text-neutral-600 hover:bg-neutral-100"
+          className="rounded-lg p-2 text-lg leading-none text-fg-neutral-secondary hover:bg-surface-hover"
           aria-label={currentChat.starred ? "Unstar" : "Star"}
         >
           {currentChat.starred ? "★" : "☆"}
@@ -85,7 +85,7 @@ function HeaderActions({ c }: { c: ChatShellController }) {
 export function ChatHeaderBar({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
   return (
-    <div className="z-10 flex items-center justify-between gap-2 bg-white p-3 sm:p-4 md:pointer-events-none md:absolute md:inset-x-0 md:top-0 md:items-start md:bg-transparent">
+    <div className="z-10 flex items-center justify-between gap-2 bg-surface p-3 sm:p-4 md:pointer-events-none md:absolute md:inset-x-0 md:top-0 md:items-start md:bg-transparent">
       <div className="md:pointer-events-auto">
         {/* The desktop collapsed rail carries its own open button, so the header
             only needs one on mobile, where the sidebar is off-screen. */}

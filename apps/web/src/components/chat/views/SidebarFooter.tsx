@@ -2,7 +2,7 @@ import { Brain } from "lucide-react";
 import { AboutIcon, LogOutIcon, ScottyLabsIcon, SettingsIcon } from "@/components/icons/index.tsx";
 import type { ChatShellController } from "../useChatShell.ts";
 
-const MENU_ROW_CLASS = "flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50";
+const MENU_ROW_CLASS = "flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-surface-subtle";
 
 function menuEntries(c: ChatShellController) {
   const { modal, memory } = c;
@@ -60,7 +60,7 @@ function SidebarMenuItems({ c }: { c: ChatShellController }) {
         onClick={() => {
           auth.logout();
         }}
-        className={`${MENU_ROW_CLASS} text-neutral-700`}
+        className={`${MENU_ROW_CLASS} text-fg-neutral-secondary`}
       >
         <LogOutIcon />
         Log out
@@ -77,7 +77,7 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
     <div
       className={`absolute bottom-full mb-1.5 grid content-end transition-[grid-template-rows,visibility] duration-200 ease-out ${placement} ${state}`}
     >
-      <div className="flex min-h-0 flex-col justify-end overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_0_rgba(158,177,194,0.45)]">
+      <div className="flex min-h-0 flex-col justify-end overflow-hidden rounded-xl bg-surface shadow-[0_2px_12px_0_var(--color-ui-shadow)]">
         <SidebarMenuItems c={c} />
       </div>
     </div>
@@ -98,13 +98,13 @@ export function SidebarFooter({ c }: { c: ChatShellController }) {
         }}
         className={`flex w-full items-center px-2 ${sidebarOpen ? "gap-3" : "justify-center"}`}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-300">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-strong">
           <span>{derived.displayName.slice(0, 1).toUpperCase()}</span>
         </div>
         {sidebarOpen && (
           <div className="min-w-0 flex-1 text-left">
             <p className="truncate font-medium">{derived.displayName}</p>
-            <p className="truncate text-sm text-fg-neutral-tertiary hover:text-neutral-800">
+            <p className="truncate text-sm text-fg-neutral-tertiary hover:text-fg-neutral-primary">
               {auth.user?.email}
             </p>
           </div>

@@ -20,7 +20,7 @@ function UserBubble({ content }: { content: string }) {
   // exchange reads as its own block.
   return (
     <div className="mt-20 flex justify-end first:mt-0">
-      <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
+      <div className="max-w-[85%] rounded-2xl bg-surface-selected px-4 py-2.5 text-sm leading-relaxed text-fg-neutral-primary">
         <div className={userBubbleMarkdownClass}>
           <ReactMarkdown
             remarkPlugins={remarkMarkdownPlugins}
@@ -48,7 +48,7 @@ function AssistantMessage({ m }: { m: MessageItem }) {
         {markdownForReactComponent(assistantDisplayContent(m.content, m.cmuMaps))}
       </ReactMarkdown>
       {typeof m.confidence === "number" && m.confidence < 0.5 && (
-        <p className="mt-2 text-xs text-amber-700">
+        <p className="mt-2 text-xs text-warning">
           Low confidence: verify with an official CMU source.
         </p>
       )}

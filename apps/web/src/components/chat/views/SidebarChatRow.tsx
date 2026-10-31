@@ -18,7 +18,7 @@ function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem 
         onKeyDown={(e) => {
           sidebar.onRenameKeyDown(e, chat.id, chat.title);
         }}
-        className="my-1.5 ml-2 min-w-0 flex-1 rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-base outline-none focus:border-neutral-400 sm:text-sm"
+        className="my-1.5 ml-2 min-w-0 flex-1 rounded border border-stroke-neutral-1 bg-surface px-1.5 py-0.5 text-base outline-none focus:border-focus sm:text-sm"
         aria-label="Chat name"
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -63,8 +63,8 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   // The row's padding lives on the label button, not the <li>: padding on the
   // <li> would be a dead zone that swallows clicks (the old "need to click
   // twice" bug), since the label only stretches to its own text otherwise.
-  const rowClass = `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
-    isActive ? "bg-neutral-200" : ""
+  const rowClass = `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-surface-selected/80 ${
+    isActive ? "bg-surface-selected" : ""
   }`;
   // The star sits in its own flex track (not overlaid on the label), so it
   // never intercepts a click meant to open the chat. When hidden it keeps its
@@ -79,7 +79,7 @@ export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
           e.stopPropagation();
           sidebar.toggleStarChat(chat.id, !starFilled);
         }}
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded hover:bg-neutral-300/60 ${
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded hover:bg-surface-strong/60 ${
           starFilled
             ? "opacity-100"
             : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"

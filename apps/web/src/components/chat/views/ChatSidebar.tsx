@@ -49,8 +49,8 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
             }
             search.toggleSearch();
           }}
-          className={`flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800 ${
-            search.searchMode ? "bg-neutral-200 text-neutral-800" : ""
+          className={`flex h-9 w-9 items-center justify-center rounded-lg text-fg-neutral-secondary transition-colors hover:bg-surface-selected/80 hover:text-fg-neutral-primary ${
+            search.searchMode ? "bg-surface-selected text-fg-neutral-primary" : ""
           }`}
           aria-label={search.searchMode ? "Close search" : "Search chats"}
         >
@@ -61,7 +61,7 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
           onClick={() => {
             setSidebarOpen((o) => !o);
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200/80 hover:text-neutral-800"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-neutral-secondary transition-colors hover:bg-surface-selected/80 hover:text-fg-neutral-primary"
           aria-label="Collapse sidebar"
         >
           <SidebarPanelIcon />
@@ -134,9 +134,9 @@ function SidebarNav({ c }: { c: ChatShellController }) {
       <button
         type="button"
         onClick={startNewChat}
-        className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200/80"
+        className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm font-medium text-fg-neutral-secondary transition-colors hover:bg-surface-selected/80"
       >
-        <span className="flex items-center justify-center rounded-full bg-white p-1.5 shadow-sm">
+        <span className="flex items-center justify-center rounded-full bg-surface p-1.5 shadow-sm">
           <PlusIcon />
         </span>
         <span>New Chat</span>
@@ -157,10 +157,10 @@ function RailNav({ c, startNewChat }: { c: ChatShellController; startNewChat: ()
       <button
         type="button"
         onClick={startNewChat}
-        className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80"
+        className="flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-surface-selected/80"
         aria-label="New chat"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-sm">
           <PlusIcon />
         </span>
       </button>
@@ -172,8 +172,8 @@ function RailNav({ c, startNewChat }: { c: ChatShellController; startNewChat: ()
           }
           search.toggleSearch();
         }}
-        className={`-mt-1 flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-neutral-200/80 ${
-          search.searchMode ? "bg-neutral-200" : ""
+        className={`-mt-1 flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-surface-selected/80 ${
+          search.searchMode ? "bg-surface-selected" : ""
         }`}
         aria-label="Search chats"
       >

@@ -23,7 +23,7 @@ export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerPr
       <button
         type="button"
         aria-label="Close memories"
-        className="absolute inset-0 h-full w-full bg-[rgba(245,245,245,0.75)] backdrop-blur-[3.55px]"
+        className="absolute inset-0 h-full w-full bg-backdrop backdrop-blur-[3.55px]"
         onClick={() => {
           if (mm.action.pendingAction === null) onClose();
         }}
@@ -37,7 +37,7 @@ export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerPr
         aria-modal="true"
         aria-labelledby="memory-manager-title"
         aria-describedby="memory-manager-description"
-        className="relative flex max-h-[min(44rem,calc(100dvh-3rem))] w-full max-w-[45.5625rem] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)]"
+        className="relative flex max-h-[min(44rem,calc(100dvh-3rem))] w-full max-w-[45.5625rem] flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_2px_6px_0_rgba(0,0,0,0.20)]"
       >
         <div ref={mm.refs.dialogContentRef} className="contents">
           <ManagerHeader onClose={onClose} />

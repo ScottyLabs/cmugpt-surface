@@ -36,7 +36,7 @@ export function WelcomeScreen({ c }: { c: ChatShellController }) {
   );
   return (
     <div className="relative mx-auto w-full max-w-[48.25rem] -translate-y-6">
-      <h1 className="absolute inset-x-0 bottom-full mb-8 text-center text-xl font-medium text-black sm:text-2xl">
+      <h1 className="absolute inset-x-0 bottom-full mb-8 text-center text-xl font-medium text-fg-neutral-primary sm:text-2xl">
         {greeting}
       </h1>
       <Composer c={c} />

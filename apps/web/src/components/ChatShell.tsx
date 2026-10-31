@@ -11,7 +11,7 @@ import { SidebarContextMenu } from "./chat/views/SidebarContextMenu.tsx";
 export function ChatShell() {
   const c = useChatShell();
   return (
-    <div className="relative flex h-dvh min-h-[480px] overflow-hidden bg-white text-neutral-900">
+    <div className="relative flex h-dvh min-h-[480px] overflow-hidden bg-surface text-fg-neutral-primary">
       {c.isMobile && c.sidebarOpen && (
         <button
           type="button"

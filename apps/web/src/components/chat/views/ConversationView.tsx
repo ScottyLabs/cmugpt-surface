@@ -19,7 +19,7 @@ export function ConversationView({ c }: { c: ChatShellController }) {
       {showWelcome && <WelcomeScreen c={c} />}
       {derived.showMessagesLoading ? (
         <div className="mx-auto w-full max-w-3xl">
-          <p className="text-neutral-500 text-sm transition-opacity delay-300 duration-200 starting:opacity-0">
+          <p className="text-fg-neutral-secondary text-sm transition-opacity delay-300 duration-200 starting:opacity-0">
             Loading messages...
           </p>
         </div>

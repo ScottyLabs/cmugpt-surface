@@ -22,7 +22,7 @@ export function ManagerHeader({ onClose }: { onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg p-1 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+        className="rounded-lg p-1 transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         aria-label="Close memories"
       >
         <X className="h-6 w-6" aria-hidden="true" />
@@ -48,7 +48,7 @@ export function ManagerSearch({ mm }: { mm: MemoryManagerController }) {
           mm.setSearch(event.target.value);
         }}
         placeholder="Search memories"
-        className="h-11 w-full rounded-xl border border-stroke-neutral-1 bg-white pl-10 pr-4 text-base font-normal outline-none transition-shadow placeholder:text-fg-neutral-tertiary focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 sm:text-sm"
+        className="h-11 w-full rounded-xl border border-stroke-neutral-1 bg-surface pl-10 pr-4 text-base font-normal outline-none transition-shadow placeholder:text-fg-neutral-tertiary focus:border-focus focus:ring-2 focus:ring-stroke-neutral-1 sm:text-sm"
       />
     </label>
   );
@@ -67,10 +67,10 @@ export function ManagerFilterRow({ mm }: { mm: MemoryManagerController }) {
               mm.setFilter(option.value);
             }}
             aria-pressed={mm.filter === option.value}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 ${
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
               mm.filter === option.value
                 ? "bg-brand-secondary-enabled text-fg-neutral-primary"
-                : "text-fg-neutral-secondary hover:bg-neutral-100"
+                : "text-fg-neutral-secondary hover:bg-surface-hover"
             }`}
           >
             {option.label}
@@ -83,7 +83,7 @@ export function ManagerFilterRow({ mm }: { mm: MemoryManagerController }) {
           mm.ops.requestClearAll(event.currentTarget);
         }}
         disabled={mm.clearPending || mm.action.deletingKey !== null || mm.total === 0}
-        className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+        className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-medium text-danger transition-colors hover:bg-danger-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {mm.clearPending ? "Clearing..." : "Clear all"}
       </button>
@@ -110,7 +110,7 @@ function ListError({ mm }: { mm: MemoryManagerController }) {
       <button
         type="button"
         onClick={() => void mm.memories.refetch()}
-        className="rounded-lg bg-brand-secondary-enabled px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+        className="rounded-lg bg-brand-secondary-enabled px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       >
         Try again
       </button>
@@ -140,7 +140,7 @@ function MemoryRow({ item, mm }: { item: MemoryItem; mm: MemoryManagerController
   return (
     <li
       className={`group flex items-start gap-3 rounded-xl px-3 py-3 transition-[opacity,transform,background-color] duration-200 ease-in motion-reduce:transition-none ${
-        deleting ? "pointer-events-none translate-x-2 opacity-0" : "hover:bg-neutral-50"
+        deleting ? "pointer-events-none translate-x-2 opacity-0" : "hover:bg-surface-subtle"
       }`}
     >
       <span
@@ -161,7 +161,7 @@ function MemoryRow({ item, mm }: { item: MemoryItem; mm: MemoryManagerController
           mm.ops.requestItemDeletion(item, event.currentTarget);
         }}
         disabled={mm.action.deletingKey !== null}
-        className="shrink-0 rounded-lg p-2 text-fg-neutral-tertiary opacity-70 transition-colors hover:bg-red-50 hover:text-red-700 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 group-hover:opacity-100 disabled:cursor-not-allowed"
+        className="shrink-0 rounded-lg p-2 text-fg-neutral-tertiary opacity-70 transition-colors hover:bg-danger-subtle hover:text-danger focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 group-hover:opacity-100 disabled:cursor-not-allowed"
         aria-label={`Delete ${typeLabel.toLowerCase()} memory`}
       >
         <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -178,7 +178,7 @@ function LoadMore({ mm }: { mm: MemoryManagerController }) {
         type="button"
         onClick={() => void mm.memories.fetchNextPage()}
         disabled={mm.memories.isFetchingNextPage}
-        className="rounded-lg bg-brand-secondary-enabled px-4 py-2 text-sm font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:cursor-wait disabled:opacity-60"
+        className="rounded-lg bg-brand-secondary-enabled px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-wait disabled:opacity-60"
       >
         {mm.memories.isFetchingNextPage ? "Loading..." : "Load more"}
       </button>
@@ -223,7 +223,7 @@ export function ManagerStatus({ mm }: { mm: MemoryManagerController }) {
             <p className="pt-2 text-xs font-normal text-fg-neutral-secondary">{actionMessage}</p>
           )
         ) : (
-          <p className="pt-2 text-xs font-normal text-red-700">{actionError}</p>
+          <p className="pt-2 text-xs font-normal text-danger">{actionError}</p>
         )}
       </div>
     </>

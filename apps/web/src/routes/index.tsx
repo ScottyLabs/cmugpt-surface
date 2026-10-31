@@ -21,22 +21,22 @@ function SignInPage() {
   const auth = useAuth();
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-white px-4">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-surface px-4">
       <SignInBackdrop />
       <section
         aria-labelledby="signin-title"
-        className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] sm:p-8"
+        className="relative w-full max-w-lg rounded-2xl bg-surface p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] sm:p-8"
       >
         <h1
           id="signin-title"
-          className="text-2xl font-bold text-neutral-900"
+          className="text-2xl font-bold text-fg-neutral-primary"
         >
           Welcome to Bark
         </h1>
-        <p className="mt-2 font-medium text-neutral-800">
+        <p className="mt-2 font-medium text-fg-neutral-primary">
           Please sign in with your CMU credentials to continue.
         </p>
-        <p className="mt-4 text-sm leading-relaxed text-neutral-700">
+        <p className="mt-4 text-sm leading-relaxed text-fg-neutral-secondary">
           Bark is available exclusively to the Carnegie Mellon community,
           providing access to real-time campus information and
           community-driven knowledge.
@@ -47,16 +47,16 @@ function SignInPage() {
             onClick={() => {
               auth.login();
             }}
-            className="rounded-full bg-brand-secondary-enabled px-6 py-2.5 font-medium text-fg-neutral-primary transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-2"
+            className="rounded-full bg-brand-secondary-enabled px-6 py-2.5 font-medium text-fg-neutral-primary transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
           >
             Sign in with CMU credentials
           </button>
         </div>
-        <p className="mt-4 text-center text-xs text-neutral-500">
+        <p className="mt-4 text-center text-xs text-fg-neutral-secondary">
           By using Bark, you agree to{" "}
           <Link
             to="/terms"
-            className="underline underline-offset-2 hover:text-neutral-700"
+            className="underline underline-offset-2 hover:text-fg-neutral-secondary"
           >
             Terms of Use
           </Link>

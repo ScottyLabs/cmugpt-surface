@@ -57,14 +57,14 @@ function ModelSelectorTrigger({
       onClick={() => {
         setOpen((o) => !o);
       }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-neutral-700 text-sm font-medium transition-colors hover:bg-neutral-100"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-fg-neutral-secondary text-sm font-medium transition-colors hover:bg-surface-hover"
       aria-haspopup="listbox"
       aria-expanded={open}
       title="Change the LLM used for new messages"
     >
       <span className="max-w-[9rem] truncate">{shortLabel}</span>
       <ChevronDown
-        className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform duration-200 ${
+        className={`h-4 w-4 shrink-0 text-fg-neutral-tertiary transition-transform duration-200 ${
           open ? "rotate-180" : ""
         }`}
         aria-hidden
@@ -90,18 +90,18 @@ function ModelOption({
           onSelect(model.id);
         }}
         aria-pressed={selected}
-        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100 ${
-          selected ? "bg-neutral-100" : ""
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-hover ${
+          selected ? "bg-surface-hover" : ""
         }`}
       >
         <span
           className={`flex-1 truncate font-medium ${
-            selected ? "text-red-800" : "text-neutral-900"
+            selected ? "text-danger" : "text-fg-neutral-primary"
           }`}
         >
           {model.label}
         </span>
-        {selected && <Check className="h-4 w-4 shrink-0 text-red-800" aria-hidden />}
+        {selected && <Check className="h-4 w-4 shrink-0 text-danger" aria-hidden />}
       </button>
     </li>
   );
@@ -163,7 +163,7 @@ export function ModelSelector() {
         currentLabel={currentLabel}
       />
       {open && models.length > 0 && (
-        <ul className="absolute bottom-full right-0 z-20 mb-2 max-h-80 w-56 origin-bottom-right overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg transition duration-150 ease-out starting:scale-95 starting:opacity-0">
+        <ul className="absolute bottom-full right-0 z-20 mb-2 max-h-80 w-56 origin-bottom-right overflow-y-auto rounded-xl border border-stroke-neutral-1 bg-surface p-1 shadow-lg transition duration-150 ease-out starting:scale-95 starting:opacity-0">
           {models.map((m) => (
             <ModelOption
               key={m.id}

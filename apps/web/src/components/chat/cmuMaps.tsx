@@ -101,7 +101,7 @@ function MapSlot({
     <div
       aria-busy={busy}
       ref={slotRef}
-      className="relative h-90 overflow-hidden bg-neutral-50 contain-[paint] sm:h-125"
+      className="relative h-90 overflow-hidden bg-surface-subtle contain-[paint] sm:h-125"
     >
       {children}
     </div>
@@ -172,7 +172,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   // only to the first appearance, since a reload keeps the map on screen.
   const revealed = loaded && settled;
   return (
-    <div className="mt-4 mb-2 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
+    <div className="mt-4 mb-2 overflow-hidden rounded-md border border-stroke-neutral-1 bg-surface shadow-sm">
       <MapHeader cmuMaps={cmuMaps} mapUrl={mapUrl} reloading={reloading} onReload={reloadMap} />
       <MapSlot busy={!revealed || reloading} slotRef={slotRef}>
         {showIframe && (

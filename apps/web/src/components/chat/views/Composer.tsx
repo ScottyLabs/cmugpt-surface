@@ -59,7 +59,7 @@ export function Composer({ c }: { c: ChatShellController }) {
   const { multiline, mirrorRef, controlsRef } = useMultilineComposer(draft, draftComposerRef);
 
   return (
-    <div className="relative mx-auto flex w-full max-w-[48.25rem] flex-col rounded-[1.75rem] border border-neutral-300/70 bg-white py-2.5 pl-2 pr-4.5 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_rgba(158,177,194,0.55)]">
+    <div className="relative mx-auto flex w-full max-w-[48.25rem] flex-col rounded-[1.75rem] border border-stroke-neutral-1/70 bg-surface py-2.5 pl-2 pr-4.5 shadow-[0_0_24px_0_var(--color-brandneutral-secondary-enabled),0_0_6px_0_var(--color-ui-shadow)]">
       {/* Hidden mirror used only to measure the draft's natural width. Must
           match the textarea's text styles. */}
       <span
@@ -100,7 +100,7 @@ function ComposerTextarea({ c, disabled }: { c: ChatShellController; disabled: b
           void send();
         }
       }}
-      className="field-sizing-content max-h-40 w-full resize-none bg-transparent py-1.5 pl-2.5 pr-1.5 text-base leading-relaxed text-neutral-900 outline-none placeholder:text-fg-neutral-secondary disabled:opacity-50 sm:text-sm"
+      className="field-sizing-content max-h-40 w-full resize-none bg-transparent py-1.5 pl-2.5 pr-1.5 text-base leading-relaxed text-fg-neutral-primary outline-none placeholder:text-fg-neutral-secondary disabled:opacity-50 sm:text-sm"
     />
   );
 }
@@ -132,7 +132,7 @@ function ComposerControls({
             void send();
           }}
           disabled={sendDisabled}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 disabled:opacity-35"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-surface-hover disabled:opacity-35"
           aria-label="Send"
         >
           <SendIcon />

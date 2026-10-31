@@ -32,7 +32,7 @@ function SearchBox({ c }: { c: ChatShellController }) {
           onClick={() => {
             c.setSidebarOpen(true);
           }}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-200/80 md:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-fg-neutral-secondary transition-colors hover:bg-surface-selected/80 md:hidden"
           aria-label="Open sidebar"
         >
           <Menu className="h-6 w-6" aria-hidden />
@@ -47,7 +47,7 @@ function SearchBox({ c }: { c: ChatShellController }) {
             setSearchQ(e.target.value);
           }}
           placeholder="Search Chat History"
-          className="flex-1 bg-transparent text-base font-normal text-fg-neutral-primary outline-none placeholder:text-neutral-500"
+          className="flex-1 bg-transparent text-base font-normal text-fg-neutral-primary outline-none placeholder:text-fg-neutral-secondary"
         />
         {Boolean(searchQ) && (
           <button
@@ -55,7 +55,7 @@ function SearchBox({ c }: { c: ChatShellController }) {
             onClick={() => {
               setSearchQ("");
             }}
-            className="shrink-0 text-neutral-400 hover:text-neutral-600"
+            className="shrink-0 text-fg-neutral-tertiary hover:text-fg-neutral-secondary"
             aria-label="Clear search"
           >
             <CloseIcon className="h-4 w-4" />
@@ -68,7 +68,7 @@ function SearchBox({ c }: { c: ChatShellController }) {
 
 function EmptyPrompt() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 text-neutral-400">
+    <div className="flex h-full flex-col items-center justify-center gap-3 text-fg-neutral-tertiary">
       <SearchIcon className="h-[2.34375rem] w-[2.34375rem] text-fg-neutral-tertiary" />
       <p className="text-xl font-medium text-fg-neutral-tertiary">Try Searching something!</p>
     </div>
@@ -80,10 +80,10 @@ function NoResultsState({ searchQ }: { searchQ: string }) {
     <>
       <div className="ml-4 mt-10 sm:ml-14">
         <p className="text-base font-medium text-fg-neutral-tertiary">
-          Results for: <span className="text-black">{searchQ}</span>
+          Results for: <span className="text-fg-neutral-primary">{searchQ}</span>
         </p>
       </div>
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-neutral-400">
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-fg-neutral-tertiary">
         <FrownIcon />
         <p className="text-2xl font-medium text-fg-neutral-tertiary">Results not found</p>
       </div>
@@ -102,7 +102,7 @@ function ResultsGrid({ searchQ, searchChats, onSelectSearchResult, onNewChat }: 
   return (
     <div className="px-4 sm:px-10 pb-6 pt-8">
       <p className="mb-6 text-base font-medium text-fg-neutral-tertiary">
-        Results for: <span className="text-black">{searchQ}</span>
+        Results for: <span className="text-fg-neutral-primary">{searchQ}</span>
       </p>
       <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-3 lg:grid-cols-4">
         {searchChats.map((chat) => (
@@ -112,9 +112,9 @@ function ResultsGrid({ searchQ, searchChats, onSelectSearchResult, onNewChat }: 
             onClick={() => {
               onSelectSearchResult(chat.id);
             }}
-            className="flex h-[13.625rem] w-full flex-col items-start gap-2.5 rounded-xl bg-white p-6 text-left shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
+            className="flex h-[13.625rem] w-full flex-col items-start gap-2.5 rounded-xl bg-surface-subtle p-6 text-left shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
           >
-            <p className="w-full break-words text-lg font-medium text-black">{chat.title}</p>
+            <p className="w-full break-words text-lg font-medium text-fg-neutral-primary">{chat.title}</p>
             {chat.updatedAt ? (
               <p className="text-xs font-normal text-fg-neutral-tertiary">
                 {relativeTime(chat.updatedAt)}
@@ -126,13 +126,13 @@ function ResultsGrid({ searchQ, searchChats, onSelectSearchResult, onNewChat }: 
           type="button"
           onClick={onNewChat}
           aria-label="Start a new chat"
-          className="flex h-[13.625rem] w-full flex-col items-center justify-center gap-2.5 rounded-xl bg-white p-6 text-left shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
+          className="flex h-[13.625rem] w-full flex-col items-center justify-center gap-2.5 rounded-xl bg-surface-subtle p-6 text-left shadow-[0_2px_6px_0_rgba(0,0,0,0.20)] hover:bg-brand-secondary-hover"
         >
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="flex items-center justify-center rounded-full bg-neutral-secondary-enabled p-3">
               <PlusIcon />
             </div>
-            <p className="text-lg font-medium text-black">New Chat</p>
+            <p className="text-lg font-medium text-fg-neutral-primary">New Chat</p>
           </div>
         </button>
       </div>

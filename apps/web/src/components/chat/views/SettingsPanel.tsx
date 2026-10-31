@@ -45,7 +45,7 @@ function ToolStateBadge({ enabled }: { enabled: boolean }) {
       className={`ml-0.5 w-7 rounded-full py-px text-center text-[0.625rem] font-semibold uppercase tracking-wide ${
         enabled
           ? "bg-brand-secondary-enabled text-fg-neutral-primary"
-          : "bg-white text-fg-neutral-tertiary"
+          : "bg-surface text-fg-neutral-tertiary"
       }`}
     >
       {enabled ? "On" : "Off"}
@@ -89,7 +89,7 @@ function ToolToggleButton({
       }
       className={`flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-neutral-tertiary ${
         enabled
-          ? "border-stroke-neutral-1 bg-white text-fg-neutral-primary shadow-[0_1px_3px_0_rgba(158,177,194,0.5)]"
+          ? "border-stroke-neutral-1 bg-surface text-fg-neutral-primary shadow-[0_1px_3px_0_var(--color-ui-shadow)]"
           : "border-transparent bg-neutral-secondary-enabled text-fg-disabled-neutral"
       } ${
         hoverArmed
@@ -127,9 +127,21 @@ function ToolToggles({ c }: { c: ChatShellController }) {
 export function SettingsPanel({ c }: { c: ChatShellController }) {
   return (
     <div className="flex flex-col gap-6 px-2 pt-2">
+      <label className="flex items-center justify-between gap-4 pl-4 text-sm">
+        Appearance
+        <select
+          data-theme-select
+          defaultValue={document.documentElement.dataset.theme ?? "system"}
+          className="rounded-lg border border-stroke-neutral-1 bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-focus"
+        >
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
       <div className="flex flex-col gap-4 pl-4">
         <div className="flex flex-col gap-1">
-          <p className="text-left text-sm font-medium text-black">Tools</p>
+          <p className="text-left text-sm font-medium text-fg-neutral-primary">Tools</p>
           <p className="text-left text-xs font-normal text-fg-neutral-secondary">
             Click a tool to switch it off. While it is off, Bark cannot use it to answer you.
           </p>

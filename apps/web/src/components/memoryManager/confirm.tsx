@@ -10,7 +10,7 @@ function ConfirmSkipCheckbox({ mm }: { mm: MemoryManagerController }) {
         onChange={(event) => {
           mm.action.setDontShowAgain(event.target.checked);
         }}
-        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       />
       <span>Don&apos;t show this confirmation again on this device</span>
     </label>
@@ -24,7 +24,7 @@ function ConfirmButtons({ mm }: { mm: MemoryManagerController }) {
         ref={mm.refs.cancelButtonRef}
         type="button"
         onClick={mm.ops.closeConfirmation}
-        className="rounded-lg border border-stroke-neutral-1 px-3.5 py-2 text-sm font-medium text-fg-neutral-primary transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+        className="rounded-lg border border-stroke-neutral-1 px-3.5 py-2 text-sm font-medium text-fg-neutral-primary transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       >
         Cancel
       </button>
@@ -55,12 +55,12 @@ export function ConfirmOverlay({ mm }: { mm: MemoryManagerController }) {
         aria-modal="true"
         aria-labelledby="memory-confirm-title"
         aria-describedby="memory-confirm-description"
-        className="relative w-full max-w-sm rounded-2xl border border-stroke-neutral-1 bg-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.16)]"
+        className="relative w-full max-w-sm rounded-2xl border border-stroke-neutral-1 bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.16)]"
       >
         <button
           type="button"
           onClick={mm.ops.closeConfirmation}
-          className="absolute right-3 top-3 rounded-lg p-1 text-fg-neutral-tertiary transition-colors hover:bg-neutral-100 hover:text-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+          className="absolute right-3 top-3 rounded-lg p-1 text-fg-neutral-tertiary transition-colors hover:bg-surface-hover hover:text-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           aria-label="Close deletion confirmation"
         >
           <X className="h-4 w-4" aria-hidden="true" />
