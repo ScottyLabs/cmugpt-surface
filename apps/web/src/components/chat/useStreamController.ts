@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { StreamBuffer } from "./StreamBuffer.ts";
 import type { CmuMapsPayload } from "./types.ts";
 
-export function useStreamController() {
+export function useStreamController(chatId: string | undefined) {
+  const [streamChatId, setStreamChatId] = useState<string>();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
@@ -29,13 +30,16 @@ export function useStreamController() {
 
   return {
     isStreaming,
+    isStreamingHere: isStreaming && streamChatId === chatId,
+    streamChatId,
+    setStreamChatId,
     setIsStreaming,
     streamingText,
     streamStatus,
     setStreamStatus,
     streamingCmuMaps,
     setStreamingCmuMaps,
-    streamError,
+    streamError: streamChatId === chatId ? streamError : null,
     setStreamError,
     enqueueStreamingText: (text: string) => {
       buffer.enqueue(text);

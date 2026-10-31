@@ -14,7 +14,7 @@ export function useOptimisticMessage(deps: OptimisticDeps) {
 
   const isForVisibleChat =
     optimisticUserMessage !== null &&
-    (chatId === undefined || optimisticUserMessage.chatId === chatId);
+    optimisticUserMessage.chatId === chatId;
   const persisted =
     optimisticUserMessage !== null &&
     chatId === optimisticUserMessage.chatId &&

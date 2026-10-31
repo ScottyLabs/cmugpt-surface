@@ -17,7 +17,7 @@ export function useChatDerived(deps: DerivedDeps) {
   const { chatId, chats, chatDetail, messagesLoading } = session;
   const currentChat = chats.find((c) => c.id === chatId);
   const shouldShowConversation =
-    Boolean(chatId) || optimistic.shouldShowOptimisticUserMessage || stream.isStreaming;
+    Boolean(chatId) || optimistic.shouldShowOptimisticUserMessage || stream.isStreamingHere;
   const showMessagesLoading =
     Boolean(chatId) && messagesLoading && !optimistic.shouldShowOptimisticUserMessage;
   const effectiveChatDetail = useMemo<ChatDetail | undefined>(() => {

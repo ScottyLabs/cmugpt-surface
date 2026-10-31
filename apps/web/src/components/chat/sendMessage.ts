@@ -20,7 +20,7 @@ export interface SendCtx {
   messagesLength: number;
   createChat: ChatMutations["createChat"];
   navigate: ChatSession["navigate"];
-  refetchMessages: ChatSession["refetchMessages"];
+  refetchMessages: ChatSession["refetchChatMessages"];
   refetchChats: ChatSession["refetchChats"];
   scrollContainerRef: RefObject<HTMLDivElement | null>;
   shouldStickToBottomRef: RefObject<boolean>;
@@ -28,6 +28,7 @@ export interface SendCtx {
   setStreamStatus: (value: string | null) => void;
   setStreamingCmuMaps: (value: CmuMapsPayload | null) => void;
   setIsStreaming: (value: boolean) => void;
+  setStreamChatId: (value: string) => void;
   setOptimisticUserMessage: (value: OptimisticUserMessage | null) => void;
   setAttachmentHint: (value: string | null) => void;
   clearComposer: () => void;
@@ -61,7 +62,7 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     messagesLength: session.messages.length,
     createChat: input.createChat,
     navigate: session.navigate,
-    refetchMessages: session.refetchMessages,
+    refetchMessages: session.refetchChatMessages,
     refetchChats: session.refetchChats,
     scrollContainerRef: scroll.scrollContainerRef,
     shouldStickToBottomRef: scroll.shouldStickToBottomRef,
@@ -69,6 +70,7 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     setStreamStatus: stream.setStreamStatus,
     setStreamingCmuMaps: stream.setStreamingCmuMaps,
     setIsStreaming: stream.setIsStreaming,
+    setStreamChatId: stream.setStreamChatId,
     setOptimisticUserMessage: input.setOptimisticUserMessage,
     setAttachmentHint: attachments.setAttachmentHint,
     clearComposer: input.clearComposer,
@@ -124,10 +126,10 @@ function parseStreamEvent(line: string): ChatStreamEvent | null {
   }
 }
 
-function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
+function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx, chatId: string): boolean {
   switch (ev.type) {
     case "user":
-      void ctx.refetchMessages();
+      void ctx.refetchMessages(chatId);
       void ctx.refetchChats();
       return false;
     case "status":
@@ -149,14 +151,14 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
       return true;
     case "error":
       ctx.setStreamError(ev.message);
-      void ctx.refetchMessages();
+      void ctx.refetchMessages(chatId);
       return false;
     default:
       return false;
   }
 }
 
-async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
+async function consumeChatStream(res: Response, ctx: SendCtx, chatId: string): Promise<void> {
   if (res.body === null) {
     ctx.setStreamError("No response body");
     return;
@@ -178,7 +180,7 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
             continue;
           }
           const ev = parseStreamEvent(line);
-          if (ev !== null && applyStreamEvent(ev, ctx)) {
+          if (ev !== null && applyStreamEvent(ev, ctx, chatId)) {
             shouldRefresh = true;
           }
         }
@@ -190,7 +192,7 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
     // Load the saved copy of the answer first, so it is on screen ready to
     // replace the live one, then stop streaming. Doing it the other way round
     // would blank the answer out for as long as the request takes.
-    await ctx.refetchMessages();
+    await ctx.refetchMessages(chatId);
     ctx.setIsStreaming(false);
     ctx.resetStreamingBuffer();
     // This one only updates the chat list in the sidebar. Waiting for it before
@@ -215,6 +217,7 @@ async function resolveActiveChatId(ctx: SendCtx): Promise<string | null> {
 }
 
 function beginSend(ctx: SendCtx, activeChatId: string, content: string): void {
+  ctx.setStreamChatId(activeChatId);
   ctx.setStreamError(null);
   const scrollEl = ctx.scrollContainerRef.current;
   if (scrollEl !== null) {
@@ -260,17 +263,17 @@ export async function runSend(ctx: SendCtx): Promise<void> {
     if (!res.ok) {
       ctx.setStreamError((await readStreamErrorDetail(res)) || "Request failed");
       ctx.setOptimisticUserMessage(null);
-      void ctx.refetchMessages();
+      void ctx.refetchMessages(activeChatId);
       void ctx.refetchChats();
       return;
     }
     ctx.clearComposer();
-    await consumeChatStream(res, ctx);
+    await consumeChatStream(res, ctx, activeChatId);
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);
     console.error("send stream failed:", e);
     ctx.setStreamError(`Network error (${detail})`);
-    void ctx.refetchMessages();
+    void ctx.refetchMessages(activeChatId);
   } finally {
     ctx.setIsStreaming(false);
     ctx.resetStreamingBuffer();

@@ -48,7 +48,7 @@ function useChatShellCore() {
   const auth = useAuth();
   const session = useChatSession();
   const mutations = useChatMutations(session);
-  const stream = useStreamController();
+  const stream = useStreamController(session.chatId);
   const attachments = useAttachments();
   const optimistic = useOptimisticMessage({
     chatId: session.chatId,
@@ -61,9 +61,9 @@ function useChatShellCore() {
     profile: auth.user,
   });
   const scroll = useConversationScroll({
-    isStreaming: stream.isStreaming,
+    isStreaming: stream.isStreamingHere,
     messagesLength: session.messages.length,
-    streamingTextLength: stream.streamingText.length,
+    streamingTextLength: stream.isStreamingHere ? stream.streamingText.length : 0,
   });
   return {
     auth,
@@ -82,7 +82,7 @@ function useShellMemory(session: ChatSession, stream: StreamController) {
   const chatIdRef = useRef(session.chatId);
   chatIdRef.current = session.chatId;
   const messagesRef = useRef(session.messages);
-  messagesRef.current = session.messages;
+  messagesRef.current = stream.streamChatId === session.chatId ? session.messages : [];
   useLearnedMemoryChip(stream.isStreaming, chatIdRef, messagesRef, refetchMessages);
   return useMemoryController(chatIdRef, refetchMessages);
 }

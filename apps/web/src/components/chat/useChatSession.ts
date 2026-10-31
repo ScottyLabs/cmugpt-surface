@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useRef } from "react";
 import { $api } from "@/lib/api/client.ts";
@@ -41,6 +42,7 @@ function useChatQueries(chatId: string | undefined) {
 }
 
 export function useChatSession() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const search = routeApi.useSearch();
   const chatId = search.chat;
@@ -50,7 +52,15 @@ export function useChatSession() {
   const chatIdRef = useRef<string | undefined>(chatId);
   chatIdRef.current = chatId;
 
-  return { navigate, chatId, isNewChatIntent, ...queries, chatIdRef };
+  function refetchChatMessages(id: string) {
+    return queryClient.invalidateQueries({
+      queryKey: $api.queryOptions("get", "/chats/{id}/messages", { params: { path: { id } } }).queryKey,
+      exact: true,
+      refetchType: "all",
+    });
+  }
+
+  return { navigate, chatId, isNewChatIntent, ...queries, chatIdRef, refetchChatMessages };
 }
 
 export type ChatSession = ReturnType<typeof useChatSession>;

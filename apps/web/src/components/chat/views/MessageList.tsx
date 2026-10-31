@@ -127,7 +127,7 @@ export function MessageList({ c }: { c: ChatShellController }) {
       {optimistic.shouldShowOptimisticUserMessage && optimisticMessage !== null ? (
         <UserBubble key="optimistic-user-message" content={optimisticMessage.content} />
       ) : null}
-      {stream.isStreaming && <StreamingTail stream={stream} />}
+      {stream.isStreamingHere && <StreamingTail stream={stream} />}
       {/* Spacer doubles as the auto-scroll anchor: scrolling it into view
           parks the last message above the floating composer, not behind it. */}
       <div ref={scroll.bottomRef} className="h-36 shrink-0" />
