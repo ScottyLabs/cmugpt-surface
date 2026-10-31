@@ -65,7 +65,7 @@ export function Composer({ c }: { c: ChatShellController }) {
       <span
         ref={mirrorRef}
         aria-hidden
-        className="invisible absolute left-0 top-0 whitespace-pre text-base leading-relaxed sm:text-sm"
+        className="invisible absolute left-0 top-0 h-0 max-w-full overflow-hidden whitespace-pre text-base leading-relaxed sm:text-sm"
       >
         {draft}
       </span>
