@@ -40,7 +40,6 @@ cmugpt-surface/
 |       |   `-- lib/api/         # typed API client (generated from server OpenAPI)
 |       `-- e2e/                 # Playwright end-to-end tests
 |-- nix/, devenv.nix, flake.nix    # Nix/devenv dev environment + build packages
-|-- scripts/secrets/               # git submodule: secrets-sync-scripts
 `-- secretspec.toml                # declares required env vars / secrets
 ```
 
@@ -128,10 +127,6 @@ cd cmugpt-surface
 devenv shell   # or `direnv allow` if you use direnv
 devenv up
 ```
-
-Don't clone with `--recurse-submodules`. `scripts/secrets` is a legacy
-submodule from the old Vault setup that points at a GitHub SSH URL, and you
-don't need it.
 
 `devenv shell` only builds the environment and loads secrets. `devenv up`
 starts every process defined in [devenv.nix](./devenv.nix) and the shared
