@@ -9,59 +9,75 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    scottylabs = {
-      url = "git+https://git.cmu.dev/ScottyLabs/kennel";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    scottylabs.url = "git+https://git.cmu.dev/ScottyLabs/kennel";
+    nixpkgs.follows = "scottylabs/nixpkgs";
+    flake-parts.follows = "scottylabs/flake-parts";
   };
 
   outputs =
-    {
-
-      nixpkgs,
-      ...
-    }:
-    let
-      supportedSystems = [
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ inputs.scottylabs.flakeModules.default ];
+      systems = [
         "x86_64-linux"
         "aarch64-linux"
+        "aarch64-darwin"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-    in
-    {
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
 
-          # Local override: upstream helpers.buildDenoTask extracts npm tarballs
-          # with `tar -x` and chokes on packages shipping read-only directories.
-          # ./nix/build-deno-task.nix is a verbatim copy + --delay-directory-restore.
-          # TODO: remove once fixed upstream in ScottyLabs/devenv.
-          buildDenoTask = pkgs.callPackage ./nix/build-deno-task.nix { };
-
-          web = buildDenoTask {
-            pname = "cmugpt-surface-web";
-            src = ./apps/web;
-            # web's lock references the sibling `@cmugpt-frontend/server` (imported for
-            # types only via ../server/build/openapi.d.ts), which isn't in this src, so the
-            # lock can't be re-derived in isolation. Still offline/pinned via --cached-only.
-            frozen = false;
-            env.VITE_API_URL = "https://api.cmugpt.com";
-          };
-
-          api = buildDenoTask {
-            pname = "cmugpt-surface-api";
-            src = ./apps/server;
-            entrypoint = "src/server.ts";
-            compile = true;
-            sloppyImports = true;
-          };
-        in
+      perSystem =
+        { helpers, ... }:
         {
-          inherit web api;
-        }
-      );
+          scottylabs = {
+            project.name = "cmugpt-surface";
+            conventionalCommits.enable = false;
+
+            postgres = {
+              enable = true;
+              extensions = e: [ e.pgvector ];
+            };
+
+            ricochet = {
+              enable = true;
+              appUrl = "http://localhost:4173";
+            };
+
+            deno = {
+              enable = true;
+              react.enable = true;
+            };
+
+            processes = {
+              api = {
+                run = "cd apps/server && PORT=3001 exec secretspec run -P dev -- deno task dev";
+                depends = [ "postgres-setup" ];
+              };
+              web.run = "cd apps/web && deno task dev";
+            };
+          };
+
+          # TanStack Router regenerates this on every dev and build run
+          treefmt.settings.global.excludes = [ "apps/web/src/routeTree.gen.ts" ];
+
+          sites.web = {
+            package = helpers.buildDenoTask {
+              src = ./.;
+              cwd = "apps/web";
+              pname = "cmugpt-surface-web";
+            };
+            spa = true;
+            customDomain = "bark.scottylabs.org";
+          };
+
+          services.api = {
+            package = helpers.buildDenoTask {
+              src = ./.;
+              cwd = "apps/server";
+              pname = "cmugpt-surface-api";
+              entrypoint = "src/server.ts";
+              compile = true;
+            };
+            customDomain = "api.cmugpt.com";
+          };
+        };
     };
 }

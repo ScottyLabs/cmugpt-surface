@@ -1,7 +1,5 @@
 # Server
 
-See [Backend Documentation](https://github.com/ScottyLabs/ScottyStack/wiki/Backend).
-
 ## Bark agent connection
 
 Set `AGENT_API_URL` to the agent service and set `AGENT_SHARED_SECRET` to the
@@ -16,7 +14,7 @@ openssl rand -hex 32
 ```
 
 Production startup fails when this secret is missing or too short. Authenticated
-Clerk subjects are deterministically hashed before being sent to the agent, so
+OIDC subjects are deterministically hashed before being sent to the agent, so
 the browser cannot select or enumerate another user's memory namespace.
 
 The memory manager exposes only durable learned facts and facts the user
