@@ -157,12 +157,12 @@ Declared in [secretspec.toml](./secretspec.toml) and validated at runtime by
 | `OIDC_ISSUER_URL` | yes | OIDC issuer for Andrew ID SSO |
 | `OIDC_CLIENT_ID` | yes (default `sl-ai-local`) | OIDC client ID |
 | `OIDC_CLIENT_SECRET` | yes | OIDC client secret |
-| `ALLOWED_ORIGINS_REGEX` | yes | Regex of allowed CORS origins |
+| `ALLOWED_ORIGINS_REGEX` | no (defaults to `https://bark.scottylabs.org`; each deployment's own web site is allowed automatically from `APP_URL`) | Comma-separated web origins allowed to make credentialed requests: exact origins (`https://bark.scottylabs.org`) or patterns anchored with `^` and `$`. The server refuses to start with an unanchored pattern such as `.` |
 | `AGENT_API_URL` | yes (default `https://api.cmugpt-agent.scottylabs.org`) | Base URL of the `cmugpt-agent` service |
 | `AGENT_SHARED_SECRET` | prod only, but strongly recommended locally | App-to-app bearer secret shared with `cmugpt-agent`; **must not** use a `VITE_`-prefixed name or otherwise reach the browser. Generate with `openssl rand -hex 32`. Required to be >=32 chars with no leading/trailing whitespace in production. |
 | `OAUTH_RELAY_URL` | no | Shared "ricochet" OAuth relay callback, used so preview deployments can authenticate without registering their own redirect URI |
 | `PORT` / `SERVER_PORT` | no (default `80`; the `api` process sets `PORT=3001`) | API server port. `PORT` takes precedence. |
-| `APP_URL` | no (default `http://localhost:4173`) | Public URL of the web app, used for OIDC callback construction |
+| `APP_URL` | no (set by kennel; default `http://localhost:4173`) | Public URL of this API deployment, used for the OIDC callback and to derive the deployment's own web origin |
 | `ADMIN_GROUP` | no | Admin group name (stopgap until real governance wiring exists) |
 
 See [apps/server/README.md](./apps/server/README.md) for more on the

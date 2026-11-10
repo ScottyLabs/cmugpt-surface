@@ -78,11 +78,9 @@ const corsOptions: CorsOptions = {
       return;
     }
 
-    if (isAllowedOrigin(origin) || process.env.NODE_ENV === "development") {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS policy: origin ${origin} not allowed`));
-    }
+    // Disallowed origins get no CORS headers, so the browser withholds the
+    // response from the calling page.
+    callback(null, isAllowedOrigin(origin));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

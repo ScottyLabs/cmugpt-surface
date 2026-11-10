@@ -1,36 +1,23 @@
+import process from "node:process";
 import { env } from "../env.ts";
+import { createOriginMatcher, isLoopbackOrigin, siblingWebOrigin } from "./originMatcher.ts";
 
 const defaultAllowedOrigins = ["http://localhost:4173", "http://127.0.0.1:4173"];
 
-export const allowedOrigins: string[] = [
+// Kennel sets APP_URL per deployment, so previews and staging trust exactly
+// their own web site without listing it in configuration.
+const deploymentWebOrigin = siblingWebOrigin(env.APP_URL);
+
+// Built once at startup so an invalid entry fails the boot, not a request.
+const matchesConfiguredOrigin = createOriginMatcher([
   ...defaultAllowedOrigins,
-  ...env.ALLOWED_ORIGINS_REGEX.split(",").map((s) => s.trim()),
-].filter(Boolean);
+  ...(deploymentWebOrigin ? [deploymentWebOrigin] : []),
+  ...env.ALLOWED_ORIGINS_REGEX.split(","),
+]);
 
-function escapeRegExp(value: string): string {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}
-
-function matchesAllowedOrigin(origin: string, allowedOrigin: string): boolean {
-  try {
-    if (origin === new URL(allowedOrigin).origin) {
-      return true;
-    }
-  } catch {
-    // Not a URL; fall through to pattern matching.
-  }
-
-  try {
-    // allowedOrigin comes from the ALLOWED_ORIGINS_REGEX env var (deployer-controlled config,
-    // same trust level as OIDC_ISSUER_URL/DATABASE_URL/etc.), never from request input, so this
-    // is not attacker-controlled ReDoS surface.
-    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
-    return new RegExp(allowedOrigin, "u").test(origin);
-  } catch {
-    return origin === allowedOrigin || origin === `^${escapeRegExp(allowedOrigin)}$`;
-  }
-}
+const isDevelopment = process.env["NODE_ENV"] === "development";
 
 export function isAllowedOrigin(origin: string): boolean {
-  return allowedOrigins.some((allowedOrigin) => matchesAllowedOrigin(origin, allowedOrigin));
+  // Development additionally accepts local servers on any port, never other hosts.
+  return matchesConfiguredOrigin(origin) || (isDevelopment && isLoopbackOrigin(origin));
 }
