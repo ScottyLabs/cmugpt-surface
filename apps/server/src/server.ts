@@ -14,6 +14,7 @@ import { env } from "./env.ts";
 import { errorHandler } from "./middlewares/errorHandler.ts";
 import { attachBearerFromSession, authRouter } from "./routes/authRoutes.ts";
 import { isAllowedOrigin } from "./lib/allowedOrigins.ts";
+import { rejectCrossSiteWrites } from "./lib/crossSiteGuard.ts";
 import { notFoundHandler } from "./middlewares/notFoundHandler.ts";
 import { registerChatMessageStreamRoute } from "./routes/chatMessageStreamRoute.ts";
 import { registerMessageSavedMemoryRoute } from "./routes/messageSavedMemoryRoute.ts";
@@ -67,9 +68,6 @@ const app = express();
 /** Chat messages may embed base64 images (markdown data URLs) in JSON `content`. */
 app.use(express.json({ limit: "12mb" }));
 
-// Parse cookies for auth flows that rely on cookies
-app.use(express.urlencoded({ extended: true }));
-
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or Postman)
@@ -87,6 +85,8 @@ const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Debug-Middleware", "X-Debug-Token-Length"],
 };
 app.use(cors(corsOptions));
+
+app.use(rejectCrossSiteWrites(isAllowedOrigin));
 
 // Server-side auth (BFF). authRouter serves /api/auth/login|callback|logout|me
 // (openid-client + ricochet); attachBearerFromSession relays the session's
