@@ -18,10 +18,11 @@ function ConfirmSkipCheckbox({ mm }: { mm: MemoryManagerController }) {
 }
 
 function ConfirmButtons({ mm }: { mm: MemoryManagerController }) {
+  const { cancelButtonRef } = mm.refs;
   return (
     <div className="mt-5 flex justify-end gap-2">
       <button
-        ref={mm.refs.cancelButtonRef}
+        ref={cancelButtonRef}
         type="button"
         onClick={mm.ops.closeConfirmation}
         className="rounded-lg border border-stroke-neutral-1 px-3.5 py-2 text-sm font-medium text-fg-neutral-primary transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
@@ -42,6 +43,8 @@ function ConfirmButtons({ mm }: { mm: MemoryManagerController }) {
 export function ConfirmOverlay({ mm }: { mm: MemoryManagerController }) {
   const pending = mm.action.pendingAction;
   if (pending === null) return null;
+  const { confirmDialogRef } = mm.refs;
+  const { closeConfirmation } = mm.ops;
   const title = pending.kind === "all" ? "Clear all memories?" : "Delete this memory?";
   const description =
     pending.kind === "all"
@@ -50,7 +53,7 @@ export function ConfirmOverlay({ mm }: { mm: MemoryManagerController }) {
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/15 px-4 py-6 backdrop-blur-[1px]">
       <section
-        ref={mm.refs.confirmDialogRef}
+        ref={confirmDialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="memory-confirm-title"
@@ -59,7 +62,7 @@ export function ConfirmOverlay({ mm }: { mm: MemoryManagerController }) {
       >
         <button
           type="button"
-          onClick={mm.ops.closeConfirmation}
+          onClick={closeConfirmation}
           className="absolute right-3 top-3 rounded-lg p-1 text-fg-neutral-tertiary transition-colors hover:bg-neutral-100 hover:text-fg-neutral-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
           aria-label="Close deletion confirmation"
         >

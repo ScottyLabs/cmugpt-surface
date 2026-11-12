@@ -4,10 +4,11 @@ import { AnimatedTitle } from "./AnimatedTitle.tsx";
 
 function ChatRowLabel({ c, chat }: { c: ChatShellController; chat: ChatListItem }) {
   const { sidebar } = c;
+  const { renameInputRef } = sidebar;
   if (sidebar.renamingChatId === chat.id) {
     return (
       <input
-        ref={sidebar.renameInputRef}
+        ref={renameInputRef}
         value={sidebar.renameDraft}
         onChange={(e) => {
           sidebar.setRenameDraft(e.target.value);

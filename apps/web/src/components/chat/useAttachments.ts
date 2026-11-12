@@ -7,20 +7,20 @@ import {
   removeAttachment,
   revokeAttachmentPreviews,
 } from "./attachments.ts";
+import { useLatestRef } from "../../lib/useLatestRef.ts";
 
 export function useAttachments() {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentHint, setAttachmentHint] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingAttachmentsRef = useRef(pendingAttachments);
-  pendingAttachmentsRef.current = pendingAttachments;
+  const pendingAttachmentsRef = useLatestRef(pendingAttachments);
 
   useEffect(() => {
     const attachmentsRef = pendingAttachmentsRef;
     return () => {
       revokeAttachmentPreviews(attachmentsRef.current);
     };
-  }, []);
+  }, [pendingAttachmentsRef]);
 
   return {
     pendingAttachments,

@@ -114,6 +114,7 @@ function StreamingTail({ stream }: { stream: ChatShellController["stream"] }) {
 
 export function MessageList({ c }: { c: ChatShellController }) {
   const { session, stream, optimistic, scroll, memory } = c;
+  const { bottomRef } = scroll;
   const optimisticMessage = optimistic.optimisticUserMessage;
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col">
@@ -126,7 +127,7 @@ export function MessageList({ c }: { c: ChatShellController }) {
       {stream.isStreaming && <StreamingTail stream={stream} />}
       {/* Spacer doubles as the auto-scroll anchor: scrolling it into view
           parks the last message above the floating composer, not behind it. */}
-      <div ref={scroll.bottomRef} className="h-36 shrink-0" />
+      <div ref={bottomRef} className="h-36 shrink-0" />
     </div>
   );
 }
