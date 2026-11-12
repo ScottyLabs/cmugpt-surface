@@ -66,8 +66,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 // Server-side auth (BFF). The browser holds only an opaque session-id cookie;
-// the Keycloak tokens live here so the frontend never sees them. `sub` stays
-// the Keycloak subject and the identity key used across the app.
+// the Keycloak tokens live here so the frontend never sees them. `sub` stays the Keycloak subject and the identity key used across the app.
 export const authSessions = pgTable("auth_sessions", {
   id: text("id").primaryKey(),
   sub: text("sub").notNull(),
@@ -83,8 +82,7 @@ export const authSessions = pgTable("auth_sessions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Short-lived pending logins: the PKCE verifier + nonce held between the
-// authorize redirect and the callback, keyed by the OAuth `state`.
+// Short-lived pending logins: the PKCE verifier + nonce held between the authorize redirect and the callback, keyed by the OAuth `state`.
 export const oidcLoginStates = pgTable("oidc_login_states", {
   state: text("state").primaryKey(),
   codeVerifier: text("code_verifier").notNull(),
@@ -132,9 +130,7 @@ export const messages = pgTable("messages", {
     dest: string | null;
     destLabel: string | null;
   } | null>(),
-  // The memory this turn saved, if any, so the "Memory saved" chip persists
-  // with its message across reloads. `id`/`kind` reference the stored fact in
-  // the agent so the chip can delete it.
+  // The memory this turn saved, if any, so the "Memory saved" chip persists with its message across reloads. `id`/`kind` reference the stored fact in the agent so the chip can delete it.
   savedMemory: jsonb("saved_memory").$type<{
     id: string;
     kind: "learned" | "remembered";

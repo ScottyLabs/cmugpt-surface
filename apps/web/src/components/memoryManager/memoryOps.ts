@@ -20,8 +20,7 @@ async function removeItemOp(item: MemoryItem, deps: OpsDeps): Promise<void> {
   action.setActionMessage(null);
   action.setDeletingKey(key);
   try {
-    // The exit animation and the DELETE round-trip are independent, so
-    // they run concurrently.
+    // The exit animation and the DELETE round-trip are independent, so they run concurrently.
     await Promise.all([waitForMotion(DELETE_TRANSITION_MS), deps.deleteCall(item)]);
     await memories.refetch();
     action.setActionMessage("Memory deleted.");

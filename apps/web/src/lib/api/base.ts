@@ -1,5 +1,4 @@
-// For kennel ephemeral preview deployments, the web is at *-web-<branch>.scottylabs.net
-// and the API is at *-api-<branch>.scottylabs.net. Detect this at runtime so the same
+// For kennel ephemeral preview deployments, the web is at *-web-<branch>.scottylabs.net and the API is at *-api-<branch>.scottylabs.net. Detect this at runtime so the same
 // Nix build artifact works for both production (uses PUBLIC_API_URL) and preview.
 async function resolveApiBaseUrl(): Promise<string> {
   const { protocol, hostname } = globalThis.location;

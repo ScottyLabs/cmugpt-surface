@@ -22,14 +22,12 @@ function useMultilineComposer(
     if (mirror === null || area === null || controls === null) {
       return;
     }
-    // Room the text may use beside the inline controls (24px of breathing
-    // space between text and controls, covering the textarea's own padding).
+    // Room the text may use beside the inline controls (24px of breathing space between text and controls, covering the textarea's own padding).
     const inlineRoom = area.clientWidth - controls.offsetWidth - 24;
     setMultiline(area.value.includes("\n") || mirror.offsetWidth > inlineRoom);
   }, [draftComposerRef]);
 
-  // Re-measure after every draft change (the mirror re-renders first) and
-  // whenever the composer is resized (window/sidebar changes).
+  // Re-measure after every draft change (the mirror re-renders first) and whenever the composer is resized (window/sidebar changes).
   useLayoutEffect(() => {
     recompute();
   }, [draft, recompute]);

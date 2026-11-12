@@ -87,9 +87,7 @@ function useShellMemory(session: ChatSession, stream: StreamController) {
   return useMemoryController(chatIdRef, refetchMessages);
 }
 
-// Opening a chat (from the sidebar or a result) leaves search, so the panel
-// is never a dead end. Selecting a result already closes search; this covers
-// navigating via the sidebar while search is open.
+// Opening a chat (from the sidebar or a result) leaves search, so the panel is never a dead end. Selecting a result already closes search; this covers navigating via the sidebar while search is open.
 function useSearchExitOnChatChange(chatId: string | undefined, closeSearch: () => void): void {
   const prevChatIdRef = useRef(chatId);
   useEffect(() => {

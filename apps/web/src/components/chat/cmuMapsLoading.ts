@@ -22,8 +22,7 @@ function whenScrollSettles(run: () => void): () => void {
   function stopListening() {
     window.clearTimeout(quietTimer);
     window.clearTimeout(deadlineTimer);
-    // Scroll events do not bubble, so the document listener uses the capture
-    // phase and need not know which element scrolls.
+    // Scroll events do not bubble, so the document listener uses the capture phase and need not know which element scrolls.
     document.removeEventListener("scroll", restartQuietTimer, { capture: true });
   }
   function settle() {
@@ -83,8 +82,7 @@ export function useLazyMapMount(
       return noCleanup;
     }
     const slot = slotRef.current;
-    // Most maps mount already on screen. A direct measurement starts the
-    // download immediately. The observer covers maps scrolled out of view.
+    // Most maps mount already on screen. A direct measurement starts the download immediately. The observer covers maps scrolled out of view.
     if (slot === null || typeof IntersectionObserver !== "function" || isNearViewport(slot)) {
       setReady(true);
       return noCleanup;

@@ -1,6 +1,4 @@
-// Server-side OIDC via openid-client (panva). Handles discovery, PKCE, the
-// authorization URL, code exchange (with id_token validation), refresh, and
-// logout -- so we never hand-roll OIDC crypto. Ricochet support lives in
+// Server-side OIDC via openid-client (panva). Handles discovery, PKCE, the authorization URL, code exchange (with id_token validation), refresh, and logout -- so we never hand-roll OIDC crypto. Ricochet support lives in
 // authRoutes.ts: we choose the redirect_uri and craft the `state`; this module
 // just runs the protocol.
 import * as client from "openid-client";

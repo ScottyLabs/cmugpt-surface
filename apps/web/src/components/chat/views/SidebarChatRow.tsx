@@ -57,19 +57,14 @@ interface SidebarChatRowProps {
 
 export function SidebarChatRow({ c, chat, starFilled }: SidebarChatRowProps) {
   const { sidebar, session, search } = c;
-  // While search is open the main pane shows results, not the chat, so the
-  // active-chat highlight would be misleading; search owns the highlight then.
+  // While search is open the main pane shows results, not the chat, so the active-chat highlight would be misleading; search owns the highlight then.
   const isActive = chat.id === session.chatId && !search.searchMode;
   // The row's padding lives on the label button, not the <li>: padding on the
-  // <li> would be a dead zone that swallows clicks (the old "need to click
-  // twice" bug), since the label only stretches to its own text otherwise.
+  // <li> would be a dead zone that swallows clicks (the old "need to click twice" bug), since the label only stretches to its own text otherwise.
   const rowClass = `group flex w-full items-center gap-1 rounded-md pr-1.5 text-sm hover:bg-neutral-200/80 ${
     isActive ? "bg-neutral-200" : ""
   }`;
-  // The star sits in its own flex track (not overlaid on the label), so it
-  // never intercepts a click meant to open the chat. When hidden it keeps its
-  // width (no layout shift) but is non-interactive, and it appears without a
-  // fade so sweeping across rows doesn't flash.
+  // The star sits in its own flex track (not overlaid on the label), so it never intercepts a click meant to open the chat. When hidden it keeps its width (no layout shift) but is non-interactive, and it appears without a fade so sweeping across rows doesn't flash.
   return (
     <li className={rowClass}>
       <ChatRowLabel c={c} chat={chat} />
