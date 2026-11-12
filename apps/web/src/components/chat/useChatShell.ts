@@ -16,6 +16,7 @@ import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
 import { type StreamController, useStreamController } from "./useStreamController.ts";
 import { useToolToggles } from "./useToolToggles.ts";
+import { useLatestRef } from "../../lib/useLatestRef.ts";
 
 function useChatShellEffects(
   session: ChatSession,
@@ -79,10 +80,8 @@ function useChatShellCore() {
 
 function useShellMemory(session: ChatSession, stream: StreamController) {
   const { refetchMessages } = session;
-  const chatIdRef = useRef(session.chatId);
-  chatIdRef.current = session.chatId;
-  const messagesRef = useRef(session.messages);
-  messagesRef.current = session.messages;
+  const chatIdRef = useLatestRef(session.chatId);
+  const messagesRef = useLatestRef(session.messages);
   useLearnedMemoryChip(stream.isStreaming, chatIdRef, messagesRef, refetchMessages);
   return useMemoryController(chatIdRef, refetchMessages);
 }

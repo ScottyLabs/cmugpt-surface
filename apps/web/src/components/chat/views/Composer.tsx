@@ -15,21 +15,24 @@ function useMultilineComposer(
   const mirrorRef = useRef<HTMLSpanElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
 
-  const recompute = useCallback(() => {
-    const mirror = mirrorRef.current;
-    const area = draftComposerRef.current;
-    const controls = controlsRef.current;
-    if (mirror === null || area === null || controls === null) {
-      return;
-    }
-    // Room the text may use beside the inline controls (24px of breathing space between text and controls, covering the textarea's own padding).
-    const inlineRoom = area.clientWidth - controls.offsetWidth - 24;
-    setMultiline(area.value.includes("\n") || mirror.offsetWidth > inlineRoom);
-  }, [draftComposerRef]);
+  const recompute = useCallback(
+    (text: string) => {
+      const mirror = mirrorRef.current;
+      const area = draftComposerRef.current;
+      const controls = controlsRef.current;
+      if (mirror === null || area === null || controls === null) {
+        return;
+      }
+      // Room the text may use beside the inline controls (24px of breathing space between text and controls, covering the textarea's own padding).
+      const inlineRoom = area.clientWidth - controls.offsetWidth - 24;
+      setMultiline(text.includes("\n") || mirror.offsetWidth > inlineRoom);
+    },
+    [draftComposerRef],
+  );
 
   // Re-measure after every draft change (the mirror re-renders first) and whenever the composer is resized (window/sidebar changes).
   useLayoutEffect(() => {
-    recompute();
+    recompute(draft);
   }, [draft, recompute]);
   useLayoutEffect(() => {
     const area = draftComposerRef.current;
@@ -37,7 +40,7 @@ function useMultilineComposer(
       return () => {};
     }
     const ro = new ResizeObserver(() => {
-      recompute();
+      recompute(area.value);
     });
     ro.observe(area);
     return () => {

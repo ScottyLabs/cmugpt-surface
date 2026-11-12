@@ -114,8 +114,11 @@ function useMapFrameLifecycle(mapUrl: string | null) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   // True while a load this card requested is pending. The frame also fires load for its own navigations, whose cross-origin URL cannot be read, so this flag is what distinguishes the two. Assigning src is the only way the card requests a load, and it cancels any load in flight, so a single flag suffices. Unlike a counter, it also survives StrictMode running the effect twice.
   const owedLoad = useRef(false);
+  // A new URL means the frame's src changes, which requests a load. The frame only renders with a URL.
   useEffect(() => {
-    owedLoad.current = true;
+    if (mapUrl !== null) {
+      owedLoad.current = true;
+    }
   }, [mapUrl]);
 
   function reloadMap() {

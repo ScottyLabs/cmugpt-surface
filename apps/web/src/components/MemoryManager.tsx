@@ -18,6 +18,7 @@ interface MemoryManagerProps {
 export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerProps) {
   const mm = useMemoryManager(open, onClose, returnFocusRef);
   if (!open) return null;
+  const { dialogRef, dialogContentRef } = mm.refs;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
       <button
@@ -29,7 +30,7 @@ export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerPr
         }}
       />
       <section
-        ref={mm.refs.dialogRef}
+        ref={dialogRef}
         // A native <dialog> brings its own backdrop, UA styles, and showModal lifecycle; this modal implements those itself.
         // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
         role="dialog"
@@ -38,7 +39,7 @@ export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerPr
         aria-describedby="memory-manager-description"
         className="relative flex max-h-[min(44rem,calc(100dvh-3rem))] w-full max-w-[45.5625rem] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_6px_0_rgba(0,0,0,0.20)]"
       >
-        <div ref={mm.refs.dialogContentRef} className="contents">
+        <div ref={dialogContentRef} className="contents">
           <ManagerHeader onClose={onClose} />
           <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 sm:px-8 sm:pb-8">
             <ManagerSearch mm={mm} />
