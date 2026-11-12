@@ -1,15 +1,10 @@
 # Bark Surface (cmugpt-surface)
 
-Bark Surface is the user-facing web app and BFF (backend-for-frontend) API for
-**Bark**, ScottyLabs' CMU-focused AI chat assistant. It handles authentication,
-chat history, memory management, and streams chat responses from the
-[`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) service, which does the actual agent/LLM
-work.
+Bark Surface is the user-facing web app and BFF (backend-for-frontend) API for **Bark**, ScottyLabs' CMU-focused AI chat assistant. It handles authentication, chat history, memory management, and streams chat responses from the [`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) service, which does the actual agent/LLM work.
 
 ## Repo structure
 
-This is a [Deno workspace](./deno.json) with two apps and no separate agent
-code - the actual chat/LLM logic lives in the sibling `cmugpt-agent` repo.
+This is a [Deno workspace](./deno.json) with two apps and no separate agent code - the actual chat/LLM logic lives in the sibling `cmugpt-agent` repo.
 
 ```
 cmugpt-surface/
@@ -37,16 +32,12 @@ cmugpt-surface/
 `-- secretspec.toml                # declares required env vars / secrets
 ```
 
-Key thing to know: **`apps/server` is the source of truth for the API shape.**
-tsoa generates an OpenAPI spec + Express routes from the controllers in
-`apps/server/src/controllers`, and `apps/web` imports the generated
-`openapi.d.ts` types directly (see the `generate` task below) to get a fully
-typed API client with no manual API type definitions on the frontend.
+Key thing to know: **`apps/server` is the source of truth for the API shape.** tsoa generates an OpenAPI spec + Express routes from the controllers in `apps/server/src/controllers`, and `apps/web` imports the generated `openapi.d.ts` types directly (see the `generate` task below) to get a fully typed API client with no manual API type definitions on the frontend.
 
 ## Tech stack
 
 | Layer | Tech |
-|---|---|
+| -- | -- |
 | Runtime / package manager | [Deno](https://deno.com/) (workspace of two `deno.json` projects, npm deps via `npm:` specifiers) |
 | API server | Express 5, [tsoa](https://tsoa-community.github.io/docs/) (decorators to OpenAPI + routes), Zod |
 | Database | PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) (semantic memory search), [Drizzle ORM](https://orm.drizzle.team/) + drizzle-kit |
@@ -60,15 +51,8 @@ typed API client with no manual API type definitions on the frontend.
 
 ## Before you start
 
-1. [Join the `slai` team through governance](https://git.cmu.dev/ScottyLabs/governance#joining-a-team).
-   This membership is what grants read access to the project's dev secrets
-   (OIDC client, agent secret, and so on) in OpenBao.
-1. Install Lix and log in to OpenBao by following kennel's
-   [local development](https://docs.kennel.scottylabs.org/guides/local-development/#installing-nix)
-   and [secrets](https://docs.kennel.scottylabs.org/guides/secrets/#local-development)
-   guides. The dev shell provides Deno, Postgres with pgvector, the local login
-   relay, `bao`, and `secretspec`, so you don't need to install those yourself.
-   You only need [Git](https://git-scm.com/downloads).
+1. [Join the `slai` team through governance](https://git.cmu.dev/ScottyLabs/governance#joining-a-team). This membership is what grants read access to the project's dev secrets (OIDC client, agent secret, and so on) in OpenBao.
+1. Install Lix and log in to OpenBao by following kennel's [local development](https://docs.kennel.scottylabs.org/guides/local-development/#installing-nix) and [secrets](https://docs.kennel.scottylabs.org/guides/secrets/#local-development) guides. The dev shell provides Deno, Postgres with pgvector, the local login relay, `bao`, and `secretspec`, so you don't need to install those yourself. You only need [Git](https://git-scm.com/downloads).
 
 ## Running it
 
@@ -84,45 +68,30 @@ pitchfork start --local
 `nix develop` builds the environment and loads secrets. `pitchfork start --local` starts every process defined in [flake.nix](./flake.nix) and the shared ScottyLabs module:
 
 - `postgres`: Postgres with pgvector (the dev shell exports `DATABASE_URL`)
-- `ricochet`: the local [OAuth relay](https://docs.kennel.scottylabs.org/guides/local-development/#oauth-relay)
-  on `127.0.0.1:8090`. Andrew ID login won't work locally without it.
+- `ricochet`: the local [OAuth relay](https://docs.kennel.scottylabs.org/guides/local-development/#oauth-relay) on `127.0.0.1:8090`. Andrew ID login won't work locally without it.
 - `api`: the server on `:3001`
 - `web`: Vite on [http://localhost:4173](http://localhost:4173)
 
-Kennel's [local development guide](https://docs.kennel.scottylabs.org/guides/local-development/#local-services)
-covers following and stopping these processes.
+Kennel's [local development guide](https://docs.kennel.scottylabs.org/guides/local-development/#local-services) covers following and stopping these processes.
 
-By default the server talks to the deployed agent at
-`https://api.cmugpt-agent.scottylabs.org`. To use a local agent, run
-[`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) with `pitchfork start --local`
-and set `AGENT_API_URL=http://localhost:5055` before starting the server. The
-agent's README covers its own setup.
+By default the server talks to the deployed agent at `https://api.cmugpt-agent.scottylabs.org`. To use a local agent, run [`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) with `pitchfork start --local` and set `AGENT_API_URL=http://localhost:5055` before starting the server. The agent's README covers its own setup.
 
 ### Troubleshooting
 
-- **Secrets fail to load after logging in.** You're probably not in the `slai`
-  team yet (see [Before you start](#before-you-start)).
-- **Server crashes on startup with a zod error.** A required variable is
-  missing. Usually `DATABASE_URL` is unset because Postgres wasn't started
-  through `pitchfork start --local`.
+- **Secrets fail to load after logging in.** You're probably not in the `slai` team yet (see [Before you start](#before-you-start)).
+- **Server crashes on startup with a zod error.** A required variable is missing. Usually `DATABASE_URL` is unset because Postgres wasn't started through `pitchfork start --local`.
 
 ### Without Nix (not recommended)
 
-Nix is the supported path. Without it, **Andrew ID login won't work locally**,
-because the `ricochet` relay it depends on is provided by Nix. You can still
-work on the parts that don't need login.
+Nix is the supported path. Without it, **Andrew ID login won't work locally**, because the `ricochet` relay it depends on is provided by Nix. You can still work on the parts that don't need login.
 
 1. Install:
 
    - [Git](https://git-scm.com/downloads)
    - [Deno](https://docs.deno.com/runtime/getting_started/installation/)
-   - [PostgreSQL](https://www.postgresql.org/download/) and the
-     [pgvector extension](https://github.com/pgvector/pgvector#installation)
-     (`brew install postgresql@17 pgvector` on macOS)
-   - [OpenBao](https://openbao.org/docs/install/) (`brew install openbao` on
-     macOS)
-   - [secretspec](https://secretspec.dev/)
-     (`curl -sSL https://install.secretspec.dev | sh`)
+   - [PostgreSQL](https://www.postgresql.org/download/) and the [pgvector extension](https://github.com/pgvector/pgvector#installation) (`brew install postgresql@17 pgvector` on macOS)
+   - [OpenBao](https://openbao.org/docs/install/) (`brew install openbao` on macOS)
+   - [secretspec](https://secretspec.dev/) (`curl -sSL https://install.secretspec.dev | sh`)
 
 1. Create a database with pgvector:
 
@@ -133,8 +102,7 @@ work on the parts that don't need login.
    export PORT=3001
    ```
 
-1. Log in to OpenBao (needs `slai` team membership) and run with the dev
-   secrets injected:
+1. Log in to OpenBao (needs `slai` team membership) and run with the dev secrets injected:
 
    ```sh
    BAO_ADDR=https://secrets.scottylabs.org bao login -method=oidc
@@ -142,17 +110,14 @@ work on the parts that don't need login.
    secretspec run -P dev -- deno task dev
    ```
 
-Migrations run automatically on server startup (`apps/server/src/server.ts`
-calls `drizzle-orm`'s `migrate()` against `apps/server/drizzle` before the
-Express app starts listening).
+Migrations run automatically on server startup (`apps/server/src/server.ts` calls `drizzle-orm`'s `migrate()` against `apps/server/drizzle` before the Express app starts listening).
 
 ## Environment variables
 
-Declared in [secretspec.toml](./secretspec.toml) and validated at runtime by
-[`apps/server/src/env.ts`](./apps/server/src/env.ts):
+Declared in [secretspec.toml](./secretspec.toml) and validated at runtime by [`apps/server/src/env.ts`](./apps/server/src/env.ts):
 
 | Variable | Required | Description |
-|---|---|---|
+| -- | -- | -- |
 | `DATABASE_URL` | yes | Postgres connection string |
 | `OIDC_ISSUER_URL` | yes | OIDC issuer for Andrew ID SSO |
 | `OIDC_CLIENT_ID` | yes (default `sl-ai-local`) | OIDC client ID |
@@ -165,15 +130,14 @@ Declared in [secretspec.toml](./secretspec.toml) and validated at runtime by
 | `APP_URL` | no (set by kennel; default `http://localhost:4173`) | Public URL of this API deployment, used for the OIDC callback and to derive the deployment's own web origin |
 | `ADMIN_GROUP` | no | Admin group name (stopgap until real governance wiring exists) |
 
-See [apps/server/README.md](./apps/server/README.md) for more on the
-agent-connection secret.
+See [apps/server/README.md](./apps/server/README.md) for more on the agent-connection secret.
 
 ## Common tasks
 
 Run from the repo root (these fan out to the two workspace apps):
 
 | Command | Description |
-|---|---|
+| -- | -- |
 | `deno task dev` | Run server + web dev servers concurrently (outside pitchfork, prefix with `PORT=3001`) |
 | `deno task generate` | Regenerate the OpenAPI spec/routes from server controllers (also runs automatically before `build`/`dev`) |
 | `deno task build` | Build both apps for production |
@@ -182,8 +146,7 @@ Run from the repo root (these fan out to the two workspace apps):
 | `deno task db:generate` | Generate a new Drizzle migration from schema changes |
 | `deno task db:migrate` | Apply pending migrations |
 
-Per-app tasks (run with `deno task --cwd apps/<app> <task>`, or `cd` into the
-app first):
+Per-app tasks (run with `deno task --cwd apps/<app> <task>`, or `cd` into the app first):
 
 - `apps/server`: `server` (no regen), `tsoa:watch`, `openapi:watch`, `start`, `check`
 - `apps/web`: `dev`, `build`, `preview`, `test` (Vitest unit tests), `check`
@@ -191,15 +154,12 @@ app first):
 ## Testing
 
 - **Unit tests** (`apps/web`): `deno task --cwd apps/web test` (Vitest + Testing Library)
-- **E2E tests**: `deno task test:e2e` from the repo root, powered by
-  [playwright.config.ts](./playwright.config.ts). It boots the web dev server
-  automatically and runs specs in `apps/web/e2e/`.
+- **E2E tests**: `deno task test:e2e` from the repo root, powered by [playwright.config.ts](./playwright.config.ts). It boots the web dev server automatically and runs specs in `apps/web/e2e/`.
 - **Type checking**: `deno task check`
 
 ## Deployment
 
-Deployed via ScottyLabs' internal `kennel` platform (see `sites` and `services`
-in [flake.nix](./flake.nix)):
+Deployed via ScottyLabs' internal `kennel` platform (see `sites` and `services` in [flake.nix](./flake.nix)):
 
 - Web (SPA) -> `bark.scottylabs.org`
 - API service -> `api.cmugpt.com`
@@ -208,11 +168,8 @@ The API compiles to a standalone Deno binary via `deno compile`. The web app rea
 
 ## Related repos
 
-- [`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) - the actual chat agent/LLM service this
-  server proxies to (OpenRouter for chat, OpenAI embeddings for memory
-  search, pgvector-backed long-term memory).
+- [`cmugpt-agent`](https://git.cmu.dev/ScottyLabs/cmugpt-agent) - the actual chat agent/LLM service this server proxies to (OpenRouter for chat, OpenAI embeddings for memory search, pgvector-backed long-term memory).
 
 ## License
 
-Dual-licensed under [Apache-2.0](./LICENSE-APACHE-2.0) or
-[MIT](./LICENSE-MIT), at your option.
+Dual-licensed under [Apache-2.0](./LICENSE-APACHE-2.0) or [MIT](./LICENSE-MIT), at your option.

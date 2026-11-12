@@ -31,8 +31,7 @@ function ToolIcon({ id, enabled }: { id: string; enabled: boolean }) {
   if (id === "guide") {
     return <BookOpen aria-hidden className={`h-4 w-4 shrink-0 ${tint}`} />;
   }
-  // A tool added to CHAT_TOOLS without artwork here renders label-only rather
-  // than borrowing another tool's icon.
+  // A tool added to CHAT_TOOLS without artwork here renders label-only rather than borrowing another tool's icon.
   return null;
 }
 
@@ -65,11 +64,8 @@ function ToolToggleButton({
   enabled: boolean;
   onToggle: () => void;
 }) {
-  // After a click the pointer is still parked on the button, so the browser
-  // keeps matching :hover and the freshly toggled state looks highlighted.
-  // Disarm hover styling on click and re-arm it once the pointer leaves, so
-  // the plain new state shows immediately and hover only returns on the next
-  // approach.
+  // After a click the pointer is still parked on the button, so the browser keeps matching :hover and the freshly toggled state looks highlighted.
+  // Disarm hover styling on click and re-arm it once the pointer leaves, so the plain new state shows immediately and hover only returns on the next approach.
   const [hoverArmed, setHoverArmed] = useState(true);
   return (
     <button

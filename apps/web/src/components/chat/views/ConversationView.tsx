@@ -4,8 +4,7 @@ import { WelcomeScreen } from "./WelcomeScreen.tsx";
 
 export function ConversationView({ c }: { c: ChatShellController }) {
   const { session, derived, scroll } = c;
-  // Show the centered greeting for any empty chat, including right after
-  // clicking New Chat, until the first message starts a conversation.
+  // Show the centered greeting for any empty chat, including right after clicking New Chat, until the first message starts a conversation.
   const showWelcome =
     !derived.shouldShowConversation && !session.chatsLoading && session.chatId === undefined;
   return (

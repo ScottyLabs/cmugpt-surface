@@ -2,8 +2,7 @@ import { useMemo } from "react";
 import type { ChatShellController } from "../useChatShell.ts";
 import { Composer } from "./Composer.tsx";
 
-// Rotating CMU / ScottyLabs flavored greetings (no em dashes). One is picked at
-// random each time the new-chat screen mounts.
+// Rotating CMU / ScottyLabs flavored greetings (no em dashes). One is picked at random each time the new-chat screen mounts.
 const NAMED_GREETINGS: ((name: string) => string)[] = [
   (n) => `Hi ${n}, where are we headed on campus?`,
   (n) => `Ready when you are, ${n}.`,

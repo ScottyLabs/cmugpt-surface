@@ -1,17 +1,21 @@
 import assert from "node:assert/strict";
-import type { AddressInfo } from "node:net";
+import { test } from "node:test";
 import express from "express";
 import { rejectCrossSiteWrites } from "./crossSiteGuard.ts";
 
-Deno.test("state-changing requests need an allowed or absent Origin", async () => {
+await test("state-changing requests need an allowed or absent Origin", async () => {
   const app = express();
   app.use(rejectCrossSiteWrites((origin) => origin === "https://bark.scottylabs.org"));
   app.all("/chats", (_req, res) => {
     res.status(200).json({ ok: true });
   });
   const server = app.listen(0);
-  await new Promise((resolve) => server.once("listening", resolve));
-  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/chats`;
+  await new Promise<void>((resolve) => {
+    server.once("listening", resolve);
+  });
+  const address = server.address();
+  assert.ok(address !== null && typeof address === "object");
+  const url = `http://127.0.0.1:${address.port}/chats`;
   const status = async (method: string, origin?: string) => {
     const response = await fetch(url, {
       method,
@@ -28,6 +32,10 @@ Deno.test("state-changing requests need an allowed or absent Origin", async () =
     assert.equal(await status("POST"), 200);
     assert.equal(await status("GET", "https://evil.example"), 200);
   } finally {
-    await new Promise((resolve) => server.close(resolve));
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        resolve();
+      });
+    });
   }
 });

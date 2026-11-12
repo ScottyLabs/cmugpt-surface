@@ -107,13 +107,11 @@ function rehypeKatexWithGuards(options?: Parameters<typeof rehypeKatex>[0]) {
   };
 }
 
-// Math before GFM: otherwise tables/`$` parsing can yield an invalid tree and
-// mdast-util-to-hast hits `'children' in undefined` during applyData.
+// Math before GFM: otherwise tables/`$` parsing can yield an invalid tree and mdast-util-to-hast hits `'children' in undefined` during applyData.
 export const remarkMarkdownPlugins = [remarkMath, remarkGfm];
 
 // Tuple form: unified calls `attacher.call(processor, options)` and uses the
-// *returned* function as the transformer. A pre-invoked `fn({...})` would be
-// mistaken for an attacher and invoked with no tree/file (both undefined).
+// *returned* function as the transformer. A pre-invoked `fn({...})` would be mistaken for an attacher and invoked with no tree/file (both undefined).
 export const rehypeMarkdownPlugins = [
   [
     rehypeKatexWithGuards,

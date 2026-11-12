@@ -32,8 +32,7 @@ await pool.query(
   `ALTER TABLE "chats" ADD COLUMN IF NOT EXISTS "is_public" boolean DEFAULT false NOT NULL`,
 );
 
-// Server-side auth tables (BFF). Created idempotently rather than via a
-// migration so the auth layer is self-contained.
+// Server-side auth tables (BFF). Created idempotently rather than via a migration so the auth layer is self-contained.
 await pool.query(`
   CREATE TABLE IF NOT EXISTS "auth_sessions" (
     "id" text PRIMARY KEY,
@@ -76,8 +75,7 @@ const corsOptions: CorsOptions = {
       return;
     }
 
-    // Disallowed origins get no CORS headers, so the browser withholds the
-    // response from the calling page.
+    // Disallowed origins get no CORS headers, so the browser withholds the response from the calling page.
     callback(null, isAllowedOrigin(origin));
   },
   credentials: true,
@@ -88,9 +86,7 @@ app.use(cors(corsOptions));
 
 app.use(rejectCrossSiteWrites(isAllowedOrigin));
 
-// Server-side auth (BFF). authRouter serves /api/auth/login|callback|logout|me
-// (openid-client + ricochet); attachBearerFromSession relays the session's
-// access token downstream as a Bearer so the existing tsoa verifier is unchanged.
+// Server-side auth (BFF). authRouter serves /api/auth/login|callback|logout|me (openid-client + ricochet); attachBearerFromSession relays the session's access token downstream as a Bearer so the existing tsoa verifier is unchanged.
 app.use(authRouter);
 app.use(attachBearerFromSession);
 
@@ -99,15 +95,13 @@ const server = http.createServer((req, res) => {
   app(req, res);
 });
 
-// OpenAPI spec. Resolve relative to this module (not cwd) so the path also
-// works inside a `deno compile` binary with `--include build`.
+// OpenAPI spec. Resolve relative to this module (not cwd) so the path also works inside a `deno compile` binary with `--include build`.
 const openApiYaml = fs.readFileSync(path.join(moduleDir, "../build/swagger.yaml"), "utf8");
 const openApiSpec: unknown = parseYaml(openApiYaml);
 app.get("/api/openapi.json", (_req, res) => {
   res.status(200).send(openApiSpec);
 });
-// Scalar API reference UI, rendered from the spec at /api/openapi.json. Needs
-// no on-disk assets, so it also works inside a `deno compile` binary.
+// Scalar API reference UI, rendered from the spec at /api/openapi.json. Needs no on-disk assets, so it also works inside a `deno compile` binary.
 app.use("/api/scalar", apiReference({ url: "/api/openapi.json" }));
 
 // Routes

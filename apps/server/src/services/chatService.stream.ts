@@ -128,8 +128,7 @@ export async function* finalizeAssistantMessage(
       };
       return;
     }
-    // The stream died before the agent's final event. Keep the partial text
-    // but mark it, instead of persisting it as a complete answer.
+    // The stream died before the agent's final event. Keep the partial text but mark it, instead of persisting it as a complete answer.
     const truncationNote = "\n\n_(This response was cut off before completing.)_";
     yield { type: "delta", text: truncationNote };
     finalResult = { text: streamedText + truncationNote };

@@ -7,8 +7,7 @@ import type { ChatListItemDto, ChatRow, MessageDto, MessageRow } from "./chatSer
 
 export const DEFAULT_CHAT_TITLE = "New chat";
 
-// The agent rejects longer queries with a 400. Fail before persisting the
-// user row, or the chat keeps a message that can never get a reply.
+// The agent rejects longer queries with a 400. Fail before persisting the user row, or the chat keeps a message that can never get a reply.
 const MAX_MESSAGE_CHARS = 8_000;
 
 export function titleFromFirstMessage(content: string): string {

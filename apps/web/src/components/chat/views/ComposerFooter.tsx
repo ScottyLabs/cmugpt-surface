@@ -10,8 +10,7 @@ import { Composer } from "./Composer.tsx";
  */
 export function ComposerFooter({ c }: { c: ChatShellController }) {
   const { derived, session, stream } = c;
-  // The centered new-chat screen renders its own composer, so the footer
-  // composer only appears once a conversation is active.
+  // The centered new-chat screen renders its own composer, so the footer composer only appears once a conversation is active.
   const showFooterComposer = derived.shouldShowConversation || session.chatsLoading;
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10">

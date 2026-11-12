@@ -30,8 +30,7 @@ export function MemoryManager({ open, onClose, returnFocusRef }: MemoryManagerPr
       />
       <section
         ref={mm.refs.dialogRef}
-        // A native <dialog> brings its own backdrop, UA styles, and
-        // showModal lifecycle; this modal implements those itself.
+        // A native <dialog> brings its own backdrop, UA styles, and showModal lifecycle; this modal implements those itself.
         // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
         role="dialog"
         aria-modal="true"

@@ -134,9 +134,7 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
       ctx.setStreamStatus(ev.text);
       return false;
     case "memory":
-      // The chip is persisted on the assistant message server-side and
-      // appears on the post-`done` message refetch, so nothing is done with
-      // this event on the client.
+      // The chip is persisted on the assistant message server-side and appears on the post-`done` message refetch, so nothing is done with this event on the client.
       return false;
     case "map":
       ctx.setStreamingCmuMaps(ev.cmuMaps);
@@ -164,9 +162,7 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
   const decoder = new TextDecoder();
   let buf = "";
   let shouldRefresh = false;
-  // Consumed via pipeTo rather than `for await`: WebKit (every browser on
-  // iOS) never shipped async iteration of ReadableStream, and the for-await
-  // form threw the moment a message was sent on any iPhone.
+  // Consumed via pipeTo rather than `for await`: WebKit (every browser on iOS) never shipped async iteration of ReadableStream, and the for-await form threw the moment a message was sent on any iPhone.
   await res.body.pipeTo(
     new WritableStream({
       write(value) {
@@ -187,15 +183,11 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
   );
   await ctx.waitForStreamingFlush();
   if (shouldRefresh) {
-    // Load the saved copy of the answer first, so it is on screen ready to
-    // replace the live one, then stop streaming. Doing it the other way round
-    // would blank the answer out for as long as the request takes.
+    // Load the saved copy of the answer first, so it is on screen ready to replace the live one, then stop streaming. Doing it the other way round would blank the answer out for as long as the request takes.
     await ctx.refetchMessages();
     ctx.setIsStreaming(false);
     ctx.resetStreamingBuffer();
-    // This one only updates the chat list in the sidebar. Waiting for it before
-    // the swap above would leave the saved answer and the live one on screen
-    // together for a full round trip, showing the reply twice.
+    // This one only updates the chat list in the sidebar. Waiting for it before the swap above would leave the saved answer and the live one on screen together for a full round trip, showing the reply twice.
     void ctx.refetchChats();
   }
 }
@@ -223,9 +215,7 @@ function beginSend(ctx: SendCtx, activeChatId: string, content: string): void {
       STICKY_SCROLL_THRESHOLD_PX;
   }
   ctx.resetStreamingBuffer();
-  // The saved-memory notice is deliberately not cleared here: once anchored
-  // to its message it stays visible through later questions. It clears on
-  // chat switch, deletion, or a newer fact replacing it.
+  // The saved-memory notice is deliberately not cleared here: once anchored to its message it stays visible through later questions. It clears on chat switch, deletion, or a newer fact replacing it.
   ctx.setStreamStatus("Thinking...");
   ctx.setOptimisticUserMessage({
     chatId: activeChatId,

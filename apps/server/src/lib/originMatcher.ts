@@ -1,8 +1,4 @@
-// Origin allowlist used by CORS, the cross-site request check, and the
-// post-login redirect. Responses carry credentials, so an origin that matches
-// here can read and change a signed-in user's data. Matching is therefore
-// exact by default, and patterns must be anchored so they cannot match a
-// longer attacker-controlled host such as `bark.scottylabs.org.evil.com`.
+// Origin allowlist used by CORS, the cross-site request check, and the post-login redirect. Responses carry credentials, so an origin that matches here can read and change a signed-in user's data. Matching is therefore exact by default, and patterns must be anchored so they cannot match a longer attacker-controlled host such as `bark.scottylabs.org.evil.com`.
 
 export type OriginMatcher = (origin: string) => boolean;
 

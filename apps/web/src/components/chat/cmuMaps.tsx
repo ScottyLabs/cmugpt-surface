@@ -61,13 +61,11 @@ function MapFrame({
       title="CMU Maps"
       src={mapUrl}
       onLoad={onLoad}
-      // Covers only the first appearance. A stronger entrance would draw
-      // attention away from the answer.
+      // Covers only the first appearance. A stronger entrance would draw attention away from the answer.
       className={`absolute top-0 left-0 border-0 transition-opacity duration-200 ease-out motion-reduce:transition-none ${
         revealed ? "opacity-100" : "opacity-0"
       }`}
-      // Not lazy. useLazyMapMount has already decided the map is near the
-      // viewport, so a browser recheck only adds delay.
+      // Not lazy. useLazyMapMount has already decided the map is near the viewport, so a browser recheck only adds delay.
       loading="eager"
       referrerPolicy="no-referrer"
       allow={`geolocation 'self' ${CMU_MAPS_ORIGIN}; clipboard-write`}
@@ -114,12 +112,7 @@ function useMapFrameLifecycle(mapUrl: string | null) {
   const [loaded, setLoaded] = useState(false);
   const [reloading, setReloading] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
-  // True while a load this card requested is pending. The frame also fires
-  // load for its own navigations, whose cross-origin URL cannot be read, so
-  // this flag is what distinguishes the two. Assigning src is the only way
-  // the card requests a load, and it cancels any load in flight, so a single
-  // flag suffices. Unlike a counter, it also survives StrictMode running the
-  // effect twice.
+  // True while a load this card requested is pending. The frame also fires load for its own navigations, whose cross-origin URL cannot be read, so this flag is what distinguishes the two. Assigning src is the only way the card requests a load, and it cancels any load in flight, so a single flag suffices. Unlike a counter, it also survives StrictMode running the effect twice.
   const owedLoad = useRef(false);
   useEffect(() => {
     owedLoad.current = true;
@@ -132,8 +125,7 @@ function useMapFrameLifecycle(mapUrl: string | null) {
     }
     setReloading(true);
     owedLoad.current = true;
-    // Reassigning src reloads the frame in place. The old page stays visible
-    // until the new one is ready.
+    // Reassigning src reloads the frame in place. The old page stays visible until the new one is ready.
     frame.src = mapUrl;
   }
 
@@ -144,10 +136,7 @@ function useMapFrameLifecycle(mapUrl: string | null) {
       setReloading(false);
       return;
     }
-    // The frame navigated to a page this card cannot show. The in-map sign-in
-    // does this, since its identity provider refuses framing and strands the
-    // frame on an error page or the API root. Hide the stray page and restore
-    // the map. The restore cannot loop, because the card requests its load.
+    // The frame navigated to a page this card cannot show. The in-map sign-in does this, since its identity provider refuses framing and strands the frame on an error page or the API root. Hide the stray page and restore the map. The restore cannot loop, because the card requests its load.
     setLoaded(false);
     reloadMap();
   }
@@ -167,9 +156,7 @@ function CmuMapsEmbedImpl({ cmuMaps }: { cmuMaps?: CmuMapsPayload | null }) {
   if (!cmuMaps || mapUrl === null) {
     return null;
   }
-  // Reveal waits for both the load and the scroll to settle. The load
-  // dominates, so the scroll wait adds no perceptible delay. Both gates apply
-  // only to the first appearance, since a reload keeps the map on screen.
+  // Reveal waits for both the load and the scroll to settle. The load dominates, so the scroll wait adds no perceptible delay. Both gates apply only to the first appearance, since a reload keeps the map on screen.
   const revealed = loaded && settled;
   return (
     <div className="mt-4 mb-2 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">

@@ -3,8 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "@/lib/api/base.ts";
 
 // Auth is server-side (BFF). The browser holds only an httpOnly session cookie;
-// this provider just reflects "who am I" from /api/auth/me and triggers the
-// server's login/logout redirects.
+// this provider just reflects "who am I" from /api/auth/me and triggers the server's login/logout redirects.
 
 export interface AuthUser {
   sub?: string;

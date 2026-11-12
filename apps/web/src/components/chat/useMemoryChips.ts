@@ -3,9 +3,7 @@ import { API_BASE_URL } from "@/lib/api/base.ts";
 import { fetchClient } from "@/lib/api/client.ts";
 import type { MessageItem, SavedMemory } from "./types.ts";
 
-// The agent's background extraction usually lands a few seconds after the
-// turn ends, so the lookup retries on a short schedule and stops at the
-// first hit rather than waiting once for the worst case.
+// The agent's background extraction usually lands a few seconds after the turn ends, so the lookup retries on a short schedule and stops at the first hit rather than waiting once for the worst case.
 const LEARNED_NOTICE_CHECK_DELAYS_MS = [2_000, 4_000, 6_500, 9_500, 14_000];
 
 /** Persist (or clear, with null) the saved-memory chip on one message.
@@ -96,8 +94,7 @@ export function useLearnedMemoryChip(
     if (!streamJustEnded || turnStartedAtRef.current === null) {
       return () => {};
     }
-    // The persisted answer is already in the list (its refetch runs before
-    // streaming flips off), so this turn's learned fact attaches to it.
+    // The persisted answer is already in the list (its refetch runs before streaming flips off), so this turn's learned fact attaches to it.
     const anchor = newestAssistantMessage(messagesRef.current);
     const chatAtTurn = chatIdRef.current;
     if (anchor === undefined || chatAtTurn === undefined) {
@@ -131,8 +128,7 @@ export function useMemoryController(
       setManagerOpen(false);
     }, [setManagerOpen]),
     userMenuTriggerRef,
-    // The chip's own control deletes the memory itself; here we clear it from
-    // its message so it does not reappear on the next load, then refetch.
+    // The chip's own control deletes the memory itself; here we clear it from its message so it does not reappear on the next load, then refetch.
     onSavedMemoryDeleted: useCallback(
       (messageId: string) => {
         const chatId = chatIdRef.current;
