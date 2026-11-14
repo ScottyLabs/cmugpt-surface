@@ -55,8 +55,13 @@
             };
           };
 
-          # TanStack Router regenerates this on every dev and build run
-          treefmt.settings.global.excludes = [ "apps/web/src/routeTree.gen.ts" ];
+          # TanStack Router, tsoa, and openapi-typescript rewrite these on every dev and build run.
+          treefmt.settings.global.excludes = [
+            "apps/web/src/routeTree.gen.ts"
+            "apps/server/build/*"
+          ];
+          # The raw openapi.d.ts exceeds the oxlint max-lines limit.
+          pre-commit.settings.hooks.oxlint.excludes = [ "^apps/server/build/" ];
 
           sites.web = {
             package = helpers.buildDenoTask {
