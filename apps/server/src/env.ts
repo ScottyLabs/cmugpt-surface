@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: environment variables are in SCREAMING_CASE */
 import process from "node:process";
 import { z } from "zod";
 

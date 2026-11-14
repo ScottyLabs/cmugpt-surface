@@ -16,14 +16,10 @@ export const OIDC_AUTH = "oidc";
 type OidcJwtPayload = JwtPayload & {
   email?: string;
   name?: string;
-  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   preferred_username?: string;
-  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   given_name?: string;
   groups?: string[];
-  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   azp?: string;
-  // biome-ignore lint/style/useNamingConvention: OIDC standard claim
   realm_access?: { roles?: string[] };
 };
 

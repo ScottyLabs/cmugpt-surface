@@ -7,7 +7,6 @@ import { defineConfig } from "vite";
 // Backend dev port; matches ./.env PORT (3001). Override via VITE_DEV_API_ORIGIN.
 const devApiTarget = process.env.VITE_DEV_API_ORIGIN ?? "http://localhost:3001";
 
-// biome-ignore lint/style/noDefaultExport: https://vitejs.dev/config/
 export default defineConfig(({ mode: _mode }) => ({
   preview: {
     allowedHosts: [".up.railway.app", "chat.scottylabs.org"],
@@ -20,8 +19,6 @@ export default defineConfig(({ mode: _mode }) => ({
       "/chats": { target: devApiTarget, changeOrigin: true },
       "/me": { target: devApiTarget, changeOrigin: true },
       "/hello": { target: devApiTarget, changeOrigin: true },
-      "/swagger": { target: devApiTarget, changeOrigin: true },
-      "/openapi.json": { target: devApiTarget, changeOrigin: true },
       // Server-side auth endpoints (login/callback/logout/me) live on the API.
       "/api/auth": { target: devApiTarget, changeOrigin: true },
     },

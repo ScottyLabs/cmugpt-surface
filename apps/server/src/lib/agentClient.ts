@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: cmugpt-agent uses snake_case JSON */
 import { env } from "../env.ts";
 import { InternalServerError } from "../middlewares/errorHandler.ts";
 import { agentBodyToResult, isAgentResponseBody, readAgentStream } from "./agentStreamParsing.ts";
