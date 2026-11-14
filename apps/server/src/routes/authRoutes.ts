@@ -1,11 +1,7 @@
 // BFF auth endpoints (openid-client under the hood). The server runs the OIDC
-// Authorization Code + PKCE flow and keeps tokens in a Postgres session; the
-// browser only gets an httpOnly session cookie.
+// Authorization Code + PKCE flow and keeps tokens in a Postgres session; the browser only gets an httpOnly session cookie.
 //
-// Ricochet: when OAUTH_RELAY_URL is set, the IdP redirect_uri is the shared
-// relay and our real callback rides in the OAuth `state` as `return_to`
-// (base64url JSON). The relay bounces the code to us. This lets preview hosts
-// authenticate without registering their own redirect URI. Mirrors
+// Ricochet: when OAUTH_RELAY_URL is set, the IdP redirect_uri is the shared relay and our real callback rides in the OAuth `state` as `return_to` (base64url JSON). The relay bounces the code to us. This lets preview hosts authenticate without registering their own redirect URI. Mirrors
 // ScottyLabs/link-shortener, server-side.
 import { Buffer } from "node:buffer";
 import { type NextFunction, type Request, type Response, Router } from "express";
@@ -132,9 +128,7 @@ authRouter.get(
     }
 
     try {
-      // The token exchange's redirect_uri = the callbackUrl's origin+path, so use
-      // the redirect_uri the code was issued for (relay in relay mode) and attach
-      // the incoming query (code/state/iss).
+      // The token exchange's redirect_uri = the callbackUrl's origin+path, so use the redirect_uri the code was issued for (relay in relay mode) and attach the incoming query (code/state/iss).
       const incoming = new URL(req.originalUrl, env.APP_URL);
       const callbackUrl = new URL(tx.redirectUri);
       callbackUrl.search = incoming.search;
@@ -160,10 +154,7 @@ authRouter.get(
   "/api/auth/logout",
   asyncHandler(async (req: Request, res: Response) => {
     // Local logout: drop our session + cookie and return to the app. We don't do
-    // RP-initiated (Keycloak end_session) logout because its post_logout_redirect_uri
-    // must be registered on the client, and neither the app URL nor the ricochet
-    // relay is allowlisted for post-logout (tested). The Keycloak SSO session
-    // persists, so a later "Sign in" re-authenticates silently.
+    // RP-initiated (Keycloak end_session) logout because its post_logout_redirect_uri must be registered on the client, and neither the app URL nor the ricochet relay is allowlisted for post-logout (tested). The Keycloak SSO session persists, so a later "Sign in" re-authenticates silently.
     const sid = readCookie(req, SESSION_COOKIE);
     if (sid !== undefined) {
       await deleteSession(sid);

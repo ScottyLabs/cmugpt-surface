@@ -1,7 +1,7 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useRef } from "react";
 import { $api } from "@/lib/api/client.ts";
 import { NO_CHAT } from "./constants.ts";
+import { useLatestRef } from "../../lib/useLatestRef.ts";
 
 const routeApi = getRouteApi("/");
 
@@ -47,8 +47,7 @@ export function useChatSession() {
   const isNewChatIntent = search.newChat;
   const queries = useChatQueries(chatId);
 
-  const chatIdRef = useRef<string | undefined>(chatId);
-  chatIdRef.current = chatId;
+  const chatIdRef = useLatestRef<string | undefined>(chatId);
 
   return { navigate, chatId, isNewChatIntent, ...queries, chatIdRef };
 }

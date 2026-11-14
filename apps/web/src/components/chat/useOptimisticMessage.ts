@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { OptimisticUserMessage } from "./types.ts";
 
 interface OptimisticDeps {
@@ -21,11 +21,10 @@ export function useOptimisticMessage(deps: OptimisticDeps) {
     messagesLength > optimisticUserMessage.messageCountBeforeSend;
   const shouldShowOptimisticUserMessage = isForVisibleChat && !persisted;
 
-  useEffect(() => {
-    if (persisted) {
-      setOptimisticUserMessage(null);
-    }
-  }, [persisted]);
+  // Once the server has the message, drop the optimistic copy so it cannot resurface on a new chat. Adjusting state during render avoids an extra effect pass.
+  if (persisted) {
+    setOptimisticUserMessage(null);
+  }
 
   return {
     optimisticUserMessage,

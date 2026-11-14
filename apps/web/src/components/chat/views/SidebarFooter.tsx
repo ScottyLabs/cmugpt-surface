@@ -86,11 +86,12 @@ function SidebarUserMenu({ c }: { c: ChatShellController }) {
 
 export function SidebarFooter({ c }: { c: ChatShellController }) {
   const { sidebarOpen, sidebar, derived, auth } = c;
+  const { userMenuTriggerRef } = c.memory;
   return (
     <div className="mt-auto p-2.5 relative">
       <SidebarUserMenu c={c} />
       <button
-        ref={c.memory.userMenuTriggerRef}
+        ref={userMenuTriggerRef}
         type="button"
         onClick={(e) => {
           e.stopPropagation();

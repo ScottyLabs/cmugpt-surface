@@ -1,7 +1,6 @@
 export const SKIP_DELETE_CONFIRMATION_KEY = "cmugpt.memory.skip-delete-confirmation";
 
-// Scoped per user so the preference cannot leak between accounts on a
-// shared device.
+// Scoped per user so the preference cannot leak between accounts on a shared device.
 function storageKey(userSub: string | undefined): string {
   return userSub === undefined || userSub === ""
     ? SKIP_DELETE_CONFIRMATION_KEY

@@ -1,7 +1,7 @@
 {
   "workspace": ["./apps/server", "./apps/web"],
   "nodeModulesDir": "auto",
-  "exclude": [".devenv", ".direnv"],
+  "exclude": [".scottylabs"],
   "unstable": ["sloppy-imports"],
   "compilerOptions": {
     "experimentalDecorators": true

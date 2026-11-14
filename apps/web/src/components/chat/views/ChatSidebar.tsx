@@ -7,10 +7,7 @@ import { SidebarOpenButton } from "./SidebarOpenButton.tsx";
 function SidebarHeader({ c }: { c: ChatShellController }) {
   const { sidebarOpen } = c;
   if (!sidebarOpen) {
-    // Collapsed rail: a single brand button that opens the sidebar, showing the
-    // dog logo and morphing to the menu icon on hover. The key differs from the
-    // open header so React remounts on toggle instead of reusing (and
-    // animating) the same nodes across states.
+    // Collapsed rail: a single brand button that opens the sidebar, showing the dog logo and morphing to the menu icon on hover. The key differs from the open header so React remounts on toggle instead of reusing (and animating) the same nodes across states.
     return (
       <div key="rail-header" className="flex h-16 items-center justify-center px-4">
         <SidebarOpenButton c={c} />
@@ -39,9 +36,7 @@ function OpenSidebarHeader({ c }: { c: ChatShellController }) {
         <button
           type="button"
           onClick={() => {
-            // On mobile the sidebar overlays the screen, so it has to close
-            // for the search panel underneath to become visible. Open (not
-            // toggle) so tapping search always lands on the search screen.
+            // On mobile the sidebar overlays the screen, so it has to close for the search panel underneath to become visible. Open (not toggle) so tapping search always lands on the search screen.
             if (isMobile) {
               setSidebarOpen(false);
               search.openSearch();
@@ -81,9 +76,7 @@ function SidebarChatLists({ c }: { c: ChatShellController }) {
         if (isMobile) {
           setSidebarOpen(false);
         }
-        // Opening any chat exits search, including re-clicking the current
-        // chat (which the chatId-change effect can't catch). Pin clicks
-        // stopPropagation, so they don't land here.
+        // Opening any chat exits search, including re-clicking the current chat (which the chatId-change effect can't catch). Pin clicks stopPropagation, so they don't land here.
         if (search.searchMode) {
           search.closeSearch();
         }
@@ -117,8 +110,7 @@ function SidebarNav({ c }: { c: ChatShellController }) {
     if (isMobile) {
       setSidebarOpen(false);
     }
-    // Close search explicitly: the chatId-change effect can't, because
-    // starting a new chat from the new-chat state leaves chatId undefined.
+    // Close search explicitly: the chatId-change effect can't, because starting a new chat from the new-chat state leaves chatId undefined.
     search.closeSearch();
     void session.navigate({
       to: "/",
@@ -145,9 +137,7 @@ function SidebarNav({ c }: { c: ChatShellController }) {
   );
 }
 
-// Collapsed rail: compact, centered icon buttons whose hover highlight hugs
-// the icon rather than spanning the whole rail. Search lives in the header
-// when open, so it only needs an entry point here in the rail.
+// Collapsed rail: compact, centered icon buttons whose hover highlight hugs the icon rather than spanning the whole rail. Search lives in the header when open, so it only needs an entry point here in the rail.
 function RailNav({ c, startNewChat }: { c: ChatShellController; startNewChat: () => void }) {
   const { search, isMobile, setSidebarOpen } = c;
   return (

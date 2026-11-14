@@ -173,8 +173,7 @@ function normalizeAgentStreamEvent(parsed: {
   return null;
 }
 
-// A hung agent connection would otherwise block reader.read() forever with
-// no cancel path in the UI.
+// A hung agent connection would otherwise block reader.read() forever with no cancel path in the UI.
 const STREAM_IDLE_TIMEOUT_MS = 90_000;
 
 type StreamReadResult = Awaited<ReturnType<ReadableStreamDefaultReader<Uint8Array>["read"]>>;

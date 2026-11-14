@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { StreamBuffer } from "./StreamBuffer.ts";
 import type { CmuMapsPayload } from "./types.ts";
 
@@ -8,11 +8,12 @@ export function useStreamController() {
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
   const [streamingCmuMaps, setStreamingCmuMaps] = useState<CmuMapsPayload | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
-  const bufferRef = useRef<StreamBuffer | null>(null);
-  bufferRef.current ??= new StreamBuffer((chunk) => {
-    setStreamingText((current) => current + chunk);
-  });
-  const buffer = bufferRef.current;
+  const [buffer] = useState(
+    () =>
+      new StreamBuffer((chunk) => {
+        setStreamingText((current) => current + chunk);
+      }),
+  );
 
   useEffect(() => {
     return () => {

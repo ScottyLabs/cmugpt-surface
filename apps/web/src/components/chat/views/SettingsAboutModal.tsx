@@ -15,8 +15,7 @@ function AboutPanel() {
         <p>
           It taps into campus knowledge through MCP tools: CMUMaps for directions, CMUCourses for
           courses, CMUEats for dining, and CMUGuide for student resources. Each can be turned on or
-          off in Settings, and Bark remembers details you share so future chats feel more
-          personal.
+          off in Settings, and Bark remembers details you share so future chats feel more personal.
         </p>
       </div>
       <div className="mt-8 flex items-center justify-end gap-2 mr-4">
