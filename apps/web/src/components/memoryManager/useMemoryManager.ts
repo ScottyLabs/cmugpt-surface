@@ -5,6 +5,7 @@ import { $api } from "@/lib/api/client.ts";
 import { useAuth } from "@/integrations/auth/AuthProvider.tsx";
 import { shouldSkipDeleteConfirmation } from "@/lib/memoryPreferences.ts";
 import { buildOps } from "./memoryOps.ts";
+import { useLatestRef } from "../../lib/useLatestRef.ts";
 
 export type MemoryType = components["schemas"]["AgentMemoryType"];
 export type MemoryFilter = "all" | MemoryType;
@@ -87,17 +88,18 @@ function trapTabKey(event: KeyboardEvent, focusRoot: HTMLElement): void {
 /** While a confirmation is up, the manager behind it goes inert and focus
  *  jumps to the safe Cancel action. */
 function useConfirmInert(pendingAction: PendingAction | null, refs: MemoryRefs): void {
+  const { pendingActionRef, dialogContentRef, cancelButtonRef } = refs;
   useEffect(() => {
-    refs.pendingActionRef.current = pendingAction;
-    if (refs.dialogContentRef.current) {
-      refs.dialogContentRef.current.inert = pendingAction !== null;
+    pendingActionRef.current = pendingAction;
+    if (dialogContentRef.current) {
+      dialogContentRef.current.inert = pendingAction !== null;
     }
     if (pendingAction === null) return () => {};
-    const frame = requestAnimationFrame(() => refs.cancelButtonRef.current?.focus());
+    const frame = requestAnimationFrame(() => cancelButtonRef.current?.focus());
     return () => {
       cancelAnimationFrame(frame);
     };
-  }, [pendingAction, refs]);
+  }, [pendingAction, pendingActionRef, dialogContentRef, cancelButtonRef]);
 }
 
 /** Escape closes (confirmation first, then the manager), Tab stays trapped,
@@ -204,8 +206,7 @@ export function useMemoryManager(
       }),
     clearCall: () => clearMemories.mutateAsync({}),
   });
-  const cancelConfirmationRef = useRef(ops.closeConfirmation);
-  cancelConfirmationRef.current = ops.closeConfirmation;
+  const cancelConfirmationRef = useLatestRef(ops.closeConfirmation);
   useConfirmInert(action.pendingAction, refs);
   useDialogKeyboard(open, onClose, refs, cancelConfirmationRef, returnFocusRef);
 

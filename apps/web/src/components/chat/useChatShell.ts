@@ -16,6 +16,7 @@ import { useShareController } from "./useShareController.ts";
 import { useSidebarInteractions } from "./useSidebarInteractions.ts";
 import { type StreamController, useStreamController } from "./useStreamController.ts";
 import { useToolToggles } from "./useToolToggles.ts";
+import { useLatestRef } from "../../lib/useLatestRef.ts";
 
 function useChatShellEffects(
   session: ChatSession,
@@ -79,17 +80,13 @@ function useChatShellCore() {
 
 function useShellMemory(session: ChatSession, stream: StreamController) {
   const { refetchMessages } = session;
-  const chatIdRef = useRef(session.chatId);
-  chatIdRef.current = session.chatId;
-  const messagesRef = useRef(session.messages);
-  messagesRef.current = stream.streamChatId === session.chatId ? session.messages : [];
+  const chatIdRef = useLatestRef(session.chatId);
+  const messagesRef = useLatestRef(stream.streamChatId === session.chatId ? session.messages : []);
   useLearnedMemoryChip(stream.isStreaming, chatIdRef, messagesRef, refetchMessages);
   return useMemoryController(chatIdRef, refetchMessages);
 }
 
-// Opening a chat (from the sidebar or a result) leaves search, so the panel
-// is never a dead end. Selecting a result already closes search; this covers
-// navigating via the sidebar while search is open.
+// Opening a chat (from the sidebar or a result) leaves search, so the panel is never a dead end. Selecting a result already closes search; this covers navigating via the sidebar while search is open.
 function useSearchExitOnChatChange(chatId: string | undefined, closeSearch: () => void): void {
   const prevChatIdRef = useRef(chatId);
   useEffect(() => {

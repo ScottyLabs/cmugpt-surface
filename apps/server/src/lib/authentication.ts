@@ -57,8 +57,7 @@ export function expressAuthentication(
   securityName: string,
   _scopes?: string[],
 ): Promise<Express.User> {
-  // Store all authentication errors in the request object
-  // so we can return the most relevant error to the client in errorHandler
+  // Store all authentication errors in the request object so we can return the most relevant error to the client in errorHandler
   request.authErrors = request.authErrors ?? [];
 
   if (securityName !== OIDC_AUTH) {
@@ -136,9 +135,7 @@ function decodeTokenHeader(request: express.Request, token: string): JwtHeader {
 
 function verifyTokenClaims(token: string, signingKey: string): Promise<OidcJwtPayload> {
   return new Promise((resolve, reject) => {
-    // No `audience` here: Keycloak access tokens carry the resource server in
-    // `aud` (often "account"), not the client_id. Authorization for our client
-    // is asserted below via `azp` (or `aud` if it does contain the client).
+    // No `audience` here: Keycloak access tokens carry the resource server in `aud` (often "account"), not the client_id. Authorization for our client is asserted below via `azp` (or `aud` if it does contain the client).
     jwt.verify(token, signingKey, { issuer: env.OIDC_ISSUER_URL }, (err, decoded) => {
       if (err || decoded === undefined || typeof decoded === "string") {
         reject(err ?? new Error("Invalid token"));
@@ -149,8 +146,7 @@ function verifyTokenClaims(token: string, signingKey: string): Promise<OidcJwtPa
   });
 }
 
-// Ensure the token was issued to our client (Keycloak sets `azp` to the
-// authorized party). Also accept an explicit audience match if present.
+// Ensure the token was issued to our client (Keycloak sets `azp` to the authorized party). Also accept an explicit audience match if present.
 function buildAuthenticatedUser(request: express.Request, payload: OidcJwtPayload): Express.User {
   if (!env.OIDC_CLIENT_ID) {
     raiseAuthError(request, "OIDC client not configured");

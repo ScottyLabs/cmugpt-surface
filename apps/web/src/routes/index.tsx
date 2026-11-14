@@ -12,9 +12,7 @@ export const Route = createFileRoute("/")({
 
 // Soft washes of the app's palette behind the sign-in card
 function SignInBackdrop() {
-  return (
-    <div aria-hidden className="signin-backdrop pointer-events-none absolute inset-0" />
-  );
+  return <div aria-hidden className="signin-backdrop pointer-events-none absolute inset-0" />;
 }
 
 function SignInPage() {
@@ -27,19 +25,15 @@ function SignInPage() {
         aria-labelledby="signin-title"
         className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] sm:p-8"
       >
-        <h1
-          id="signin-title"
-          className="text-2xl font-bold text-neutral-900"
-        >
+        <h1 id="signin-title" className="text-2xl font-bold text-neutral-900">
           Welcome to Bark
         </h1>
         <p className="mt-2 font-medium text-neutral-800">
           Please sign in with your CMU credentials to continue.
         </p>
         <p className="mt-4 text-sm leading-relaxed text-neutral-700">
-          Bark is available exclusively to the Carnegie Mellon community,
-          providing access to real-time campus information and
-          community-driven knowledge.
+          Bark is available exclusively to the Carnegie Mellon community, providing access to
+          real-time campus information and community-driven knowledge.
         </p>
         <div className="mt-6 flex justify-center">
           <button
@@ -54,10 +48,7 @@ function SignInPage() {
         </div>
         <p className="mt-4 text-center text-xs text-neutral-500">
           By using Bark, you agree to{" "}
-          <Link
-            to="/terms"
-            className="underline underline-offset-2 hover:text-neutral-700"
-          >
+          <Link to="/terms" className="underline underline-offset-2 hover:text-neutral-700">
             Terms of Use
           </Link>
         </p>

@@ -140,8 +140,7 @@ export const chatService = {
       content,
     );
 
-    // One-time title upgrade, concurrent with the agent call. The agent
-    // moderates the message itself and titles flagged ones "New chat".
+    // One-time title upgrade, concurrent with the agent call. The agent moderates the message itself and titles flagged ones "New chat".
     const titlePromise = titledByThisMessage
       ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
       : undefined;
@@ -177,10 +176,7 @@ export const chatService = {
 
     yield { type: "user", message: messageRowToDto(userRow) };
 
-    // One-time title upgrade, concurrent with the agent turn: by the time the
-    // stream finishes it has almost always resolved, so awaiting it below
-    // adds no meaningful latency before the done event. The agent moderates
-    // the message itself and titles flagged ones "New chat".
+    // One-time title upgrade, concurrent with the agent turn: by the time the stream finishes it has almost always resolved, so awaiting it below adds no meaningful latency before the done event. The agent moderates the message itself and titles flagged ones "New chat".
     const titlePromise = titledByThisMessage
       ? upgradeChatTitle(chatId, content.trim()).catch(() => {})
       : undefined;
@@ -206,8 +202,7 @@ export const chatService = {
       streamedCmuMaps,
       streamedSavedMemory,
     );
-    // Let the title land before the response closes, so the client's
-    // post-stream refetch already sees it.
+    // Let the title land before the response closes, so the client's post-stream refetch already sees it.
     await titlePromise;
   },
 

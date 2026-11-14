@@ -1,6 +1,4 @@
-// Postgres-backed server sessions for the BFF flow, plus short-lived
-// pending-login (PKCE/state) records. The session id is an opaque random token
-// in an httpOnly cookie; Keycloak tokens live only in the DB.
+// Postgres-backed server sessions for the BFF flow, plus short-lived pending-login (PKCE/state) records. The session id is an opaque random token in an httpOnly cookie; Keycloak tokens live only in the DB.
 import crypto from "node:crypto";
 import type { Request } from "express";
 import { eq, lt } from "drizzle-orm";

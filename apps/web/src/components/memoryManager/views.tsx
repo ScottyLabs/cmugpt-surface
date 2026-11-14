@@ -32,6 +32,7 @@ export function ManagerHeader({ onClose }: { onClose: () => void }) {
 }
 
 export function ManagerSearch({ mm }: { mm: MemoryManagerController }) {
+  const { searchInputRef } = mm.refs;
   return (
     <label className="relative block" htmlFor="memory-search">
       <span className="sr-only">Search memories</span>
@@ -40,7 +41,7 @@ export function ManagerSearch({ mm }: { mm: MemoryManagerController }) {
         aria-hidden="true"
       />
       <input
-        ref={mm.refs.searchInputRef}
+        ref={searchInputRef}
         id="memory-search"
         type="search"
         value={mm.search}

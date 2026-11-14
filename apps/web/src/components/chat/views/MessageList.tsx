@@ -16,8 +16,7 @@ import type { MessageItem } from "../types.ts";
 import type { ChatShellController } from "../useChatShell.ts";
 
 function UserBubble({ content }: { content: string }) {
-  // ChatGPT-like rhythm: the largest break sits above a new question, so each
-  // exchange reads as its own block.
+  // ChatGPT-like rhythm: the largest break sits above a new question, so each exchange reads as its own block.
   return (
     <div className="mt-20 flex justify-end first:mt-0">
       <div className="max-w-[85%] rounded-2xl bg-neutral-200 px-4 py-2.5 text-sm leading-relaxed text-neutral-900">
@@ -36,8 +35,7 @@ function UserBubble({ content }: { content: string }) {
 }
 
 function AssistantMessage({ m }: { m: MessageItem }) {
-  // Roomy but smaller than the pre-question break, so the answer still reads
-  // as attached to the question above it.
+  // Roomy but smaller than the pre-question break, so the answer still reads as attached to the question above it.
   return (
     <div className={`mt-8 first:mt-0 ${markdownClass}`}>
       <ReactMarkdown
@@ -57,10 +55,8 @@ function AssistantMessage({ m }: { m: MessageItem }) {
   );
 }
 
-// The saved-memory chip is persisted on the message it belongs to, so it
-// renders directly above that message and survives later questions, reloads,
-// and leaving the chat. Explicit remembers are persisted with the answer and
-// self-learned facts are attached a few seconds later.
+// The saved-memory chip is persisted on the message it belongs to, so it renders directly above that message and survives later questions, reloads,
+// and leaving the chat. Explicit remembers are persisted with the answer and self-learned facts are attached a few seconds later.
 function MessageTurn({
   m,
   onSavedMemoryDeleted,
@@ -118,6 +114,7 @@ function StreamingTail({ stream }: { stream: ChatShellController["stream"] }) {
 
 export function MessageList({ c }: { c: ChatShellController }) {
   const { session, stream, optimistic, scroll, memory } = c;
+  const { bottomRef } = scroll;
   const optimisticMessage = optimistic.optimisticUserMessage;
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col">
@@ -130,7 +127,7 @@ export function MessageList({ c }: { c: ChatShellController }) {
       {stream.isStreamingHere && <StreamingTail stream={stream} />}
       {/* Spacer doubles as the auto-scroll anchor: scrolling it into view
           parks the last message above the floating composer, not behind it. */}
-      <div ref={scroll.bottomRef} className="h-36 shrink-0" />
+      <div ref={bottomRef} className="h-36 shrink-0" />
     </div>
   );
 }
