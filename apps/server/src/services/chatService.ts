@@ -201,6 +201,7 @@ export const chatService = {
       streamedText,
       streamedCmuMaps,
       streamedSavedMemory,
+      options.signal?.aborted === true,
     );
     // Let the title land before the response closes, so the client's post-stream refetch already sees it.
     await titlePromise;

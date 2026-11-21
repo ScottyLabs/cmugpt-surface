@@ -74,11 +74,24 @@ export async function* runAgentStream(
       }
     }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Agent request failed";
-    yield { type: "error", message: msg };
-    return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
+    // A client disconnect (Stop, closed tab) aborts the agent request: keep what streamed instead of reporting an error.
+    if (signal?.aborted !== true) {
+      const msg = e instanceof Error ? e.message : "Agent request failed";
+      yield { type: "error", message: msg };
+      return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: true };
+    }
   }
   return { result, streamedText, streamedCmuMaps, streamedSavedMemory, errored: false };
+}
+
+/** Marks a reply that ended early. Closes a code fence the partial text left
+ *  open, so the note renders as prose rather than inside the code block. */
+function partialReplyNote(streamedText: string, stopped: boolean): string {
+  const fenceOpen = (streamedText.match(/```/gu)?.length ?? 0) % 2 === 1;
+  const note = stopped
+    ? "_(Response stopped.)_"
+    : "_(This response was cut off before completing.)_";
+  return `${fenceOpen ? "\n```" : ""}\n\n${note}`;
 }
 
 /** Persist a streamed answer with its map and chip. Undefined means the
@@ -118,6 +131,7 @@ export async function* finalizeAssistantMessage(
   streamedText: string,
   streamedCmuMaps: CmuMapsDto | null,
   streamedSavedMemory: SavedMemoryDto | null,
+  stopped: boolean,
 ): AsyncGenerator<ChatStreamEvent, void, undefined> {
   let finalResult = result;
   if (finalResult === undefined) {
@@ -128,10 +142,10 @@ export async function* finalizeAssistantMessage(
       };
       return;
     }
-    // The stream died before the agent's final event. Keep the partial text but mark it, instead of persisting it as a complete answer.
-    const truncationNote = "\n\n_(This response was cut off before completing.)_";
-    yield { type: "delta", text: truncationNote };
-    finalResult = { text: streamedText + truncationNote };
+    // The stream ended before the agent's final event. Keep the partial text but mark it, instead of persisting it as a complete answer.
+    const note = partialReplyNote(streamedText, stopped);
+    yield { type: "delta", text: note };
+    finalResult = { text: streamedText + note };
   } else if (!streamedText) {
     yield { type: "delta", text: finalResult.text };
   }

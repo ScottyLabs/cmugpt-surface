@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import { API_BASE_URL } from "@/lib/api/base.ts";
 import { buildOutgoingContent, type PendingAttachment } from "./attachments.ts";
 import { STICKY_SCROLL_THRESHOLD_PX } from "./constants.ts";
+import { settleStoppedTurn, type StreamTurn } from "./stoppedTurn.ts";
 import type { Attachments } from "./useAttachments.ts";
 import type { ConversationScroll } from "./useConversationScroll.ts";
 import type { ChatMutations } from "./useChatMutations.ts";
@@ -34,6 +35,7 @@ export interface SendCtx {
   enqueueStreamingText: (text: string) => void;
   waitForStreamingFlush: () => Promise<void>;
   resetStreamingBuffer: () => void;
+  beginRequest: () => AbortSignal;
 }
 
 export interface SendCtxInput {
@@ -75,6 +77,7 @@ export function buildSendCtx(input: SendCtxInput): SendCtx {
     enqueueStreamingText: stream.enqueueStreamingText,
     waitForStreamingFlush: stream.waitForStreamingFlush,
     resetStreamingBuffer: stream.resetStreamingBuffer,
+    beginRequest: stream.beginRequest,
   };
 }
 
@@ -82,6 +85,7 @@ function postChatMessageStream(
   chatId: string,
   content: string,
   disabledTools: string[],
+  signal: AbortSignal,
 ): Promise<Response> {
   // Cross-origin in production (web on cmugpt.com, API on api.cmugpt.com);
   // credentials carry the session cookie, and the server bridges it to a Bearer.
@@ -90,6 +94,7 @@ function postChatMessageStream(
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content, disabledTools }),
+    signal,
   });
 }
 
@@ -124,9 +129,19 @@ function parseStreamEvent(line: string): ChatStreamEvent | null {
   }
 }
 
-function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
+function messageIdOf(message: unknown): string | null {
+  return typeof message === "object" &&
+    message !== null &&
+    "id" in message &&
+    typeof message.id === "string"
+    ? message.id
+    : null;
+}
+
+function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx, turn: StreamTurn): boolean {
   switch (ev.type) {
     case "user":
+      turn.userMessageId = messageIdOf(ev.message);
       void ctx.refetchMessages();
       void ctx.refetchChats();
       return false;
@@ -140,6 +155,7 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
       ctx.setStreamingCmuMaps(ev.cmuMaps);
       return false;
     case "delta":
+      turn.receivedText = true;
       ctx.setStreamStatus(null);
       ctx.enqueueStreamingText(ev.text);
       return false;
@@ -154,7 +170,7 @@ function applyStreamEvent(ev: ChatStreamEvent, ctx: SendCtx): boolean {
   }
 }
 
-async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
+async function consumeChatStream(res: Response, ctx: SendCtx, turn: StreamTurn): Promise<void> {
   if (res.body === null) {
     ctx.setStreamError("No response body");
     return;
@@ -174,7 +190,7 @@ async function consumeChatStream(res: Response, ctx: SendCtx): Promise<void> {
             continue;
           }
           const ev = parseStreamEvent(line);
-          if (ev !== null && applyStreamEvent(ev, ctx)) {
+          if (ev !== null && applyStreamEvent(ev, ctx, turn)) {
             shouldRefresh = true;
           }
         }
@@ -244,9 +260,11 @@ export async function runSend(ctx: SendCtx): Promise<void> {
     ctx.setAttachmentHint(e instanceof Error ? e.message : "Could not read attachments.");
     return;
   }
+  const signal = ctx.beginRequest();
+  const turn: StreamTurn = { userMessageId: null, receivedText: false };
   beginSend(ctx, activeChatId, content);
   try {
-    const res = await postChatMessageStream(activeChatId, content, ctx.disabledTools);
+    const res = await postChatMessageStream(activeChatId, content, ctx.disabledTools, signal);
     if (!res.ok) {
       ctx.setStreamError((await readStreamErrorDetail(res)) || "Request failed");
       ctx.setOptimisticUserMessage(null);
@@ -255,8 +273,12 @@ export async function runSend(ctx: SendCtx): Promise<void> {
       return;
     }
     ctx.clearComposer();
-    await consumeChatStream(res, ctx);
+    await consumeChatStream(res, ctx, turn);
   } catch (e) {
+    if (signal.aborted) {
+      await settleStoppedTurn(ctx, turn);
+      return;
+    }
     const detail = e instanceof Error ? e.message : String(e);
     console.error("send stream failed:", e);
     ctx.setStreamError(`Network error (${detail})`);

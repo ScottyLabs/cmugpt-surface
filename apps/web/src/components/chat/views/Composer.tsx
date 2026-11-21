@@ -1,3 +1,4 @@
+import { Square } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { SendIcon } from "@/components/icons/index.tsx";
 import { ModelSelector } from "../../ModelSelector.tsx";
@@ -75,9 +76,8 @@ export function Composer({ c }: { c: ChatShellController }) {
         multiline={multiline}
         controlsRef={controlsRef}
         send={send}
-        sendDisabled={
-          streaming || c.mutations.createChat.isPending || lockedForChat || nothingToSend
-        }
+        stop={streaming ? c.stream.stopStream : null}
+        sendDisabled={c.mutations.createChat.isPending || lockedForChat || nothingToSend}
       />
     </div>
   );
@@ -112,11 +112,14 @@ function ComposerControls({
   multiline,
   controlsRef,
   send,
+  stop,
   sendDisabled,
 }: {
   multiline: boolean;
   controlsRef: React.RefObject<HTMLDivElement | null>;
   send: () => Promise<void> | void;
+  /** Set while a response is streaming; the send button becomes Stop. */
+  stop: (() => void) | null;
   sendDisabled: boolean;
 }) {
   return (
@@ -125,19 +128,31 @@ function ComposerControls({
         multiline ? "mt-1.5" : "-mt-9"
       }`}
     >
-      <div ref={controlsRef} className="pointer-events-auto flex items-center">
+      {/* relative: the disabled textarea's opacity lifts it above unpositioned siblings, which would swallow clicks on Stop. */}
+      <div ref={controlsRef} className="pointer-events-auto relative flex items-center">
         <ModelSelector />
-        <button
-          type="button"
-          onClick={() => {
-            void send();
-          }}
-          disabled={sendDisabled}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 disabled:opacity-35"
-          aria-label="Send"
-        >
-          <SendIcon />
-        </button>
+        {stop === null ? (
+          <button
+            type="button"
+            onClick={() => {
+              void send();
+            }}
+            disabled={sendDisabled}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 disabled:opacity-35"
+            aria-label="Send"
+          >
+            <SendIcon />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={stop}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-neutral-100"
+            aria-label="Stop response"
+          >
+            <Square className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" aria-hidden />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StreamBuffer } from "./StreamBuffer.ts";
 import type { CmuMapsPayload } from "./types.ts";
+
+/** One AbortController per send, so Stop can cancel the request in flight. */
+function useStreamRequest() {
+  const requestRef = useRef<AbortController | null>(null);
+  return {
+    beginRequest: () => {
+      const controller = new AbortController();
+      requestRef.current = controller;
+      return controller.signal;
+    },
+    stopStream: () => {
+      requestRef.current?.abort();
+    },
+  };
+}
 
 export function useStreamController() {
   const [isStreaming, setIsStreaming] = useState(false);
@@ -8,6 +23,7 @@ export function useStreamController() {
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
   const [streamingCmuMaps, setStreamingCmuMaps] = useState<CmuMapsPayload | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const request = useStreamRequest();
   const [buffer] = useState(
     () =>
       new StreamBuffer((chunk) => {
@@ -43,6 +59,7 @@ export function useStreamController() {
     },
     waitForStreamingFlush: () => buffer.waitForFlush(),
     resetStreamingBuffer,
+    ...request,
   };
 }
 
